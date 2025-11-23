@@ -1,15 +1,64 @@
 # GearTrade MCP Server
 
-Model Context Protocol (MCP) server for autonomous AI trading on Hyperliquid.
+**Model Context Protocol (MCP) server for autonomous AI trading on Hyperliquid**
+
+GearTrade MCP Server is a comprehensive trading analysis and execution platform that exposes 36+ powerful trading tools through the Model Context Protocol. Built specifically for Hyperliquid perpetual futures trading, this server enables AI agents and trading systems to perform sophisticated market analysis, risk management, and order execution with full EIP-712 signing support.
 
 ## Overview
 
-GearTrade MCP Server exposes trading functionality through the Model Context Protocol, allowing AI agents to:
-- Generate trading signals using technical analysis and AI
-- Get real-time market data
-- Manage trading positions
-- Run trading cycles
-- Monitor performance metrics
+GearTrade MCP Server provides a complete suite of trading tools organized into 10 major categories:
+
+### 📊 Market Data & Analysis (10 tools)
+- **Price Tools**: Real-time price fetching for single and multiple assets
+- **Technical Analysis**: Comprehensive indicators including RSI, EMA, MACD, Bollinger Bands, ATR, ADX, OBV, VWAP, Stochastic, CCI, Williams %R, Parabolic SAR, Aroon, Support/Resistance, Fibonacci, Trend, Market Structure, RSI Divergence, Candlestick patterns, and Market Regime analysis
+- **Volume Analysis**: Deep volume profiling with buy/sell pressure, CVD analysis, liquidity zones, and volume-based recommendations
+- **Multi-Timeframe Analysis**: Trend alignment across Daily, 4H, and 1H timeframes with alignment scoring
+
+### 🔍 Advanced Market Analysis (18 tools)
+- **Fibonacci Retracement**: Complete Fibonacci level analysis with swing high/low detection and signal generation
+- **Order Book Depth**: Real-time order book analysis with bid/ask depth, spread, imbalance, and support/resistance zones
+- **Volume Profile**: Session and composite volume profiles with POC, VAH/VAL, HVN/LVN, and accumulation/distribution zones
+- **Market Structure**: Change of Character (COC) detection with swing high/low identification and reversal signals
+- **Candlestick Patterns**: Detection of doji, hammer, and bullish/bearish engulfing patterns
+- **Divergence Detection**: RSI divergence analysis for bullish/bearish signals
+- **Liquidation Levels**: Liquidation cluster analysis with liquidity grab zones, stop hunt predictions, and safe entry zones
+- **Long/Short Ratio**: Sentiment analysis with contrarian signals and extreme ratio detection
+- **Spot-Futures Divergence**: Premium analysis, arbitrage opportunities, and mean reversion signals
+
+### 💼 Position & Risk Management (5 tools)
+- **Position Management**: Real-time position tracking with unrealized PnL and MAE (Maximum Adverse Excursion)
+- **Risk Management**: Automated stop loss and take profit calculation with risk/reward ratio analysis
+- **Position Setup**: Dynamic position sizing with leverage calculation, margin management, and capital allocation
+
+### 📈 External Market Data (2 tools)
+- **Funding Rate Analysis**: Real-time funding rates with trend analysis
+- **Open Interest Tracking**: Open interest monitoring with trend detection
+- **Volume & Volatility Trends**: Market trend analysis
+
+### ⚡ Order Execution (4 tools)
+- **Spot Execution**: Spot trading execution (1x leverage) with simulation and live trading support
+- **Futures Execution**: Leveraged futures trading (1-50x) with full Hyperliquid integration
+- **Paper Trading**: Realistic simulation with slippage modeling
+- **Live Trading**: Real order execution via Hyperliquid API with EIP-712 signing
+
+### Key Features
+
+- **36+ MCP Tools**: Comprehensive trading toolkit covering all aspects of market analysis and execution
+- **Hyperliquid Integration**: Native support for Hyperliquid perpetual futures with EIP-712 order signing
+- **Real-time Data**: Live market data from Hyperliquid and Binance APIs
+- **Advanced Analytics**: 20+ technical indicators, volume analysis, and market structure detection
+- **Risk Management**: Automated position sizing, stop loss, and take profit calculation
+- **Safe Execution**: Paper trading simulation with realistic slippage before live execution
+- **Multi-Asset Support**: Batch processing for multiple tickers simultaneously
+- **Type-Safe**: Full TypeScript implementation with Zod schema validation
+
+### Use Cases
+
+- **AI Trading Agents**: Enable AI agents to analyze markets and execute trades autonomously
+- **Trading Bots**: Build sophisticated trading bots with comprehensive market analysis
+- **Risk Management Systems**: Implement automated risk management and position sizing
+- **Market Research**: Perform deep market analysis across multiple assets and timeframes
+- **Backtesting**: Simulate trading strategies with paper trading executor
 
 ## Installation
 
