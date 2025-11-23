@@ -502,14 +502,17 @@ class GearTradeMCPServer {
               maxRetries: 3,
             })
 
-            // Prepare signal for execution
+            // Prepare signal for execution (LiveExecutor expects 'coin' and 'signal' fields)
             const executionSignal: Signal = {
               asset: ticker,
+              coin: ticker, // LiveExecutor uses 'coin' field
               action: isLong ? 'BUY' : 'SELL',
+              signal: isLong ? 'buy_to_enter' : 'sell_to_enter', // LiveExecutor expects this format
               confidence: signal.confidence,
               entryPrice: currentPrice,
-              stopLoss: signal.stopLoss,
-              takeProfit: signal.takeProfit,
+              stop_loss: signal.stopLoss, // LiveExecutor uses 'stop_loss'
+              take_profit: signal.takeProfit, // LiveExecutor uses 'take_profit'
+              profit_target: signal.takeProfit, // Alternative field name
               leverage: signal.leverage,
               quantity: quantity || signal.quantity || 0,
               reasoning: signal.reasoning,
