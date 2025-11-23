@@ -3,7 +3,7 @@
  * Paper trading with virtual positions and simulated execution
  */
 
-import { CycleState, CycleConfig, PositionState, Signal } from '../types'
+import { CycleState, CycleConfig, PositionState, Signal, MarketData } from '../types'
 import { PaperExecutor, PaperExecutorConfig } from '../execution/paper-executor'
 import { PerformanceTracker, PerformanceTrackerConfig } from './shared/performance-tracker'
 import { CircuitBreakerState } from '../types'
@@ -12,7 +12,7 @@ import { executeCycle, CycleCoreConfig } from './shared/cycle-core'
 import { saveCycleState, loadCycleState, StateManagerConfig } from './shared/state-manager'
 import { getTradingConfig } from '../config'
 import { getAIModel, getAIProvider } from '../config'
-import { generateCycleId } from './shared/utils'
+// generateCycleId is defined locally in this file, no need to import
 
 export interface TestModeConfig {
   cycleIntervalMs: number

@@ -5,7 +5,7 @@
 
 import { Signal, TrendAlignment, MarketRegime, ExternalData } from '../types'
 import { TechnicalIndicators } from '../technical-indicators/aggregator'
-import { calculateFuturesConfidence, FuturesSignalScores } from '../analysis/futures-confidence'
+import { calculateFuturesConfidence } from '../analysis/futures-confidence'
 import { FuturesMarketData, BTCCorrelationData } from '../types/futures-types'
 
 export interface ConfidenceResult {

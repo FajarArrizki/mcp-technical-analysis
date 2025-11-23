@@ -51,7 +51,7 @@ export async function generateSignalForSingleAsset(
     const isMap = marketDataIsMap ?? (marketData instanceof Map)
     
     // Get asset data
-    const assetData = isMap ? marketData.get(asset) : marketData[asset]
+    const assetData = isMap ? marketData.get(asset) : (marketData as Record<string, any>)[asset]
     if (!assetData) {
       console.warn(`⚠️  No market data available for ${asset}`)
       return null

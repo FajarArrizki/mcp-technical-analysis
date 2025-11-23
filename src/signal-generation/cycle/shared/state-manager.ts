@@ -34,8 +34,8 @@ export function saveCycleState(
 
     // Convert Map to array for JSON serialization
     const positionsArray = Array.from(state.positions.entries()).map(([symbol, pos]) => ({
-      symbol,
-      ...pos
+      ...pos,
+      symbol // Put symbol last to avoid overwriting
     }))
 
     const stateToSave = {

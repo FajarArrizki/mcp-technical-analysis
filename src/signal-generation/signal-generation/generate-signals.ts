@@ -582,7 +582,7 @@ export async function generateSignals(
       // OPTIMIZATION FINAL: For very small batches (1-3 signals), correlation filtering is not worth the overhead
       // The overhead of building signalData, correlationMap, and nested loops is larger than the benefit
       
-      if (shouldDoCorrelationFiltering) {
+      if (shouldDoCorrelationFiltering && signalData) {
         // OPTIMIZATION: Pre-compute constants outside loop
         const CORRELATION_THRESHOLD = 0.8
         
