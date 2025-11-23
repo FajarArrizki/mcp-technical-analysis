@@ -25,6 +25,7 @@ import { initializeTestMode, runTestModeCycle } from '../signal-generation/cycle
 import { loadCycleState } from '../signal-generation/cycle/shared/state-manager'
 import { LiveExecutor } from '../signal-generation/execution/live-executor'
 import { getRealTimePrice } from '../signal-generation/data-fetchers/hyperliquid'
+import { formatSignal } from '../signal-generation/formatting/format-signal'
 import * as fs from 'fs'
 import * as path from 'path'
 
@@ -355,13 +356,14 @@ class GearTradeMCPServer {
             // Convert positions to Map format expected by generateSignalForSingleAsset
             const positionsMap = new Map<string, any>()
             positions.forEach((pos) => {
-              positionsMap.set(pos.asset, pos)
+              positionsMap.set(pos.asset || pos.symbol, pos)
             })
 
             // Get account state (simplified for analysis)
             const accountState = {
-              availableCash: 10000, // Default for analysis
-              totalValue: 10000,
+              availableCash: parseFloat(process.env.PAPER_CAPITAL || '10000'),
+              totalValue: parseFloat(process.env.PAPER_CAPITAL || '10000'),
+              accountValue: parseFloat(process.env.PAPER_CAPITAL || '10000'),
             }
 
             // Generate signal for single asset (analysis only, no execution)
@@ -378,43 +380,84 @@ class GearTradeMCPServer {
               null // qualityScore
             )
 
+            if (!signal) {
+              throw new Error(`Could not generate signal for ${ticker}. Analysis may have rejected the trade.`)
+            }
+
             // Get full market data for the asset
             const assetMarketData = marketDataMap.get(ticker)
+
+            // Format signal as string using formatSignal function
+            // Capture console output by overriding console.log temporarily
+            let formattedOutput = ''
+            const originalLog = console.log
+            const originalError = console.error
+            const originalWarn = console.warn
+
+            // Override console methods to capture output
+            console.log = (...args: any[]) => {
+              formattedOutput += args.map(arg => 
+                typeof arg === 'string' ? arg : JSON.stringify(arg, null, 2)
+              ).join(' ') + '\n'
+            }
+            console.error = (...args: any[]) => {
+              formattedOutput += args.map(arg => 
+                typeof arg === 'string' ? arg : JSON.stringify(arg, null, 2)
+              ).join(' ') + '\n'
+            }
+            console.warn = (...args: any[]) => {
+              formattedOutput += args.map(arg => 
+                typeof arg === 'string' ? arg : JSON.stringify(arg, null, 2)
+              ).join(' ') + '\n'
+            }
+
+            try {
+              // Convert signal to format expected by formatSignal
+              const formattedSignal: Signal & {
+                asset?: string
+                action?: string
+                entryPrice?: number
+                stopLoss?: number
+                takeProfit?: number
+                reasoning?: string
+                justification?: string
+                riskRewardRatio?: number
+                expectedValue?: number
+              } = {
+                coin: ticker,
+                signal: signal.signal || (signal.action === 'BUY' ? 'buy_to_enter' : signal.action === 'SELL' ? 'sell_to_enter' : 'hold'),
+                confidence: signal.confidence || 0,
+                entry_price: signal.entryPrice || signal.entry_price,
+                stop_loss: signal.stopLoss || signal.stop_loss,
+                take_profit: signal.takeProfit || signal.take_profit,
+                leverage: signal.leverage,
+                justification: signal.justification,
+                expected_value: signal.expectedValue || signal.expected_value,
+                ...signal,
+              }
+
+              // Call formatSignal to generate formatted output
+              await formatSignal(
+                formattedSignal,
+                0, // index
+                marketDataMap,
+                positionsMap,
+                new Map(), // signalHistory
+                accountState,
+                assetMarketData // metadata
+              )
+            } finally {
+              // Restore original console methods
+              console.log = originalLog
+              console.error = originalError
+              console.warn = originalWarn
+            }
 
             return {
               content: [
                 {
                   type: 'text',
-                  text: JSON.stringify(
-                    {
-                      asset: ticker,
-                      analysis: signal
-                        ? {
-                            action: signal.action,
-                            confidence: signal.confidence,
-                            entryPrice: signal.entryPrice,
-                            stopLoss: signal.stopLoss,
-                            takeProfit: signal.takeProfit,
-                            leverage: signal.leverage,
-                            reasoning: signal.reasoning,
-                            justification: signal.justification,
-                            riskRewardRatio: signal.riskRewardRatio,
-                            expectedValue: signal.expectedValue,
-                          }
-                        : null,
-                      marketData: assetMarketData
-                        ? {
-                            price: assetMarketData.price,
-                            volume24h: assetMarketData.volume24h,
-                            change24h: assetMarketData.change24h,
-                          }
-                        : null,
-                      timestamp: new Date().toISOString(),
-                      note: 'This is analysis only. No trades were executed.',
-                    },
-                    null,
-                    2
-                  ),
+                  text: formattedOutput || `Analysis for ${ticker}:\n\nSignal: ${signal.signal || signal.action}\nConfidence: ${((signal.confidence || 0) * 100).toFixed(2)}%\n\nNote: This is analysis only. No trades were executed.`,
                 },
               ],
             }
