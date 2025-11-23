@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "tsx src/mcp-server/index.ts",
     "build": "tsc",
-    "start": "node dist/mcp-server/index.js"
+    "start": "node dist/mcp-server/index.js",
+    "inspector": "npx @modelcontextprotocol/inspector tsx src/mcp-server/index.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0"
