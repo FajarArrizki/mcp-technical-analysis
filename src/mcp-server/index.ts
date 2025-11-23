@@ -176,11 +176,39 @@ class GearTradeMCPServer {
       try {
         switch (name) {
           case 'generate_trading_signals': {
-            const assets = args?.assets as string[]
-            const topN = (args?.topN as number) || 15
+            // Handle different input formats from MCP Inspector
+            let assets: string[] = []
+            
+            // Try to get assets from args
+            if (args?.assets) {
+              if (Array.isArray(args.assets)) {
+                assets = args.assets.map((a: any) => String(a).toUpperCase().trim())
+              } else if (typeof args.assets === 'string') {
+                // Handle string input (comma-separated or JSON string)
+                try {
+                  const parsed = JSON.parse(args.assets)
+                  assets = Array.isArray(parsed) ? parsed.map((a: any) => String(a).toUpperCase().trim()) : [args.assets.toUpperCase().trim()]
+                } catch {
+                  // If not JSON, treat as comma-separated string
+                  assets = args.assets.split(',').map((a: string) => a.trim().toUpperCase().replace(/^\$/, ''))
+                }
+              }
+            }
+            
+            // If still no assets, try to get from topN or use default
+            if (assets.length === 0) {
+              const topN = (args?.topN as number) || 15
+              // Use default assets if none provided
+              throw new Error(`assets array is required. Please provide a list of asset symbols (e.g., ["BTC", "ETH"]). You can also use analyze_asset tool for single asset analysis.`)
+            }
 
-            if (!assets || !Array.isArray(assets) || assets.length === 0) {
-              throw new Error('assets array is required')
+            const topN = (args?.topN as number) || 15
+            
+            // Filter out empty strings
+            assets = assets.filter(a => a && a.length > 0)
+            
+            if (assets.length === 0) {
+              throw new Error('assets array cannot be empty. Please provide at least one valid asset symbol.')
             }
 
             const { marketDataMap, allowedAssets } = await getMarketData(assets)
