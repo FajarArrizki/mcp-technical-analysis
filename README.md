@@ -273,6 +273,63 @@ Example exported config:
 - `MODEL_ID`
 - `HYPERLIQUID_API_URL` (optional, has default)
 
+## MCP Resources
+
+The server provides the following resources (documentation that AI can read):
+
+- **`geartrade://docs/trading-strategies`** - Comprehensive guide on trading strategies, technical analysis, and best practices
+- **`geartrade://docs/risk-management`** - Guide on risk management, position sizing, stop loss, and take profit strategies
+- **`geartrade://docs/tools-overview`** - Complete overview of all 38+ MCP tools available in GearTrade
+- **`geartrade://docs/execution-workflow`** - Step-by-step guide for analysis to execution workflow with safety best practices
+
+AI agents can read these resources to understand how to use the tools effectively and follow best practices.
+
+## MCP Prompts
+
+The server provides the following prompt templates to help AI agents use tools more effectively:
+
+### `analyze_and_execute`
+Analyze a crypto asset and prepare execution plan with risk management.
+
+**Arguments:**
+- `ticker` (required) - Asset ticker to analyze (e.g., "BTC", "ETH", "SOL")
+- `capital` (optional) - Trading capital in USD (default: 10000)
+- `riskPct` (optional) - Risk percentage per trade (default: 1.0)
+
+**Usage:**
+AI agents can use this prompt to get a structured workflow for analyzing an asset and preparing for execution, including risk management calculations and user confirmation steps.
+
+### `multi_asset_scan`
+Scan multiple assets for trading opportunities and rank by confidence.
+
+**Arguments:**
+- `tickers` (required) - Array of tickers to scan (e.g., ["BTC", "ETH", "SOL"])
+- `capital` (optional) - Trading capital in USD (default: 10000)
+
+**Usage:**
+AI agents can use this prompt to scan multiple assets, rank them by signal confidence and risk/reward ratio, and present the top opportunities to the user.
+
+### `risk_analysis`
+Perform comprehensive risk analysis for a trading position.
+
+**Arguments:**
+- `ticker` (required) - Asset ticker to analyze
+- `entry` (required) - Entry price
+- `side` (required) - Trade side ("LONG" or "SHORT")
+- `capital` (required) - Trading capital in USD
+
+**Usage:**
+AI agents can use this prompt to calculate position sizing, stop loss, take profit, and risk/reward ratios for a specific trading setup.
+
+### `position_monitoring`
+Monitor open positions and provide status update.
+
+**Arguments:**
+- `tickers` (optional) - Array of tickers to monitor (monitors all positions if not provided)
+
+**Usage:**
+AI agents can use this prompt to monitor open positions, track PnL, and provide recommendations for position management.
+
 ## MCP Tools
 
 The server provides the following tools:

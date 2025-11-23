@@ -8314,6 +8314,944 @@ server.registerTool(
   }
 )
 
+// Register Resources
+server.registerResource(
+  'trading-strategies',
+  'geartrade://docs/trading-strategies',
+  {
+    name: 'Trading Strategies Guide',
+    description: 'Comprehensive guide on trading strategies, technical analysis, and best practices for using GearTrade MCP Server',
+    mimeType: 'text/markdown',
+  },
+  async () => {
+
+    return {
+      contents: [
+        {
+          uri: 'geartrade://docs/trading-strategies',
+          mimeType: 'text/markdown',
+          text: `# Trading Strategies Guide
+
+## Overview
+
+GearTrade MCP Server provides comprehensive tools for crypto trading analysis and execution. This guide covers effective trading strategies using the available tools.
+
+## Recommended Workflow
+
+### 1. Comprehensive Analysis
+Always start with \`analisis_crypto\` or \`analisis_multiple_crypto\` to gather complete market data:
+- Real-time price and technical indicators
+- Volume analysis (buy/sell pressure, CVD, liquidity zones)
+- Multi-timeframe trend alignment
+- External data (funding rate, open interest)
+- Advanced analysis (Fibonacci, Order Book, Volume Profile, etc.)
+
+### 2. Signal Identification
+Look for high-confidence signals:
+- **BUY Signals**: RSI oversold (<30), bullish divergence, support bounce, positive CVD trend
+- **SELL Signals**: RSI overbought (>70), bearish divergence, resistance rejection, negative CVD trend
+- **Multi-timeframe alignment**: Daily, 4H, and 1H all trending in same direction = higher confidence
+
+### 3. Risk Management
+Before execution, calculate:
+- Position size based on capital and risk percentage
+- Stop loss level (typically 1-3% from entry)
+- Take profit level (aim for 2:1 or 3:1 risk/reward ratio)
+- Maximum leverage (consider volatility and market conditions)
+
+### 4. Execution
+- Always use paper trading first (\`execute: false\` or \`useLiveExecutor: false\`)
+- Get user confirmation before live execution
+- Monitor positions after execution using \`get_position\`
+
+## Technical Analysis Strategies
+
+### Trend Following
+1. Use \`get_multitimeframe\` to identify trend alignment
+2. Enter on pullbacks to support (for uptrends) or resistance (for downtrends)
+3. Use Fibonacci retracement levels from \`get_fibonacci\` for entry zones
+4. Confirm with volume analysis showing accumulation/distribution
+
+### Mean Reversion
+1. Identify overbought/oversold conditions using RSI from \`get_indicator\`
+2. Look for divergence signals from \`get_divergence\`
+3. Check order book depth for support/resistance zones
+4. Enter when price reaches extreme levels with reversal candlestick patterns
+
+### Breakout Trading
+1. Identify consolidation zones using \`get_volume_profile\` (HVN/LVN)
+2. Monitor order book depth for liquidity clusters
+3. Wait for volume confirmation on breakout
+4. Use liquidation levels to identify potential stop hunt zones
+
+## Volume-Based Strategies
+
+### CVD (Cumulative Volume Delta) Trading
+- Positive CVD trend = buying pressure = bullish
+- Negative CVD trend = selling pressure = bearish
+- Use \`get_volume_analysis\` to track CVD trends
+- Enter when CVD diverges from price (early signal)
+
+### Volume Profile Trading
+- POC (Point of Control) = high volume price level = strong support/resistance
+- VAH/VAL = value area boundaries
+- Trade from HVN to LVN (high volume to low volume)
+- Use \`get_volume_profile\` for session and composite profiles
+
+## Risk Management Best Practices
+
+1. **Never risk more than 1-2% of capital per trade**
+2. **Always set stop loss** - use \`calculate_risk_management\` tool
+3. **Use position sizing** - use \`calculate_position_setup\` tool
+4. **Monitor MAE (Maximum Adverse Excursion)** - track with \`get_position\`
+5. **Diversify** - don't put all capital in one trade
+6. **Respect leverage limits** - higher leverage = higher risk
+
+## Advanced Analysis Tools
+
+### Fibonacci Retracement
+- Use swing highs/lows to identify key retracement levels
+- 38.2%, 50%, 61.8% are common support/resistance zones
+- Combine with volume profile for confirmation
+
+### Order Book Depth
+- Monitor bid/ask imbalance for short-term direction
+- Large orders at specific levels = support/resistance
+- Spread analysis indicates market liquidity
+
+### Liquidation Levels
+- Identify where stop losses are clustered
+- Price often moves to liquidate positions before reversing
+- Use safe entry zones to avoid stop hunts
+
+### Long/Short Ratio
+- Extreme ratios (>70% long or short) = contrarian signal
+- Divergence between ratio and price = reversal potential
+- Monitor sentiment shifts
+
+## Execution Safety
+
+1. **Always test with paper trading first**
+2. **Get explicit user confirmation** before live execution
+3. **Start with small position sizes**
+4. **Monitor positions actively** after execution
+5. **Use multiple timeframes** for confirmation
+6. **Respect market conditions** - avoid trading during high volatility or low liquidity
+
+## Common Mistakes to Avoid
+
+1. ❌ Trading without stop loss
+2. ❌ Over-leveraging (using too high leverage)
+3. ❌ Ignoring volume analysis
+4. ❌ Trading against the trend
+5. ❌ Not waiting for confirmation signals
+6. ❌ Emotional trading (FOMO, revenge trading)
+7. ❌ Ignoring risk/reward ratios
+8. ❌ Not monitoring open positions
+
+## Tools Quick Reference
+
+- **Price**: \`get_price\`, \`get_multiple_prices\`
+- **Technical Analysis**: \`get_indicator\`, \`get_multiple_indicators\`
+- **Volume**: \`get_volume_analysis\`, \`get_multiple_volume_analysis\`
+- **Multi-timeframe**: \`get_multitimeframe\`, \`get_multiple_multitimeframe\`
+- **Advanced**: \`get_fibonacci\`, \`get_orderbook_depth\`, \`get_volume_profile\`, \`get_market_structure\`, \`get_candlestick_patterns\`, \`get_divergence\`, \`get_liquidation_levels\`, \`get_long_short_ratio\`, \`get_spot_futures_divergence\`
+- **Comprehensive**: \`analisis_crypto\`, \`analisis_multiple_crypto\`
+- **Execution**: \`get_execution_spot\`, \`get_execution_futures\`
+- **Position**: \`get_position\`, \`get_multiple_positions\`
+- **Risk**: \`calculate_risk_management\`, \`calculate_position_setup\`
+`,
+        },
+      ],
+    }
+  }
+)
+
+server.registerResource(
+  'risk-management',
+  'geartrade://docs/risk-management',
+  {
+    name: 'Risk Management Guide',
+    description: 'Guide on risk management, position sizing, stop loss, and take profit strategies',
+    mimeType: 'text/markdown',
+  },
+  async () => {
+    return {
+      contents: [
+        {
+          uri: 'geartrade://docs/risk-management',
+          mimeType: 'text/markdown',
+          text: `# Risk Management Guide
+
+## Overview
+
+Proper risk management is essential for successful trading. This guide covers position sizing, stop loss, take profit, and leverage management using GearTrade MCP Server tools.
+
+## Position Sizing
+
+### Basic Principles
+- **Risk per trade**: Never risk more than 1-2% of total capital per trade
+- **Position size calculation**: Use \`calculate_position_setup\` tool
+- **Capital allocation**: Reserve 20-30% of capital for margin requirements
+
+### Position Sizing Formula
+\`\`\`
+Position Size = (Capital × Risk %) / (Entry Price - Stop Loss Price)
+\`\`\`
+
+### Example
+- Capital: $10,000
+- Risk: 1% = $100
+- Entry: $50,000
+- Stop Loss: $49,000 (2% below entry)
+- Position Size: $100 / $1,000 = 0.1 BTC
+
+## Stop Loss Strategies
+
+### Fixed Percentage Stop Loss
+- Conservative: 1-2% from entry
+- Moderate: 2-3% from entry
+- Aggressive: 3-5% from entry
+
+### Technical Stop Loss
+- Below support level (for longs)
+- Above resistance level (for shorts)
+- Below/above key Fibonacci levels
+- Below/above volume profile POC
+
+### ATR-Based Stop Loss
+- Use ATR (Average True Range) from technical indicators
+- Stop Loss = Entry ± (2 × ATR) for volatility-adjusted stops
+
+### Using calculate_risk_management Tool
+The \`calculate_risk_management\` tool automatically calculates:
+- Optimal stop loss level
+- Take profit level
+- Risk/reward ratio
+- Position risk percentage
+
+## Take Profit Strategies
+
+### Risk/Reward Ratio
+- **Minimum**: 1:1 (break-even after fees)
+- **Recommended**: 2:1 or 3:1
+- **Aggressive**: 4:1 or higher
+
+### Multiple Take Profit Levels
+1. **TP1**: 1:1 risk/reward (secure partial profit)
+2. **TP2**: 2:1 risk/reward (let winners run)
+3. **TP3**: 3:1 risk/reward (trailing stop)
+
+### Technical Take Profit
+- At resistance level (for longs)
+- At support level (for shorts)
+- At Fibonacci extension levels
+- At volume profile VAH/VAL
+
+## Leverage Management
+
+### Leverage Guidelines
+- **Conservative**: 1x-3x leverage
+- **Moderate**: 3x-5x leverage
+- **Aggressive**: 5x-10x leverage
+- **Maximum**: Never exceed 10x for most traders
+
+### Leverage Calculation
+Use \`calculate_position_setup\` tool to determine:
+- Required margin
+- Maximum leverage based on capital
+- Position quantity with leverage
+
+### Dynamic Leverage
+- **High volatility**: Reduce leverage (1x-3x)
+- **Low volatility**: Can use higher leverage (3x-5x)
+- **Trending markets**: Moderate leverage (3x-5x)
+- **Ranging markets**: Lower leverage (1x-3x)
+
+## Margin Management
+
+### Margin Requirements
+- **Initial Margin**: Required to open position
+- **Maintenance Margin**: Required to keep position open
+- **Liquidation Price**: Price where position gets liquidated
+
+### Margin Safety
+- Always maintain 20-30% buffer above maintenance margin
+- Monitor margin ratio using \`get_position\` tool
+- Reduce position size if margin ratio drops below 150%
+
+## Maximum Adverse Excursion (MAE)
+
+### What is MAE?
+MAE measures the maximum unfavorable price movement after entry, even if the trade eventually becomes profitable.
+
+### Using MAE
+- Track MAE with \`get_position\` tool
+- High MAE = poor entry timing
+- Low MAE = good entry timing
+- Use MAE to refine entry strategies
+
+### MAE Analysis
+- **MAE < Stop Loss**: Good entry, trade went as planned
+- **MAE > Stop Loss but trade profitable**: Entry could be improved
+- **MAE > Stop Loss and trade lost**: Entry was poor, review strategy
+
+## Risk/Reward Ratio
+
+### Calculation
+\`\`\`
+Risk/Reward Ratio = (Take Profit - Entry) / (Entry - Stop Loss)
+\`\`\`
+
+### Guidelines
+- **Minimum**: 1:1 (break-even after fees)
+- **Good**: 2:1 (profitable long-term)
+- **Excellent**: 3:1 or higher
+
+### Using calculate_risk_management
+The tool automatically calculates optimal risk/reward ratios based on:
+- Entry price
+- Support/resistance levels
+- Volatility (ATR)
+- Market structure
+
+## Portfolio Risk Management
+
+### Capital Allocation
+- **Per trade risk**: 1-2% of total capital
+- **Total open positions**: Maximum 5-10 positions
+- **Maximum portfolio risk**: 10-20% of total capital
+
+### Diversification
+- Don't put all capital in one asset
+- Spread risk across different cryptocurrencies
+- Consider correlation between assets
+
+### Correlation Risk
+- BTC and ETH are highly correlated
+- Altcoins often follow BTC
+- Diversify across different market segments
+
+## Position Monitoring
+
+### Active Monitoring
+- Use \`get_position\` to track:
+  - Unrealized PnL
+  - MAE (Maximum Adverse Excursion)
+  - Current price vs entry
+  - Distance to stop loss/take profit
+
+### Position Adjustments
+- **Trailing Stop**: Move stop loss to breakeven after TP1 hit
+- **Partial Close**: Close 50% at TP1, let rest run to TP2
+- **Add to Position**: Only if original trade is profitable
+
+## Common Risk Management Mistakes
+
+1. ❌ **No stop loss**: Always set stop loss
+2. ❌ **Too wide stop loss**: Defeats purpose of risk management
+3. ❌ **Too tight stop loss**: Gets stopped out by noise
+4. ❌ **Over-leveraging**: Using too high leverage
+5. ❌ **Averaging down**: Adding to losing positions
+6. ❌ **Ignoring MAE**: Not learning from trade analysis
+7. ❌ **Emotional exits**: Closing positions based on fear/greed
+8. ❌ **No position sizing**: Trading without calculating position size
+
+## Tools for Risk Management
+
+- **\`calculate_position_setup\`**: Calculate position size, leverage, margin
+- **\`calculate_risk_management\`**: Calculate stop loss, take profit, risk/reward
+- **\`get_position\`**: Monitor open positions, PnL, MAE
+- **\`get_multiple_positions\`**: Monitor multiple positions at once
+
+## Best Practices
+
+1. ✅ Always calculate position size before trading
+2. ✅ Always set stop loss (use calculate_risk_management)
+3. ✅ Aim for minimum 2:1 risk/reward ratio
+4. ✅ Monitor positions actively
+5. ✅ Review MAE after each trade
+6. ✅ Adjust leverage based on volatility
+7. ✅ Maintain margin buffer
+8. ✅ Diversify across assets
+9. ✅ Never risk more than 2% per trade
+10. ✅ Keep detailed trade journal
+`,
+        },
+      ],
+    }
+  }
+)
+
+server.registerResource(
+  'tools-overview',
+  'geartrade://docs/tools-overview',
+  {
+    name: 'Tools Overview',
+    description: 'Complete overview of all 38+ MCP tools available in GearTrade',
+    mimeType: 'text/markdown',
+  },
+  async () => {
+    return {
+      contents: [
+        {
+          uri: 'geartrade://docs/tools-overview',
+          mimeType: 'text/markdown',
+          text: `# Tools Overview
+
+## Complete List of 38+ MCP Tools
+
+### Price Tools (2)
+- **\`get_price\`**: Get latest price for single ticker
+- **\`get_multiple_prices\`**: Get latest prices for multiple tickers
+
+### Technical Analysis Tools (2)
+- **\`get_indicator\`**: Comprehensive technical indicators (RSI, EMA, MACD, Bollinger Bands, ATR, ADX, OBV, VWAP, Stochastic, CCI, Williams %R, Parabolic SAR, Aroon, Support/Resistance, Fibonacci, Trend, Market Structure, RSI Divergence, Candlestick Patterns, Market Regime)
+- **\`get_multiple_indicators\`**: Technical indicators for multiple tickers
+
+### Volume Analysis Tools (2)
+- **\`get_volume_analysis\`**: Buy/sell volume, POC, VAH/VAL, HVN/LVN, CVD, liquidity zones, recommendations
+- **\`get_multiple_volume_analysis\`**: Volume analysis for multiple tickers
+
+### Multi-Timeframe Tools (2)
+- **\`get_multitimeframe\`**: Trend alignment across Daily, 4H, 1H timeframes
+- **\`get_multiple_multitimeframe\`**: Multi-timeframe analysis for multiple tickers
+
+### External Data Tools (2)
+- **\`get_external_data\`**: Funding rate, open interest, volume trend, volatility
+- **\`get_multiple_external_data\`**: External data for multiple tickers
+
+### Position Management Tools (2)
+- **\`get_position\`**: Current position info (side, quantity, entry price, PnL, MAE)
+- **\`get_multiple_positions\`**: Position info for multiple tickers
+
+### Risk Management Tools (2)
+- **\`calculate_risk_management\`**: Calculate stop loss, take profit, risk/reward ratio
+- **\`calculate_position_setup\`**: Calculate position size, leverage, margin, quantity
+
+### Advanced Analysis Tools (18)
+- **\`get_fibonacci\`** / **\`get_multiple_fibonacci\`**: Fibonacci retracement levels
+- **\`get_orderbook_depth\`** / **\`get_multiple_orderbook_depth\`**: Order book depth analysis
+- **\`get_volume_profile\`** / **\`get_multiple_volume_profile\`**: Volume profile (POC, VAH/VAL, HVN/LVN)
+- **\`get_market_structure\`** / **\`get_multiple_market_structure\`**: Market structure (COC, swing patterns)
+- **\`get_candlestick_patterns\`** / **\`get_multiple_candlestick_patterns\`**: Candlestick pattern detection
+- **\`get_divergence\`** / **\`get_multiple_divergence\`**: RSI divergence detection
+- **\`get_liquidation_levels\`** / **\`get_multiple_liquidation_levels\`**: Liquidation level analysis
+- **\`get_long_short_ratio\`** / **\`get_multiple_long_short_ratio\`**: Long/short ratio sentiment
+- **\`get_spot_futures_divergence\`** / **\`get_multiple_spot_futures_divergence\`**: Spot-futures divergence
+
+### Comprehensive Analysis Tools (2)
+- **\`analisis_crypto\`**: Complete analysis for single ticker (aggregates all data)
+- **\`analisis_multiple_crypto\`**: Complete analysis for multiple tickers
+
+### Execution Tools (4)
+- **\`get_execution_spot\`**: Spot trading execution (1x leverage)
+- **\`get_multiple_execution_spot\`**: Spot execution for multiple tickers
+- **\`get_execution_futures\`**: Futures trading execution (1-50x leverage)
+- **\`get_multiple_execution_futures\`**: Futures execution for multiple tickers
+
+## Tool Categories
+
+### Analysis Tools
+All tools that provide market data and analysis without executing trades.
+
+### Execution Tools
+Tools that can execute trades (paper or live). Always require user confirmation.
+
+### Risk Management Tools
+Tools for calculating position sizes, stop loss, take profit, and risk metrics.
+
+## Usage Patterns
+
+### Single Asset Analysis
+\`\`\`
+1. get_price → get_indicator → get_volume_analysis → get_multitimeframe
+2. OR: analisis_crypto (all-in-one)
+\`\`\`
+
+### Multiple Asset Scan
+\`\`\`
+1. get_multiple_prices → get_multiple_indicators
+2. OR: analisis_multiple_crypto (all-in-one)
+\`\`\`
+
+### Execution Workflow
+\`\`\`
+1. analisis_crypto (analysis)
+2. calculate_position_setup (position sizing)
+3. calculate_risk_management (stop loss/take profit)
+4. get_execution_futures (execution with execute: false first)
+5. get_position (monitor after execution)
+\`\`\`
+
+## Tool Outputs
+
+All tools return structured JSON data with:
+- Ticker symbol
+- Timestamp
+- Requested data fields
+- Error handling (null values for missing data)
+
+## Best Practices
+
+1. Use comprehensive tools (\`analisis_crypto\`) for complete analysis
+2. Use specialized tools for specific analysis needs
+3. Always use paper trading before live execution
+4. Get user confirmation before live trades
+5. Monitor positions after execution
+6. Use risk management tools before execution
+`,
+        },
+      ],
+    }
+  }
+)
+
+server.registerResource(
+  'execution-workflow',
+  'geartrade://docs/execution-workflow',
+  {
+    name: 'Execution Workflow',
+    description: 'Step-by-step guide for analysis to execution workflow with safety best practices',
+    mimeType: 'text/markdown',
+  },
+  async () => {
+    return {
+      contents: [
+        {
+          uri: 'geartrade://docs/execution-workflow',
+          mimeType: 'text/markdown',
+          text: `# Execution Workflow Guide
+
+## Overview
+
+This guide covers the complete workflow from market analysis to order execution using GearTrade MCP Server. Always follow safety best practices.
+
+## Step-by-Step Workflow
+
+### Step 1: Comprehensive Analysis
+
+Use \`analisis_crypto\` to gather complete market data:
+
+\`\`\`json
+{
+  "name": "analisis_crypto",
+  "arguments": {
+    "ticker": "BTC",
+    "capital": 10000,
+    "riskPct": 1.0,
+    "strategy": "flexible"
+  }
+}
+\`\`\`
+
+**Output includes:**
+- Real-time price
+- Technical indicators (20+)
+- Volume analysis
+- Multi-timeframe alignment
+- External data (funding rate, OI)
+- Advanced analysis (Fibonacci, Order Book, Volume Profile, etc.)
+- Position setup recommendations
+- Risk management calculations
+
+### Step 2: Signal Identification
+
+Analyze the comprehensive data to identify:
+- **Signal**: BUY, SELL, or HOLD
+- **Confidence**: Based on multiple confirmations
+- **Entry Level**: Optimal entry price
+- **Stop Loss**: Risk level
+- **Take Profit**: Profit target
+
+**Key Indicators:**
+- RSI: Oversold (<30) = BUY, Overbought (>70) = SELL
+- Trend Alignment: All timeframes aligned = higher confidence
+- Volume: Positive CVD = bullish, Negative CVD = bearish
+- Divergence: Bullish divergence = BUY signal, Bearish = SELL
+- Market Structure: COC (Change of Character) = potential reversal
+
+### Step 3: Present Analysis to User
+
+**Always present clear summary:**
+\`\`\`
+📊 Analysis Summary for BTC
+
+Current Price: $86,804
+Signal: SELL
+Confidence: 73.86%
+
+Entry: $86,804
+Stop Loss: $88,338 (1.77% risk)
+Take Profit: $82,003 (5.53% reward)
+Risk/Reward: 3.12:1
+
+Position Size: 0.1 BTC
+Leverage: 5x
+Margin Required: $1,736
+
+Technical Indicators:
+- RSI(14): 68.5 (Overbought)
+- Trend: Bearish (Daily, 4H, 1H aligned)
+- Volume: Negative CVD trend
+- Divergence: Bearish divergence detected
+
+⚠️ Risk: Medium
+\`\`\`
+
+### Step 4: Request User Confirmation
+
+**Always ask for explicit confirmation:**
+\`\`\`
+Berdasarkan analisis, sinyal SELL dengan confidence 73.86%.
+Entry: $86,804, Stop Loss: $88,338, Take Profit: $82,003.
+Risk/Reward: 3.12:1
+
+Mau dieksekusi ke Hyperliquid? (YES/NO)
+\`\`\`
+
+**Never execute without user approval!**
+
+### Step 5: Paper Trading First (Recommended)
+
+Test execution with paper trading first:
+
+\`\`\`json
+{
+  "name": "get_execution_futures",
+  "arguments": {
+    "ticker": "BTC",
+    "side": "SHORT",
+    "quantity": 0.1,
+    "leverage": 5,
+    "orderType": "MARKET",
+    "execute": true,
+    "useLiveExecutor": false
+  }
+}
+\`\`\`
+
+**Paper trading benefits:**
+- No real money at risk
+- Test execution logic
+- Verify position sizing
+- Check stop loss/take profit levels
+
+### Step 6: Live Execution (If User Confirms)
+
+Only execute live if user explicitly confirms:
+
+\`\`\`json
+{
+  "name": "get_execution_futures",
+  "arguments": {
+    "ticker": "BTC",
+    "side": "SHORT",
+    "quantity": 0.1,
+    "leverage": 5,
+    "orderType": "MARKET",
+    "execute": true,
+    "useLiveExecutor": true
+  }
+}
+\`\`\`
+
+**Safety checks:**
+- ✅ User confirmed execution
+- ✅ Paper trading tested
+- ✅ Position size calculated
+- ✅ Stop loss/take profit set
+- ✅ Risk within limits (1-2% of capital)
+
+### Step 7: Position Monitoring
+
+After execution, monitor the position:
+
+\`\`\`json
+{
+  "name": "get_position",
+  "arguments": {
+    "ticker": "BTC"
+  }
+}
+\`\`\`
+
+**Monitor:**
+- Unrealized PnL
+- Current price vs entry
+- Distance to stop loss/take profit
+- MAE (Maximum Adverse Excursion)
+
+## Multiple Asset Execution
+
+For multiple assets, use batch tools:
+
+\`\`\`json
+{
+  "name": "analisis_multiple_crypto",
+  "arguments": {
+    "tickers": ["BTC", "ETH", "SOL"],
+    "capital": 10000,
+    "riskPct": 1.0
+  }
+}
+\`\`\`
+
+**Note:** \`get_multiple_execution_*\` tools default to paper trading for safety.
+
+## Safety Features
+
+### Paper Trading Default
+- Multiple executions default to paper trading
+- Single executions require explicit \`useLiveExecutor: true\`
+
+### User Confirmation Required
+- Always ask user before live execution
+- Present clear risk/reward summary
+- Show position size and margin requirements
+
+### Risk Limits
+- Default risk: 1% of capital per trade
+- Maximum recommended: 2% per trade
+- Total portfolio risk: 10-20% maximum
+
+## Error Handling
+
+### Execution Errors
+- Network errors: Retry with exponential backoff
+- Insufficient balance: Show clear error message
+- Invalid parameters: Validate before execution
+- Order rejection: Log reason and inform user
+
+### Position Monitoring Errors
+- API failures: Retry and cache last known state
+- Missing positions: Handle gracefully (position closed or never opened)
+
+## Best Practices
+
+1. ✅ **Always analyze first** - Use \`analisis_crypto\` before execution
+2. ✅ **Present clear summary** - Show all key metrics
+3. ✅ **Ask for confirmation** - Never execute without user approval
+4. ✅ **Paper trade first** - Test with paper trading
+5. ✅ **Monitor positions** - Track PnL and MAE
+6. ✅ **Respect risk limits** - Never exceed 2% risk per trade
+7. ✅ **Handle errors gracefully** - Show user-friendly error messages
+8. ✅ **Log all executions** - Keep record of all trades
+
+## Common Workflow Patterns
+
+### Quick Analysis
+\`\`\`
+analisis_crypto → Present summary → User decision
+\`\`\`
+
+### Full Execution Workflow
+\`\`\`
+analisis_crypto → calculate_position_setup → calculate_risk_management → 
+Present summary → User confirmation → Paper trade → Live execution → Monitor position
+\`\`\`
+
+### Multi-Asset Scan
+\`\`\`
+analisis_multiple_crypto → Identify opportunities → Present top 3 → 
+User selects → Individual analysis → Execution workflow
+\`\`\`
+`,
+        },
+      ],
+    }
+  }
+)
+
+// Register Prompts
+server.registerPrompt(
+  'analyze_and_execute',
+  {
+    title: 'Analyze and Execute',
+    description: 'Analyze a crypto asset and prepare execution plan with risk management',
+    argsSchema: {
+      ticker: z.string().describe('Asset ticker to analyze (e.g., BTC, ETH, SOL)'),
+      capital: z.number().optional().describe('Trading capital in USD (default: 10000)'),
+      riskPct: z.number().optional().describe('Risk percentage per trade (default: 1.0)'),
+    },
+  },
+  async (args) => {
+    const ticker = args.ticker || 'BTC'
+    const capital = args.capital || 10000
+    const riskPct = args.riskPct || 1.0
+
+    return {
+      messages: [
+        {
+          role: 'user',
+          content: {
+            type: 'text',
+            text: `Please analyze ${ticker} using the analisis_crypto tool with capital=${capital} and riskPct=${riskPct}.
+
+After analysis, present a clear summary with:
+1. Current price and 24h change
+2. Technical signal (BUY/SELL/HOLD) with confidence percentage
+3. Entry price, Stop Loss, and Take Profit levels
+4. Risk/Reward ratio
+5. Position size recommendation (quantity, leverage, margin)
+6. Key technical indicators (RSI, trend alignment, volume analysis)
+7. Risk level assessment
+
+Then ask the user: "Mau dieksekusi ke Hyperliquid? (YES/NO)"
+
+If user confirms YES:
+- First test with paper trading (execute: true, useLiveExecutor: false)
+- Then ask again for live execution confirmation
+- Only execute live if user explicitly confirms again
+
+Always prioritize safety and never execute without explicit user approval.`,
+          },
+        },
+      ],
+    }
+  }
+)
+
+server.registerPrompt(
+  'multi_asset_scan',
+  {
+    title: 'Multi Asset Scan',
+    description: 'Scan multiple assets for trading opportunities and rank by confidence',
+    argsSchema: {
+      tickers: z.array(z.string()).describe('Array of tickers to scan (e.g., ["BTC", "ETH", "SOL"])'),
+      capital: z.number().optional().describe('Trading capital in USD (default: 10000)'),
+    },
+  },
+  async (args) => {
+    const tickers = args.tickers || ['BTC', 'ETH', 'SOL']
+    const capital = args.capital || 10000
+
+    return {
+      messages: [
+        {
+          role: 'user',
+          content: {
+            type: 'text',
+            text: `Please scan multiple assets using analisis_multiple_crypto with tickers=${JSON.stringify(tickers)} and capital=${capital}.
+
+After scanning, rank the assets by:
+1. Signal confidence (highest first)
+2. Risk/Reward ratio (best first)
+3. Trend alignment strength
+
+Present the top 3 opportunities with:
+- Ticker and current price
+- Signal (BUY/SELL/HOLD) and confidence
+- Entry, Stop Loss, Take Profit
+- Risk/Reward ratio
+- Brief technical summary
+
+Then ask user: "Asset mana yang mau dianalisis lebih detail atau dieksekusi?"
+
+Use the selected asset for further analysis or execution workflow.`,
+          },
+        },
+      ],
+    }
+  }
+)
+
+server.registerPrompt(
+  'risk_analysis',
+  {
+    title: 'Risk Analysis',
+    description: 'Perform comprehensive risk analysis for a trading position',
+    argsSchema: {
+      ticker: z.string().describe('Asset ticker to analyze'),
+      entry: z.number().describe('Entry price'),
+      side: z.enum(['LONG', 'SHORT']).describe('Trade side (LONG or SHORT)'),
+      capital: z.number().describe('Trading capital in USD'),
+    },
+  },
+  async (args) => {
+    const ticker = args.ticker || 'BTC'
+    const entry = args.entry
+    const side = args.side || 'LONG'
+    const capital = args.capital || 10000
+
+    return {
+      messages: [
+        {
+          role: 'user',
+          content: {
+            type: 'text',
+            text: `Please perform comprehensive risk analysis for ${ticker}:
+- Entry: ${entry}
+- Side: ${side}
+- Capital: ${capital}
+
+Use these tools in sequence:
+1. calculate_position_setup - Calculate optimal position size, leverage, and margin
+2. calculate_risk_management - Calculate stop loss, take profit, and risk/reward ratio
+3. get_position (if position exists) - Check current position status
+
+Present:
+1. Recommended position size (quantity, leverage, margin)
+2. Stop loss level and risk amount
+3. Take profit level and reward amount
+4. Risk/Reward ratio
+5. Maximum loss if stop loss hit
+6. Maximum profit if take profit hit
+7. Margin requirements and safety buffer
+
+Provide clear risk assessment and recommendations.`,
+          },
+        },
+      ],
+    }
+  }
+)
+
+server.registerPrompt(
+  'position_monitoring',
+  {
+    title: 'Position Monitoring',
+    description: 'Monitor open positions and provide status update',
+    argsSchema: {
+      tickers: z.array(z.string()).optional().describe('Array of tickers to monitor (monitors all positions if not provided)'),
+    },
+  },
+  async (args) => {
+    const tickers = args.tickers
+
+    return {
+      messages: [
+        {
+          role: 'user',
+          content: {
+            type: 'text',
+            text: `Please monitor open positions${tickers ? ` for ${JSON.stringify(tickers)}` : ' (all positions)'}.
+
+Use ${tickers ? 'get_multiple_positions' : 'get_position'} to get current status.
+
+For each position, present:
+1. Ticker and side (LONG/SHORT)
+2. Entry price vs current price
+3. Unrealized PnL (profit/loss)
+4. PnL percentage
+5. Distance to stop loss
+6. Distance to take profit
+7. MAE (Maximum Adverse Excursion)
+8. Risk/Reward status
+
+If any position is:
+- Near stop loss: Alert user
+- Near take profit: Suggest partial close or trailing stop
+- Showing high MAE: Suggest reviewing entry strategy
+
+Provide actionable recommendations for each position.`,
+          },
+        },
+      ],
+    }
+  }
+)
+
 // Start server
 async function main() {
   try {
