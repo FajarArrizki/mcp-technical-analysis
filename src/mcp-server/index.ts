@@ -176,39 +176,29 @@ class GearTradeMCPServer {
       try {
         switch (name) {
           case 'generate_trading_signals': {
-            // Handle different input formats from MCP Inspector
+            // Handle different input formats (string, array, or JSON string)
             let assets: string[] = []
-            
-            // Try to get assets from args
             if (args?.assets) {
-              if (Array.isArray(args.assets)) {
-                assets = args.assets.map((a: any) => String(a).toUpperCase().trim())
-              } else if (typeof args.assets === 'string') {
-                // Handle string input (comma-separated or JSON string)
+              if (typeof args.assets === 'string') {
                 try {
+                  // Try to parse as JSON if it's a string
                   const parsed = JSON.parse(args.assets)
-                  assets = Array.isArray(parsed) ? parsed.map((a: any) => String(a).toUpperCase().trim()) : [args.assets.toUpperCase().trim()]
+                  assets = Array.isArray(parsed) ? parsed : [args.assets]
                 } catch {
-                  // If not JSON, treat as comma-separated string
-                  assets = args.assets.split(',').map((a: string) => a.trim().toUpperCase().replace(/^\$/, ''))
+                  // If not JSON, treat as single asset
+                  assets = [args.assets]
                 }
+              } else if (Array.isArray(args.assets)) {
+                assets = args.assets
+              } else {
+                throw new Error('assets must be an array or string')
               }
             }
             
-            // If still no assets, try to get from topN or use default
-            if (assets.length === 0) {
-              const topN = (args?.topN as number) || 15
-              // Use default assets if none provided
-              throw new Error(`assets array is required. Please provide a list of asset symbols (e.g., ["BTC", "ETH"]). You can also use analyze_asset tool for single asset analysis.`)
-            }
-
             const topN = (args?.topN as number) || 15
-            
-            // Filter out empty strings
-            assets = assets.filter(a => a && a.length > 0)
-            
-            if (assets.length === 0) {
-              throw new Error('assets array cannot be empty. Please provide at least one valid asset symbol.')
+
+            if (!assets || assets.length === 0) {
+              throw new Error('assets array is required and must not be empty')
             }
 
             const { marketDataMap, allowedAssets } = await getMarketData(assets)
@@ -219,13 +209,20 @@ class GearTradeMCPServer {
             })
 
             const accountState = {
-              availableCash: 10000,
-              totalValue: 10000,
+              availableCash: parseFloat(process.env.PAPER_CAPITAL || '10000'),
+              totalValue: parseFloat(process.env.PAPER_CAPITAL || '10000'),
+              accountValue: parseFloat(process.env.PAPER_CAPITAL || '10000'),
             }
 
-            // Generate signals (model can be null, will use config from env)
+            // Get model configuration
+            const model = {
+              provider: process.env.AI_PROVIDER || 'openrouter',
+              modelId: process.env.MODEL_ID || 'anthropic/claude-3-5-sonnet',
+            }
+
+            // Generate signals
             const signals = await generateSignals(
-              null, // model - will use config from environment
+              model,
               marketDataMap,
               accountState,
               allowedAssets.length > 0 ? allowedAssets : assets,
@@ -260,19 +257,50 @@ class GearTradeMCPServer {
           }
 
           case 'get_market_data': {
-            const assets = args?.assets as string[]
-
-            if (!assets || !Array.isArray(assets) || assets.length === 0) {
-              throw new Error('assets array is required')
+            // Handle different input formats (string, array, or JSON string)
+            let assets: string[] = []
+            if (args?.assets) {
+              if (typeof args.assets === 'string') {
+                try {
+                  // Try to parse as JSON if it's a string
+                  const parsed = JSON.parse(args.assets)
+                  assets = Array.isArray(parsed) ? parsed : [args.assets]
+                } catch {
+                  // If not JSON, treat as single asset
+                  assets = [args.assets]
+                }
+              } else if (Array.isArray(args.assets)) {
+                assets = args.assets
+              } else {
+                throw new Error('assets must be an array or string')
+              }
             }
 
-            const marketData = await getMarketData(assets)
+            if (!assets || assets.length === 0) {
+              throw new Error('assets array is required and must not be empty')
+            }
+
+            const { marketDataMap, allowedAssets } = await getMarketData(assets)
+
+            // Convert Map to object for JSON serialization
+            const marketDataObject: Record<string, any> = {}
+            marketDataMap.forEach((value, key) => {
+              marketDataObject[key] = value
+            })
 
             return {
               content: [
                 {
                   type: 'text',
-                  text: JSON.stringify(marketData, null, 2),
+                  text: JSON.stringify(
+                    {
+                      marketDataMap: marketDataObject,
+                      allowedAssets,
+                      count: marketDataMap.size,
+                    },
+                    null,
+                    2
+                  ),
                 },
               ],
             }
