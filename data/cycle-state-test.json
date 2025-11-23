@@ -1,6 +1,6 @@
 {
-  "cycleId": null,
-  "startTime": null,
+  "cycleId": "cycle_1763909413263_dadc8urad",
+  "startTime": 1763909195215,
   "status": "RUNNING",
   "positions": [],
   "trades": [],
@@ -25,13 +25,13 @@
   "circuitBreaker": {
     "enabled": true,
     "dailyLossLimit": 0.05,
-    "maxDrawdownLimit": 0.20,
+    "maxDrawdownLimit": 0.2,
     "dailyLoss": 0,
     "maxDrawdown": 0,
     "lastResetTime": null,
     "tripped": false
   },
-  "lastRankingTime": null,
+  "lastRankingTime": 1763909413263,
   "topNAssets": 15,
   "config": {
     "intervalMs": 10000,
@@ -46,6 +46,5 @@
       "indicatorBased": true
     }
   },
-  "lastSaved": null
+  "lastSaved": 1763909413263
 }
-

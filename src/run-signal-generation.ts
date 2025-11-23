@@ -8,7 +8,7 @@ import * as path from 'path'
 
 // Load .env file from project root manually
 // IMPORTANT: Don't override environment variables already set in shell (they have priority)
-const envPath = path.join(__dirname, '..', '.env')
+const envPath = path.join(process.cwd(), '.env')
 if (fs.existsSync(envPath)) {
   const envContent = fs.readFileSync(envPath, 'utf-8')
   envContent.split('\n').forEach(line => {
