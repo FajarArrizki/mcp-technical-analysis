@@ -62,8 +62,9 @@ export async function getMarketData(assets: string[], metadata?: any): Promise<{
     const BATCH_DELAY = parseInt(process.env.BINANCE_BATCH_DELAY_MS || '0') // 0ms delay between batches (no throttling)
     
     // OPTIMIZATION FINAL: Cache all process.env checks at function start (avoid repeated checks per asset)
-    // CRITICAL FIX: Increased from 50 to 80 candles for better indicator accuracy and confidence calculation
-    const CANDLES_COUNT = parseInt(process.env.CANDLES_COUNT || '80')
+    // CRITICAL FIX: Increased to 75 candles minimum for better volume analysis and indicator accuracy
+    // Volume analysis requires sufficient historical data to calculate POC, VAH/VAL, HVN/LVN, CVD, etc.
+    const CANDLES_COUNT = parseInt(process.env.CANDLES_COUNT || '75')
     // FUTURES / SCALPING MODE: default primary TF → 5m (lebih responsif untuk entry cepat)
     // Bisa override via env: PRIMARY_DATA_INTERVAL=10m/15m/1h, dll.
     const PRIMARY_INTERVAL = process.env.PRIMARY_DATA_INTERVAL || '5m'

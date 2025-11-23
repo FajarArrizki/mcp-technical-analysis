@@ -216,12 +216,25 @@ export class PaperExecutor {
 
   /**
    * Apply slippage simulation
+   * Simulates realistic market slippage based on order size and market conditions
    */
   private applySlippage(price: number, side: 'LONG' | 'SHORT'): number {
-    const slippage = (price * this.config.slippagePct) / 100
+    // Base slippage percentage
+    const baseSlippage = this.config.slippagePct / 100
+    
+    // Add small random variation to simulate real market conditions (±20% of base slippage)
+    const variation = (Math.random() - 0.5) * 0.2 * baseSlippage
+    const slippage = baseSlippage + variation
+    
+    // Calculate slippage amount
+    const slippageAmount = price * slippage
+    
     // For LONG entries, slippage is positive (buy at higher price)
     // For SHORT entries, slippage is negative (sell at lower price)
-    return side === 'LONG' ? price + slippage : price - slippage
+    const fillPrice = side === 'LONG' ? price + slippageAmount : price - slippageAmount
+    
+    // Ensure fill price is positive
+    return Math.max(fillPrice, price * 0.001) // Minimum 0.1% of original price
   }
 
   /**

@@ -1,5 +1,5 @@
 {
-  "cycleId": "cycle_1763909413263_dadc8urad",
+  "cycleId": "cycle_1763909630989_35dft535a",
   "startTime": 1763909195215,
   "status": "RUNNING",
   "positions": [],
@@ -31,7 +31,7 @@
     "lastResetTime": null,
     "tripped": false
   },
-  "lastRankingTime": 1763909413263,
+  "lastRankingTime": 1763909630989,
   "topNAssets": 15,
   "config": {
     "intervalMs": 10000,
@@ -46,5 +46,5 @@
       "indicatorBased": true
     }
   },
-  "lastSaved": 1763909413263
+  "lastSaved": 1763909630989
 }

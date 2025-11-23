@@ -6,6 +6,7 @@
 import { Signal, Order, OrderStatus, OrderType, PositionState, ExitReason } from '../types'
 import { fetchHyperliquid } from '../data-fetchers/hyperliquid'
 import { getHyperliquidWalletApiKey, getHyperliquidAccountAddress } from '../config'
+import { getAssetIndex, createOrderMessage, signHyperliquidOrder, createWalletFromPrivateKey } from './hyperliquid-signing'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as crypto from 'crypto'
@@ -30,7 +31,7 @@ export interface HyperliquidOrder {
 
 /**
  * Live executor for real trading via Hyperliquid API
- * Note: This is a placeholder - actual implementation requires EIP-712 signing
+ * Implements EIP-712 signing for order submission to Hyperliquid /exchange endpoint
  */
 export class LiveExecutor {
   private config: LiveExecutorConfig
@@ -182,7 +183,7 @@ export class LiveExecutor {
 
   /**
    * Submit order to Hyperliquid API
-   * Note: This requires EIP-712 signing with wallet API key
+   * Implements EIP-712 signing for order submission
    */
   private async submitOrder(params: {
     symbol: string
@@ -193,69 +194,204 @@ export class LiveExecutor {
     takeProfit?: number
     reduceOnly?: boolean
   }): Promise<Order> {
-    // TODO: Implement actual Hyperliquid order submission with EIP-712 signing
-    // This is a placeholder - actual implementation requires:
-    // 1. EIP-712 domain and message structure
-    // 2. Signing with wallet private key
-    // 3. Sending to /exchange endpoint
-
     const orderId = `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 
-    // For now, return pending order (would be replaced with actual API call)
-    const order: Order = {
-      id: orderId,
-      symbol: params.symbol,
-      side: params.side,
-      type: params.type,
-      quantity: params.quantity,
-      status: 'PENDING',
-      submittedAt: Date.now(),
-      stopLoss: params.stopLoss,
-      takeProfit: params.takeProfit
+    try {
+      // Get wallet API key
+      const walletApiKey = getHyperliquidWalletApiKey()
+      if (!walletApiKey || walletApiKey.trim() === '') {
+        throw new Error('HYPERLIQUID_WALLET_API_KEY not configured')
+      }
+
+      // Get account address
+      const accountAddress = getHyperliquidAccountAddress()
+      if (!accountAddress) {
+        throw new Error('HYPERLIQUID_ACCOUNT_ADDRESS not configured')
+      }
+
+      // Create wallet from private key
+      const wallet = createWalletFromPrivateKey(walletApiKey)
+
+      // Verify wallet address matches account address
+      if (wallet.address.toLowerCase() !== accountAddress.toLowerCase()) {
+        throw new Error(`Wallet address ${wallet.address} does not match account address ${accountAddress}`)
+      }
+
+      // Get asset index
+      const assetIndex = await getAssetIndex(params.symbol)
+
+      // Determine if buy or sell
+      const isBuy = params.side === 'LONG' || (params.side === 'CLOSE' && params.reduceOnly === false)
+      const reduceOnly = params.side === 'CLOSE' || params.reduceOnly === true
+
+      // Convert quantity to string (Hyperliquid uses string for precision)
+      const quantityStr = params.quantity.toString()
+
+      // Get current price for limit orders (if needed)
+      let limitPx: string | undefined
+      if (params.type === 'LIMIT') {
+        // For limit orders, we need a price - use stopLoss or takeProfit if available
+        // Otherwise, user should provide price in params
+        limitPx = params.stopLoss?.toString() || params.takeProfit?.toString() || '0'
+      }
+
+      // Create order message
+      // Note: Hyperliquid requires size as string with proper precision
+      const orderMessage = createOrderMessage({
+        assetIndex,
+        isBuy,
+        reduceOnly,
+        limitPx,
+        sz: quantityStr,
+        orderType: params.type === 'LIMIT' ? 'Limit' : 'Market',
+        cloid: orderId // Use orderId as client order ID for tracking
+      })
+
+      // Sign the order
+      const signature = await signHyperliquidOrder(wallet, orderMessage)
+
+      // Prepare request payload for Hyperliquid /exchange endpoint
+      const requestPayload = {
+        action: orderMessage.action,
+        nonce: Date.now(),
+        signature: signature,
+        vaultAddress: null // For regular trading, vaultAddress is null
+      }
+
+      // Submit to Hyperliquid /exchange endpoint
+      const response = await fetchHyperliquid('/exchange', requestPayload)
+
+      // Check response - Hyperliquid returns { status: 'ok' } on success
+      if (response && (response.status === 'ok' || response.status === 'ok' || response.data?.status === 'ok')) {
+        const order: Order = {
+          id: orderId,
+          symbol: params.symbol,
+          side: params.side,
+          type: params.type,
+          quantity: params.quantity,
+          price: limitPx ? parseFloat(limitPx) : undefined,
+          status: 'PENDING', // Will be updated by waitForFill
+          submittedAt: Date.now(),
+          stopLoss: params.stopLoss,
+          takeProfit: params.takeProfit,
+          metadata: {
+            hyperliquidResponse: response,
+            assetIndex,
+            clientOrderId: orderId
+          }
+        }
+
+        this.pendingOrders.set(orderId, order)
+        return order
+      } else {
+        throw new Error(`Order submission failed: ${response?.error || 'Unknown error'}`)
+      }
+    } catch (error: any) {
+      const errorMsg = error instanceof Error ? error.message : String(error)
+      console.error(`❌ Failed to submit order to Hyperliquid: ${errorMsg}`)
+      
+      return {
+        id: orderId,
+        symbol: params.symbol,
+        side: params.side,
+        type: params.type,
+        quantity: params.quantity,
+        status: 'REJECTED',
+        submittedAt: Date.now(),
+        rejectedReason: `Order submission failed: ${errorMsg}`
+      }
     }
-
-    this.pendingOrders.set(orderId, order)
-
-    // Simulate API call (replace with actual Hyperliquid API call)
-    console.warn('⚠️  Live executor: Order submission not yet implemented. Requires EIP-712 signing.')
-
-    return order
   }
 
   /**
    * Wait for order fill confirmation
+   * Polls Hyperliquid API for order status
    */
   private async waitForFill(order: Order, timeoutMs: number): Promise<Order> {
     const startTime = Date.now()
-    const pollInterval = 1000 // Poll every 1 second
+    const pollInterval = 2000 // Poll every 2 seconds
+    const accountAddress = getHyperliquidAccountAddress()
+
+    if (!accountAddress) {
+      return {
+        ...order,
+        status: 'REJECTED',
+        rejectedReason: 'Account address not configured'
+      }
+    }
 
     while (Date.now() - startTime < timeoutMs) {
-      // TODO: Poll Hyperliquid API for order status
-      // For now, simulate immediate fill
       await new Promise(resolve => setTimeout(resolve, pollInterval))
 
-      // Check order status (would query Hyperliquid API)
-      const updatedOrder = this.pendingOrders.get(order.id)
-      if (updatedOrder && updatedOrder.status !== 'PENDING') {
-        return updatedOrder
-      }
+      try {
+        // Query user state to check order status
+        const userState = await fetchHyperliquid('/info', {
+          type: 'clearinghouseState',
+          user: accountAddress
+        })
 
-      // Simulate fill after 2 seconds (remove in actual implementation)
-      if (Date.now() - startTime > 2000) {
-        return {
-          ...order,
-          status: 'FILLED',
-          filledQuantity: order.quantity,
-          filledPrice: order.price || 0,
-          filledAt: Date.now()
+        // Check if order is filled
+        // Hyperliquid returns open orders in userState.openOrders
+        if (userState && userState.openOrders) {
+          const openOrder = userState.openOrders.find((o: any) => 
+            o.oid === order.metadata?.clientOrderId || 
+            o.coid === order.metadata?.clientOrderId
+          )
+
+          if (!openOrder) {
+            // Order not in open orders - check filled orders
+            if (userState.filledOrders) {
+              const filledOrder = userState.filledOrders.find((o: any) =>
+                o.oid === order.metadata?.clientOrderId ||
+                o.coid === order.metadata?.clientOrderId
+              )
+
+              if (filledOrder) {
+                return {
+                  ...order,
+                  status: 'FILLED',
+                  filledQuantity: parseFloat(filledOrder.sz || order.quantity.toString()),
+                  filledPrice: parseFloat(filledOrder.avgPx || order.price?.toString() || '0'),
+                  filledAt: Date.now()
+                }
+              }
+            }
+
+            // Order might be filled but not yet in filledOrders - check positions
+            if (userState.assetPositions) {
+              const position = userState.assetPositions.find((p: any) => 
+                p.position.coin === order.symbol
+              )
+
+              if (position) {
+                // Position exists - order likely filled
+                return {
+                  ...order,
+                  status: 'FILLED',
+                  filledQuantity: order.quantity,
+                  filledPrice: order.price || parseFloat(position.position.entryPx || '0'),
+                  filledAt: Date.now()
+                }
+              }
+            }
+          } else {
+            // Order still open
+            const updatedOrder = {
+              ...order,
+              status: 'PENDING' as OrderStatus
+            }
+            this.pendingOrders.set(order.id, updatedOrder)
+          }
         }
+      } catch (error: any) {
+        console.warn(`⚠️  Failed to poll order status: ${error.message}`)
+        // Continue polling
       }
     }
 
     // Timeout - order not filled
     if (this.config.retryOnTimeout) {
-      // Retry logic would go here
-      console.warn(`⚠️  Order ${order.id} timeout, retry not yet implemented`)
+      console.warn(`⚠️  Order ${order.id} timeout after ${timeoutMs}ms`)
     }
 
     return {

@@ -29,8 +29,8 @@ MODEL_ID=anthropic/claude-3-5-sonnet  # or glm-4.5, etc.
 
 # Hyperliquid Configuration
 HYPERLIQUID_API_URL=https://api.hyperliquid.xyz
-HYPERLIQUID_WALLET_ADDRESS=0x...
-HYPERLIQUID_ACCOUNT_ADDRESS=0x...
+HYPERLIQUID_ACCOUNT_ADDRESS=0x...  # Your wallet address
+HYPERLIQUID_WALLET_API_KEY=your_private_key_here  # Private key (64 hex chars) for EIP-712 signing
 
 # Trading Configuration
 CYCLE_INTERVAL_MS=10000
@@ -415,13 +415,472 @@ The server provides the following tools:
     ```
   - **Note:** All multi-timeframe data is fetched in parallel for better performance
 
-### Trading Tools (Planned)
+### External Data Tools
 
-- `generate_trading_signals` - Generate AI-powered trading signals for assets
-- `get_market_data` - Get current market data for specified assets
-- `get_active_positions` - Get current active trading positions
-- `run_trading_cycle` - Run a single trading cycle (test mode)
-- `get_performance` - Get trading performance metrics
+- **`get_external_data`** - Get external market data for a single trading ticker
+  - **Input:** `ticker` (string) - Asset ticker symbol (e.g., "BTC", "ETH", "SOL")
+  - **Output:** External data including:
+    - Funding Rate & Trend
+    - Open Interest & Trend
+    - Volume Trend
+    - Volatility
+  - **Example:**
+    ```json
+    {
+      "name": "get_external_data",
+      "arguments": {
+        "ticker": "BTC"
+      }
+    }
+    ```
+
+- **`get_multiple_external_data`** - Get external market data for multiple trading tickers at once
+  - **Input:** `tickers` (array of strings) - Array of asset ticker symbols
+  - **Output:** Array of external data for each ticker
+  - **Example:**
+    ```json
+    {
+      "name": "get_multiple_external_data",
+      "arguments": {
+        "tickers": ["BTC", "ETH", "SOL"]
+      }
+    }
+    ```
+
+### Position Management Tools
+
+- **`get_position`** - Get current position information for a single trading ticker
+  - **Input:** `ticker` (string) - Asset ticker symbol
+  - **Output:** Position data including:
+    - Side (LONG/SHORT)
+    - Entry Price
+    - Quantity
+    - Unrealized PnL
+    - MAE (Maximum Adverse Excursion)
+  - **Example:**
+    ```json
+    {
+      "name": "get_position",
+      "arguments": {
+        "ticker": "BTC"
+      }
+    }
+    ```
+
+- **`get_multiple_positions`** - Get current position information for multiple trading tickers at once
+  - **Input:** `tickers` (array of strings) - Array of asset ticker symbols
+  - **Output:** Array of position data for each ticker
+  - **Example:**
+    ```json
+    {
+      "name": "get_multiple_positions",
+      "arguments": {
+        "tickers": ["BTC", "ETH", "SOL"]
+      }
+    }
+    ```
+
+### Risk Management Tools
+
+- **`calculate_risk_management`** - Calculate risk management parameters (stop loss, take profit, risk/reward ratio)
+  - **Input:**
+    - `ticker` (string) - Asset ticker symbol
+    - `entryPrice` (number) - Entry price
+    - `side` (enum: "LONG" | "SHORT") - Trade side
+    - `stopLossPct` (number) - Stop loss percentage
+    - `takeProfitPct` (number) - Take profit percentage
+    - `positionSizeUsd` (number) - Position size in USD
+  - **Output:** Risk management data including:
+    - Stop Loss (Fixed & Flexible)
+    - Take Profit
+    - Potential Loss/Profit
+    - Risk/Reward Ratio
+  - **Example:**
+    ```json
+    {
+      "name": "calculate_risk_management",
+      "arguments": {
+        "ticker": "BTC",
+        "entryPrice": 87000,
+        "side": "LONG",
+        "stopLossPct": 2,
+        "takeProfitPct": 4.5,
+        "positionSizeUsd": 10000
+      }
+    }
+    ```
+
+### Position Setup Tools
+
+- **`calculate_position_setup`** - Calculate position setup parameters (quantity, leverage, margin)
+  - **Input:**
+    - `ticker` (string) - Asset ticker symbol
+    - `entryPrice` (number) - Entry price
+    - `side` (enum: "LONG" | "SHORT") - Trade side
+    - `positionSizeUsd` (number) - Position size in USD
+    - `capital` (number, optional) - Total capital (default: 10000)
+    - `riskPct` (number, optional) - Risk percentage (default: 0.9)
+  - **Output:** Position setup data including:
+    - Quantity
+    - Leverage
+    - Margin Percentage
+    - Margin Used
+    - Position Value
+    - Capital Allocation
+  - **Example:**
+    ```json
+    {
+      "name": "calculate_position_setup",
+      "arguments": {
+        "ticker": "BTC",
+        "entryPrice": 87000,
+        "side": "LONG",
+        "positionSizeUsd": 10000,
+        "capital": 10000,
+        "riskPct": 0.9
+      }
+    }
+    ```
+
+### Advanced Analysis Tools
+
+#### Fibonacci Retracement
+
+- **`get_fibonacci`** - Get Fibonacci retracement levels and analysis for a single ticker
+  - **Input:** `ticker` (string) - Asset ticker symbol
+  - **Output:** Fibonacci data including levels (0%, 23.6%, 38.2%, 50%, 61.8%, 78.6%, 100%, 127.2%, 161.8%, 200%), current level, swing high/low, direction, signal
+  - **Example:**
+    ```json
+    {
+      "name": "get_fibonacci",
+      "arguments": {
+        "ticker": "BTC"
+      }
+    }
+    ```
+
+- **`get_multiple_fibonacci`** - Get Fibonacci retracement for multiple tickers at once
+  - **Input:** `tickers` (array of strings) - Array of asset ticker symbols
+  - **Output:** Array of Fibonacci data for each ticker
+
+#### Order Book Depth
+
+- **`get_orderbook_depth`** - Get order book depth analysis for a single ticker
+  - **Input:** `ticker` (string) - Asset ticker symbol
+  - **Output:** Order book data including bid/ask depth, spread, imbalance, support/resistance zones, liquidity score
+  - **Example:**
+    ```json
+    {
+      "name": "get_orderbook_depth",
+      "arguments": {
+        "ticker": "BTC"
+      }
+    }
+    ```
+
+- **`get_multiple_orderbook_depth`** - Get order book depth for multiple tickers at once
+  - **Input:** `tickers` (array of strings) - Array of asset ticker symbols
+  - **Output:** Array of order book data for each ticker
+
+#### Volume Profile
+
+- **`get_volume_profile`** - Get volume profile analysis for a single ticker
+  - **Input:** `ticker` (string) - Asset ticker symbol
+  - **Output:** Volume profile data including POC, VAH/VAL, HVN/LVN, accumulation/distribution zones
+  - **Example:**
+    ```json
+    {
+      "name": "get_volume_profile",
+      "arguments": {
+        "ticker": "BTC"
+      }
+    }
+    ```
+
+- **`get_multiple_volume_profile`** - Get volume profile for multiple tickers at once
+  - **Input:** `tickers` (array of strings) - Array of asset ticker symbols
+  - **Output:** Array of volume profile data for each ticker
+
+#### Market Structure
+
+- **`get_market_structure`** - Get market structure analysis (Change of Character) for a single ticker
+  - **Input:** `ticker` (string) - Asset ticker symbol
+  - **Output:** Market structure data including structure (bullish/bearish/neutral), COC, swing highs/lows, reversal signals
+  - **Example:**
+    ```json
+    {
+      "name": "get_market_structure",
+      "arguments": {
+        "ticker": "BTC"
+      }
+    }
+    ```
+
+- **`get_multiple_market_structure`** - Get market structure for multiple tickers at once
+  - **Input:** `tickers` (array of strings) - Array of asset ticker symbols
+  - **Output:** Array of market structure data for each ticker
+
+#### Candlestick Patterns
+
+- **`get_candlestick_patterns`** - Get candlestick pattern detection for a single ticker
+  - **Input:** `ticker` (string) - Asset ticker symbol
+  - **Output:** Candlestick patterns including doji, hammer, bullish/bearish engulfing, latest pattern, bullish/bearish count
+  - **Example:**
+    ```json
+    {
+      "name": "get_candlestick_patterns",
+      "arguments": {
+        "ticker": "BTC"
+      }
+    }
+    ```
+
+- **`get_multiple_candlestick_patterns`** - Get candlestick patterns for multiple tickers at once
+  - **Input:** `tickers` (array of strings) - Array of asset ticker symbols
+  - **Output:** Array of candlestick patterns for each ticker
+
+#### Divergence Detection
+
+- **`get_divergence`** - Get RSI divergence detection for a single ticker
+  - **Input:** `ticker` (string) - Asset ticker symbol
+  - **Output:** Divergence data including bullish/bearish divergence signals
+  - **Example:**
+    ```json
+    {
+      "name": "get_divergence",
+      "arguments": {
+        "ticker": "BTC"
+      }
+    }
+    ```
+
+- **`get_multiple_divergence`** - Get divergence detection for multiple tickers at once
+  - **Input:** `tickers` (array of strings) - Array of asset ticker symbols
+  - **Output:** Array of divergence data for each ticker
+
+#### Liquidation Levels
+
+- **`get_liquidation_levels`** - Get liquidation level analysis for a single ticker
+  - **Input:** `ticker` (string) - Asset ticker symbol
+  - **Output:** Liquidation data including clusters, liquidity grab zones, stop hunt predictions, cascade risk, safe entry zones
+  - **Example:**
+    ```json
+    {
+      "name": "get_liquidation_levels",
+      "arguments": {
+        "ticker": "BTC"
+      }
+    }
+    ```
+
+- **`get_multiple_liquidation_levels`** - Get liquidation levels for multiple tickers at once
+  - **Input:** `tickers` (array of strings) - Array of asset ticker symbols
+  - **Output:** Array of liquidation data for each ticker
+
+#### Long/Short Ratio
+
+- **`get_long_short_ratio`** - Get long/short ratio analysis for a single ticker
+  - **Input:** `ticker` (string) - Asset ticker symbol
+  - **Output:** Long/short ratio data including sentiment, contrarian signals, extreme ratios, divergence
+  - **Example:**
+    ```json
+    {
+      "name": "get_long_short_ratio",
+      "arguments": {
+        "ticker": "BTC"
+      }
+    }
+    ```
+
+- **`get_multiple_long_short_ratio`** - Get long/short ratio for multiple tickers at once
+  - **Input:** `tickers` (array of strings) - Array of asset ticker symbols
+  - **Output:** Array of long/short ratio data for each ticker
+
+#### Spot-Futures Divergence
+
+- **`get_spot_futures_divergence`** - Get spot-futures divergence analysis for a single ticker
+  - **Input:** `ticker` (string) - Asset ticker symbol
+  - **Output:** Spot-futures divergence data including premium analysis, arbitrage opportunities, mean reversion signals
+  - **Example:**
+    ```json
+    {
+      "name": "get_spot_futures_divergence",
+      "arguments": {
+        "ticker": "BTC"
+      }
+    }
+    ```
+
+- **`get_multiple_spot_futures_divergence`** - Get spot-futures divergence for multiple tickers at once
+  - **Input:** `tickers` (array of strings) - Array of asset ticker symbols
+  - **Output:** Array of spot-futures divergence data for each ticker
+
+### Execution Tools
+
+#### Spot Execution
+
+- **`get_execution_spot`** - Get spot trading execution information for a single ticker (no leverage, 1x)
+  - **Input:**
+    - `ticker` (string) - Asset ticker symbol
+    - `side` (enum: "LONG" | "SHORT") - Trade side
+    - `quantity` (number) - Quantity to trade (in base asset units)
+    - `price` (number, optional) - Limit price (if not provided, uses current market price)
+    - `orderType` (enum: "MARKET" | "LIMIT", default: "MARKET") - Order type
+    - `execute` (boolean, default: false) - Whether to actually execute the order via Hyperliquid
+    - `useLiveExecutor` (boolean, default: false) - Whether to use live executor (requires HYPERLIQUID_WALLET_API_KEY)
+  - **Output:** Execution data including order ID, position value, margin required, status, estimated fill price, slippage
+  - **Example (Simulation):**
+    ```json
+    {
+      "name": "get_execution_spot",
+      "arguments": {
+        "ticker": "BTC",
+        "side": "LONG",
+        "quantity": 0.1,
+        "orderType": "MARKET"
+      }
+    }
+    ```
+  - **Example (Execute with Paper Trading):**
+    ```json
+    {
+      "name": "get_execution_spot",
+      "arguments": {
+        "ticker": "BTC",
+        "side": "LONG",
+        "quantity": 0.1,
+        "execute": true,
+        "useLiveExecutor": false
+      }
+    }
+    ```
+  - **Example (Execute with Live Trading):**
+    ```json
+    {
+      "name": "get_execution_spot",
+      "arguments": {
+        "ticker": "BTC",
+        "side": "LONG",
+        "quantity": 0.1,
+        "execute": true,
+        "useLiveExecutor": true
+      }
+    }
+    ```
+  - **Note:** 
+    - Default: Simulation only (no actual execution)
+    - `execute=true` + `useLiveExecutor=false`: Uses PaperExecutor (simulation with slippage)
+    - `execute=true` + `useLiveExecutor=true`: Uses LiveExecutor (real execution via Hyperliquid API, requires EIP-712 signing)
+
+- **`get_multiple_execution_spot`** - Get spot trading execution information for multiple tickers at once
+  - **Input:**
+    - `executions` (array) - Array of execution requests, each with `ticker`, `side`, `quantity`, `price` (optional), `orderType` (optional)
+    - `execute` (boolean, default: false) - Whether to actually execute orders (uses PaperExecutor for safety)
+  - **Output:** Array of execution results with summary
+  - **Example:**
+    ```json
+    {
+      "name": "get_multiple_execution_spot",
+      "arguments": {
+        "executions": [
+          {"ticker": "BTC", "side": "LONG", "quantity": 0.1},
+          {"ticker": "ETH", "side": "SHORT", "quantity": 1.0}
+        ],
+        "execute": false
+      }
+    }
+    ```
+  - **Note:** For multiple executions, `execute=true` always uses PaperExecutor for safety (no live trading)
+
+#### Futures Execution
+
+- **`get_execution_futures`** - Get futures trading execution information for a single ticker (with leverage)
+  - **Input:**
+    - `ticker` (string) - Asset ticker symbol
+    - `side` (enum: "LONG" | "SHORT") - Trade side
+    - `quantity` (number) - Quantity to trade (in base asset units)
+    - `leverage` (number, default: 10) - Leverage multiplier (1-50x)
+    - `price` (number, optional) - Limit price (if not provided, uses current market price)
+    - `orderType` (enum: "MARKET" | "LIMIT", default: "MARKET") - Order type
+    - `execute` (boolean, default: false) - Whether to actually execute the order via Hyperliquid
+    - `useLiveExecutor` (boolean, default: false) - Whether to use live executor (requires HYPERLIQUID_WALLET_API_KEY)
+  - **Output:** Execution data including order ID, leverage, position value, margin required, status, estimated fill price, slippage
+  - **Example (Simulation):**
+    ```json
+    {
+      "name": "get_execution_futures",
+      "arguments": {
+        "ticker": "BTC",
+        "side": "LONG",
+        "quantity": 0.1,
+        "leverage": 10,
+        "orderType": "MARKET"
+      }
+    }
+    ```
+  - **Example (Execute with Live Trading):**
+    ```json
+    {
+      "name": "get_execution_futures",
+      "arguments": {
+        "ticker": "BTC",
+        "side": "LONG",
+        "quantity": 0.1,
+        "leverage": 10,
+        "execute": true,
+        "useLiveExecutor": true
+      }
+    }
+    ```
+  - **Note:** 
+    - Default: Simulation only (no actual execution)
+    - `execute=true` + `useLiveExecutor=false`: Uses PaperExecutor (simulation with slippage)
+    - `execute=true` + `useLiveExecutor=true`: Uses LiveExecutor (real execution via Hyperliquid API with EIP-712 signing)
+
+- **`get_multiple_execution_futures`** - Get futures trading execution information for multiple tickers at once
+  - **Input:**
+    - `executions` (array) - Array of execution requests, each with `ticker`, `side`, `quantity`, `leverage` (optional, default: 10), `price` (optional), `orderType` (optional)
+    - `execute` (boolean, default: false) - Whether to actually execute orders (uses PaperExecutor for safety)
+  - **Output:** Array of execution results with summary
+  - **Example:**
+    ```json
+    {
+      "name": "get_multiple_execution_futures",
+      "arguments": {
+        "executions": [
+          {"ticker": "BTC", "side": "LONG", "quantity": 0.1, "leverage": 10},
+          {"ticker": "ETH", "side": "SHORT", "quantity": 1.0, "leverage": 5}
+        ],
+        "execute": false
+      }
+    }
+    ```
+  - **Note:** For multiple executions, `execute=true` always uses PaperExecutor for safety (no live trading)
+
+### Execution Implementation Details
+
+#### LiveExecutor (Real Trading via Hyperliquid)
+
+- **EIP-712 Signing:** Fully implemented with proper domain separator and message structure
+- **Order Submission:** Submits signed orders to Hyperliquid `/exchange` endpoint
+- **Order Status Polling:** Polls Hyperliquid API for order fill confirmation
+- **Requirements:**
+  - `HYPERLIQUID_WALLET_API_KEY` - Private key (64 hex characters, 32 bytes)
+  - `HYPERLIQUID_ACCOUNT_ADDRESS` - Wallet address matching the private key
+- **Safety:** Validates wallet address matches account address before execution
+
+#### PaperExecutor (Simulation)
+
+- **Slippage Simulation:** Realistic slippage with random variation (±20% of base slippage)
+- **Virtual Balance:** Tracks virtual capital and positions
+- **Trade Persistence:** Saves trades to file for tracking
+- **No Risk:** Completely safe for testing and multiple executions
+
+#### Multiple Executions Safety
+
+- **Default Behavior:** All multiple execution tools use PaperExecutor when `execute=true`
+- **Reason:** Prevents accidental live trading of multiple positions simultaneously
+- **Single Executions:** Can use LiveExecutor with `useLiveExecutor=true` (requires proper configuration)
 
 ## MCP Resources
 
