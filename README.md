@@ -88,7 +88,8 @@ npx @modelcontextprotocol/inspector -e OPENROUTER_API_KEY=your_key -e MODEL_ID=a
 3. **Test Tools** - Use the UI to test:
    - `get_price` - Get price for a single ticker (e.g., "BTC")
    - `get_multiple_prices` - Get prices for multiple tickers (e.g., ["BTC", "ETH", "SOL"])
-   - *(More tools coming soon)*
+   - `get_indicator` - Get technical analysis for a single ticker (e.g., "BTC")
+   - `get_multiple_indicators` - Get technical analysis for multiple tickers (e.g., ["BTC", "ETH", "SOL"])
 4. **Test Resources** - Access:
    - `geartrade://state` - Current trading cycle state
    - `geartrade://performance` - Trading performance metrics
@@ -218,6 +219,103 @@ The server provides the following tools:
     }
     ```
   - **Note:** All prices are fetched in parallel for better performance
+
+### Technical Analysis Tools
+
+- **`get_indicator`** - Get comprehensive technical analysis indicators for a single trading ticker
+  - **Input:** `ticker` (string) - Asset ticker symbol (e.g., "BTC", "ETH", "SOL")
+  - **Output:** Technical indicators including:
+    - RSI (14, 7, 4H)
+    - EMA (20, 50)
+    - MACD (MACD, Signal, Histogram)
+    - Bollinger Bands (Upper, Middle, Lower, Position)
+    - ATR (14)
+    - ADX (ADX, +DI, -DI, Trend)
+    - OBV, VWAP
+    - Stochastic (K, D)
+    - CCI, Williams %R
+    - Parabolic SAR
+    - Aroon (Up, Down, Trend)
+    - Support & Resistance
+    - Fibonacci levels
+    - Trend analysis
+    - Market Structure
+    - RSI Divergence
+    - Candlestick patterns
+    - Market Regime
+    - 24h Change & Volume Change
+  - **Example:**
+    ```json
+    {
+      "name": "get_indicator",
+      "arguments": {
+        "ticker": "BTC"
+      }
+    }
+    ```
+  - **Output Example:**
+    ```json
+    {
+      "ticker": "BTC",
+      "price": 43250.50,
+      "timestamp": "2024-01-15T10:30:00.000Z",
+      "technical": {
+        "rsi": {
+          "rsi14": 51.85,
+          "rsi7": 48.35,
+          "rsi4h": 40.25
+        },
+        "ema": {
+          "ema20": 180.08,
+          "ema50": 179.84
+        },
+        "macd": {
+          "macd": 0.2968,
+          "signal": 0.3821,
+          "histogram": -0.0853
+        },
+        ...
+      }
+    }
+    ```
+
+- **`get_multiple_indicators`** - Get comprehensive technical analysis indicators for multiple trading tickers at once
+  - **Input:** `tickers` (array of strings) - Array of asset ticker symbols (e.g., ["BTC", "ETH", "SOL"])
+  - **Output:** Array of technical indicators for each ticker
+  - **Example:**
+    ```json
+    {
+      "name": "get_multiple_indicators",
+      "arguments": {
+        "tickers": ["BTC", "ETH", "SOL"]
+      }
+    }
+    ```
+  - **Output Example:**
+    ```json
+    {
+      "results": [
+        {
+          "ticker": "BTC",
+          "price": 43250.50,
+          "timestamp": "2024-01-15T10:30:00.000Z",
+          "technical": { ... }
+        },
+        {
+          "ticker": "ETH",
+          "price": 2650.75,
+          "timestamp": "2024-01-15T10:30:00.000Z",
+          "technical": { ... }
+        }
+      ],
+      "summary": {
+        "total": 2,
+        "found": 2,
+        "notFound": 0
+      }
+    }
+    ```
+  - **Note:** All technical data is fetched in parallel for better performance
 
 ### Trading Tools (Planned)
 
