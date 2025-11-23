@@ -6,40 +6,15 @@ GearTrade MCP Server is a comprehensive trading analysis and execution platform 
 
 ## Overview
 
-GearTrade MCP Server provides a complete suite of trading tools organized into 10 major categories:
+GearTrade MCP Server provides a complete suite of trading tools that cover every aspect of market analysis and execution. The platform offers real-time price data and comprehensive technical analysis with over 20 indicators including RSI, EMA, MACD, Bollinger Bands, ATR, ADX, OBV, VWAP, Stochastic, CCI, Williams %R, Parabolic SAR, Aroon, Support/Resistance, Fibonacci retracements, trend analysis, market structure detection, RSI divergence, candlestick pattern recognition, and market regime classification. Advanced volume analysis tools provide deep insights into buy/sell pressure, cumulative volume delta (CVD), liquidity zones, and volume-based trading recommendations. Multi-timeframe analysis enables trend alignment scoring across Daily, 4H, and 1H timeframes to identify high-probability trading setups.
 
-### 📊 Market Data & Analysis (10 tools)
-- **Price Tools**: Real-time price fetching for single and multiple assets
-- **Technical Analysis**: Comprehensive indicators including RSI, EMA, MACD, Bollinger Bands, ATR, ADX, OBV, VWAP, Stochastic, CCI, Williams %R, Parabolic SAR, Aroon, Support/Resistance, Fibonacci, Trend, Market Structure, RSI Divergence, Candlestick patterns, and Market Regime analysis
-- **Volume Analysis**: Deep volume profiling with buy/sell pressure, CVD analysis, liquidity zones, and volume-based recommendations
-- **Multi-Timeframe Analysis**: Trend alignment across Daily, 4H, and 1H timeframes with alignment scoring
+The server includes 18 specialized advanced analysis tools for professional-grade market research. Fibonacci retracement analysis identifies key support and resistance levels with swing high/low detection. Order book depth analysis provides real-time bid/ask depth, spread calculations, order flow imbalance, and dynamic support/resistance zones. Volume profile tools generate both session and composite profiles with Point of Control (POC), Value Area High/Low (VAH/VAL), High/Low Volume Nodes (HVN/LVN), and accumulation/distribution zone identification. Market structure analysis detects Change of Character (COC) events, swing patterns, and potential reversal signals. Candlestick pattern detection identifies doji, hammer, and bullish/bearish engulfing formations. Divergence detection analyzes RSI divergences for early trend reversal signals. Liquidation level analysis maps liquidation clusters, predicts liquidity grab zones and stop hunts, and identifies safe entry zones. Long/short ratio analysis provides sentiment indicators with contrarian signals and extreme ratio detection. Spot-futures divergence tools identify premium/discount opportunities, arbitrage setups, and mean reversion signals.
 
-### 🔍 Advanced Market Analysis (18 tools)
-- **Fibonacci Retracement**: Complete Fibonacci level analysis with swing high/low detection and signal generation
-- **Order Book Depth**: Real-time order book analysis with bid/ask depth, spread, imbalance, and support/resistance zones
-- **Volume Profile**: Session and composite volume profiles with POC, VAH/VAL, HVN/LVN, and accumulation/distribution zones
-- **Market Structure**: Change of Character (COC) detection with swing high/low identification and reversal signals
-- **Candlestick Patterns**: Detection of doji, hammer, and bullish/bearish engulfing patterns
-- **Divergence Detection**: RSI divergence analysis for bullish/bearish signals
-- **Liquidation Levels**: Liquidation cluster analysis with liquidity grab zones, stop hunt predictions, and safe entry zones
-- **Long/Short Ratio**: Sentiment analysis with contrarian signals and extreme ratio detection
-- **Spot-Futures Divergence**: Premium analysis, arbitrage opportunities, and mean reversion signals
+Position and risk management tools enable automated position tracking with real-time unrealized PnL and Maximum Adverse Excursion (MAE) monitoring. Risk management calculators automatically determine optimal stop loss and take profit levels with risk/reward ratio analysis. Position setup tools calculate dynamic position sizing based on leverage requirements, margin management, and capital allocation strategies.
 
-### 💼 Position & Risk Management (5 tools)
-- **Position Management**: Real-time position tracking with unrealized PnL and MAE (Maximum Adverse Excursion)
-- **Risk Management**: Automated stop loss and take profit calculation with risk/reward ratio analysis
-- **Position Setup**: Dynamic position sizing with leverage calculation, margin management, and capital allocation
+External market data integration provides real-time funding rate analysis with trend detection, open interest tracking with trend monitoring, and comprehensive volume and volatility trend analysis. These tools help traders understand market sentiment and potential price movements.
 
-### 📈 External Market Data (2 tools)
-- **Funding Rate Analysis**: Real-time funding rates with trend analysis
-- **Open Interest Tracking**: Open interest monitoring with trend detection
-- **Volume & Volatility Trends**: Market trend analysis
-
-### ⚡ Order Execution (4 tools)
-- **Spot Execution**: Spot trading execution (1x leverage) with simulation and live trading support
-- **Futures Execution**: Leveraged futures trading (1-50x) with full Hyperliquid integration
-- **Paper Trading**: Realistic simulation with slippage modeling
-- **Live Trading**: Real order execution via Hyperliquid API with EIP-712 signing
+Order execution capabilities support both spot trading (1x leverage) and leveraged futures trading (1-50x) with full Hyperliquid integration. The platform includes a sophisticated paper trading simulator with realistic slippage modeling for safe strategy testing, and live trading execution via Hyperliquid API with EIP-712 cryptographic signing for secure order submission. All execution tools support both single and multiple asset batch processing, with safety mechanisms that default to paper trading for multiple simultaneous executions.
 
 ### Key Features
 
