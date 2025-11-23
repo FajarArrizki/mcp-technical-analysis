@@ -830,16 +830,177 @@ These tools aggregate all available market data into a single comprehensive anal
     - `capital` (number, optional) - Total trading capital in USD (default: 10000)
     - `riskPct` (number, optional) - Risk percentage per trade (default: 1.0)
     - `strategy` (enum, optional) - Trading strategy timeframe: "short_term", "long_term", or "flexible" (default: "flexible")
-  - **Output:** Complete analysis including:
-    - Real-time price
-    - Technical indicators (20+ indicators)
-    - Volume analysis (buy/sell pressure, CVD, liquidity zones)
-    - Multi-timeframe analysis (Daily, 4H, 1H alignment)
-    - External data (funding rate, open interest, volatility)
-    - Position information (if exists)
-    - Position setup (leverage, margin, position size)
-    - Risk management (stop loss, take profit, R:R ratio)
-  - **Example:**
+  - **Output:** Complete analysis object with the following structure:
+    ```json
+    {
+      "ticker": "BTC",
+      "price": 87532,
+      "timestamp": "2025-11-23T19:39:31.201Z",
+      "technical": {
+        "rsi": {
+          "rsi14": 65.32,
+          "rsi7": 70.81,
+          "rsi4h": 49.83
+        },
+        "ema": {
+          "ema20": 87205.37,
+          "ema50": 87036.01
+        },
+        "macd": {
+          "macd": 155.41,
+          "signal": 104.25,
+          "histogram": 51.16
+        },
+        "bollingerBands": {
+          "upper": 87600.86,
+          "middle": 87145.94,
+          "lower": 86691.03,
+          "position": "Above middle (Bullish)"
+        },
+        "atr": 180.57,
+        "adx": {
+          "adx": 21.35,
+          "plusDI": 33.79,
+          "minusDI": 12.91,
+          "trend": "Weak"
+        },
+        "obv": 364.61,
+        "vwap": 86975.39,
+        "stochastic": {
+          "k": 84.17,
+          "d": 82.91
+        },
+        "cci": 171.71,
+        "williamsR": -15.83,
+        "parabolicSAR": {
+          "value": 87159.42,
+          "trend": "Bullish"
+        },
+        "aroon": {
+          "up": null,
+          "down": 100,
+          "trend": "Strong Downtrend"
+        },
+        "support": 86692.13,
+        "resistance": 87161.16,
+        "fibonacci": null,
+        "trend": {
+          "direction": "downtrend",
+          "strength": "40/100"
+        },
+        "marketStructure": {
+          "structure": "uptrend",
+          "higherHigh": false,
+          "lowerLow": false
+        },
+        "rsiDivergence": "bearish",
+        "candlestick": null,
+        "marketRegime": "neutral",
+        "change24h": 0.75,
+        "volumeChange24h": -42.57
+      },
+      "volumeAnalysis": {
+        "buyVolume": 1902.86,
+        "sellVolume": 1925.51,
+        "netDelta": -22.65,
+        "buyPressure": 49.70,
+        "sellPressure": 50.30,
+        "dominantSide": "NEUTRAL",
+        "keyLevel": 87587.25,
+        "keyLevelDelta": -55.25,
+        "poc": 86679.03,
+        "vah": 87344.13,
+        "val": 86627.87,
+        "hvn": "86679.03, 87037.16, 87011.58",
+        "lvn": "87523.19, 86423.22, 86448.80",
+        "cvdTrend": "RISING",
+        "cvdDelta": 181.59,
+        "topLiquidityZones": [
+          {
+            "priceRange": "86709.02-87560.26",
+            "type": "neutral",
+            "strength": "high"
+          },
+          {
+            "priceRange": "86478.51-86705.44",
+            "type": "support",
+            "strength": "high"
+          }
+        ],
+        "recommendation": "HOLD",
+        "confidence": 50,
+        "riskLevel": "MEDIUM"
+      },
+      "multiTimeframe": {
+        "dailyTrend": "downtrend",
+        "h4Aligned": false,
+        "h1Aligned": false,
+        "overall": "Not Aligned",
+        "score": 40,
+        "reason": "Lower timeframes not aligned",
+        "daily": {
+          "price": 87519,
+          "ema20": 95542.64,
+          "ema50": 105397.56,
+          "rsi14": 23.35
+        },
+        "h4": {
+          "price": 87519,
+          "ema20": 86507.88,
+          "rsi14": 49.83
+        },
+        "h1": {
+          "price": 87519,
+          "ema20": 86347.45,
+          "rsi14": 62.46
+        }
+      },
+      "externalData": {
+        "fundingRate": "0.0001%",
+        "fundingRateTrend": "stable",
+        "openInterest": null,
+        "openInterestTrend": "stable",
+        "volumeTrend": "increasing",
+        "volatility": "low"
+      },
+      "position": null,
+      "positionSetup": {
+        "ticker": "BTC",
+        "entryPrice": 87532,
+        "side": "LONG",
+        "positionSizeUsd": 1.20,
+        "quantity": 0.00001371,
+        "leverage": 6,
+        "marginPercent": 85,
+        "marginUsed": 0.20,
+        "positionValue": 1.20,
+        "capital": 6,
+        "capitalAllocated": 1.20,
+        "capitalAllocatedPct": 20.00,
+        "riskPct": 1
+      },
+      "riskManagement": {
+        "stopLossFixed": 85956.42,
+        "stopLossFixedPct": 1.8,
+        "stopLossFlexible": 86925.40,
+        "stopLossFlexiblePct": 0.69,
+        "takeProfit": 91470.94,
+        "takeProfitPct": 4.5,
+        "potentialLoss": 0.0216,
+        "potentialProfit": 0.054,
+        "riskRewardRatio": 2.50
+      }
+    }
+    ```
+  - **Output Fields Explained:**
+    - **`technical`**: Complete technical analysis with 20+ indicators including RSI (14, 7, 4H), EMA (20, 50), MACD, Bollinger Bands, ATR, ADX, OBV, VWAP, Stochastic, CCI, Williams %R, Parabolic SAR, Aroon, Support/Resistance, Fibonacci, Trend, Market Structure, RSI Divergence, Candlestick patterns, Market Regime, 24h Change, Volume Change
+    - **`volumeAnalysis`**: Buy/sell volume, net delta, buy/sell pressure, dominant side, key level, POC (Point of Control), VAH/VAL (Value Area High/Low), HVN/LVN (High/Low Volume Nodes), CVD trend & delta, top liquidity zones, recommendation, confidence, risk level
+    - **`multiTimeframe`**: Daily trend, 4H/1H alignment status, overall alignment, score (0-100), reason, detailed data for daily/4H/1H timeframes (price, EMA20, RSI14)
+    - **`externalData`**: Funding rate, funding rate trend, open interest, open interest trend, volume trend, volatility
+    - **`position`**: Current position information (if exists) including quantity, entry price, unrealized PnL, MAE
+    - **`positionSetup`**: Calculated position setup with ticker, entry price, side (LONG/SHORT), position size USD, quantity, leverage, margin percentage, margin used, position value, capital, capital allocated, capital allocated percentage, risk percentage
+    - **`riskManagement`**: Stop loss (fixed & flexible), take profit levels, potential loss/profit, risk/reward ratio
+  - **Example Request:**
     ```json
     {
       "name": "analisis_crypto",
