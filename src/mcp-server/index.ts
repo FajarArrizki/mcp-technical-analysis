@@ -19,10 +19,12 @@ import { generateSignals } from '../signal-generation/signal-generation/generate
 import { generateSignalForSingleAsset } from '../signal-generation/signal-generation/generate-single-asset'
 import { getMarketData } from '../signal-generation/data-fetchers/market-data'
 import { getActivePositions } from '../signal-generation/position-management/positions'
-import { getTradingConfig } from '../signal-generation/config'
+import { getTradingConfig, getHyperliquidAccountAddress, getHyperliquidWalletApiKey } from '../signal-generation/config'
 import { Signal, MarketData } from '../signal-generation/types'
 import { initializeTestMode, runTestModeCycle } from '../signal-generation/cycle/test-mode'
 import { loadCycleState } from '../signal-generation/cycle/shared/state-manager'
+import { LiveExecutor } from '../signal-generation/execution/live-executor'
+import { getRealTimePrice } from '../signal-generation/data-fetchers/hyperliquid'
 import * as fs from 'fs'
 import * as path from 'path'
 
@@ -128,7 +130,7 @@ class GearTradeMCPServer {
         },
         {
           name: 'analyze_asset',
-          description: 'Analyze a single asset (ticker) without executing trades. Use this when user mentions a ticker like $BTC or BTC. Returns detailed analysis only, no trade execution.',
+          description: 'Analyze a single asset (ticker) without executing trades. Use this when user types "analisa $BTC", "analisa BTC", or just mentions a ticker. Returns detailed analysis only, no trade execution. This is ANALYSIS ONLY mode.',
           inputSchema: {
             type: 'object',
             properties: {
@@ -138,6 +140,29 @@ class GearTradeMCPServer {
               },
             },
             required: ['ticker'],
+          },
+        },
+        {
+          name: 'execute_trade',
+          description: 'Execute a real trade in the market. Use this when user types "Esekusi" or "Execute" after analysis. This will execute the trade immediately on Hyperliquid. WARNING: This executes real trades with real money.',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              ticker: {
+                type: 'string',
+                description: 'Asset ticker symbol to execute trade for (e.g., "BTC", "ETH")',
+              },
+              action: {
+                type: 'string',
+                enum: ['BUY', 'SELL', 'LONG', 'SHORT'],
+                description: 'Trade action: BUY/LONG for long position, SELL/SHORT for short position',
+              },
+              quantity: {
+                type: 'number',
+                description: 'Trade quantity (optional, will use signal recommendation if not provided)',
+              },
+            },
+            required: ['ticker', 'action'],
           },
         },
       ],
@@ -386,6 +411,139 @@ class GearTradeMCPServer {
                         : null,
                       timestamp: new Date().toISOString(),
                       note: 'This is analysis only. No trades were executed.',
+                    },
+                    null,
+                    2
+                  ),
+                },
+              ],
+            }
+          }
+
+          case 'execute_trade': {
+            let ticker = (args?.ticker as string) || ''
+            const action = (args?.action as string) || ''
+            const quantity = args?.quantity as number | undefined
+
+            // Strip $ symbol if present
+            ticker = ticker.replace(/^\$/, '').toUpperCase().trim()
+
+            if (!ticker) {
+              throw new Error('ticker is required')
+            }
+
+            if (!action || !['BUY', 'SELL', 'LONG', 'SHORT'].includes(action.toUpperCase())) {
+              throw new Error('action must be BUY, SELL, LONG, or SHORT')
+            }
+
+            // Check if Hyperliquid credentials are configured
+            const walletApiKey = getHyperliquidWalletApiKey()
+            const accountAddress = getHyperliquidAccountAddress()
+
+            if (!walletApiKey || !accountAddress) {
+              throw new Error('Hyperliquid API credentials not configured. Please set HYPERLIQUID_WALLET_API_KEY and HYPERLIQUID_ACCOUNT_ADDRESS environment variables.')
+            }
+
+            // Get current price
+            const currentPrice = await getRealTimePrice(ticker)
+            if (!currentPrice) {
+              throw new Error(`Could not get current price for ${ticker}`)
+            }
+
+            // Generate signal first to get recommended parameters
+            const { marketDataMap, allowedAssets } = await getMarketData([ticker])
+            const positions = getActivePositions()
+            const positionsMap = new Map<string, any>()
+            positions.forEach((pos) => {
+              positionsMap.set(pos.asset, pos)
+            })
+
+            const accountState = {
+              availableCash: 10000,
+              totalValue: 10000,
+            }
+
+            const signal = await generateSignalForSingleAsset(
+              ticker,
+              marketDataMap,
+              accountState,
+              positionsMap,
+              1000,
+              0,
+              allowedAssets.length > 0 ? allowedAssets : [ticker],
+              true,
+              null,
+              null
+            )
+
+            if (!signal) {
+              throw new Error(`Could not generate signal for ${ticker}. Analysis may have rejected the trade.`)
+            }
+
+            // Normalize action
+            const normalizedAction = action.toUpperCase()
+            const isLong = normalizedAction === 'BUY' || normalizedAction === 'LONG'
+            const isShort = normalizedAction === 'SELL' || normalizedAction === 'SHORT'
+
+            // Validate signal matches requested action
+            if (isLong && signal.action !== 'BUY' && signal.action !== 'LONG') {
+              throw new Error(`Signal recommends ${signal.action} but you requested ${action}. Please review the analysis.`)
+            }
+            if (isShort && signal.action !== 'SELL' && signal.action !== 'SHORT') {
+              throw new Error(`Signal recommends ${signal.action} but you requested ${action}. Please review the analysis.`)
+            }
+
+            // Initialize LiveExecutor
+            const tradesFile = path.join(DATA_DIR, 'live-trades.json')
+            const executor = new LiveExecutor({
+              tradesFile,
+              orderFillTimeoutMs: 30000,
+              retryOnTimeout: true,
+              maxRetries: 3,
+            })
+
+            // Prepare signal for execution
+            const executionSignal: Signal = {
+              asset: ticker,
+              action: isLong ? 'BUY' : 'SELL',
+              confidence: signal.confidence,
+              entryPrice: currentPrice,
+              stopLoss: signal.stopLoss,
+              takeProfit: signal.takeProfit,
+              leverage: signal.leverage,
+              quantity: quantity || signal.quantity || 0,
+              reasoning: signal.reasoning,
+              justification: signal.justification,
+              riskRewardRatio: signal.riskRewardRatio,
+              expectedValue: signal.expectedValue,
+            }
+
+            // Execute trade
+            const order = await executor.executeEntry(executionSignal, currentPrice)
+
+            return {
+              content: [
+                {
+                  type: 'text',
+                  text: JSON.stringify(
+                    {
+                      status: order.status === 'FILLED' ? 'executed' : order.status.toLowerCase(),
+                      order: {
+                        id: order.id,
+                        symbol: order.symbol,
+                        side: order.side,
+                        type: order.type,
+                        quantity: order.quantity,
+                        price: order.price,
+                        status: order.status,
+                        submittedAt: order.submittedAt,
+                      },
+                      message: order.status === 'FILLED' 
+                        ? `Trade executed successfully for ${ticker}`
+                        : order.status === 'REJECTED'
+                        ? `Trade rejected: ${order.rejectedReason || 'Unknown reason'}`
+                        : `Trade ${order.status.toLowerCase()}`,
+                      timestamp: new Date().toISOString(),
                     },
                     null,
                     2

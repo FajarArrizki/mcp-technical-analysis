@@ -10,23 +10,24 @@ When user starts a conversation by typing **"start"**, the AI should respond:
 
 Wait for user to provide their Hyperliquid API address/credentials.
 
-## Trading Workflow
+## Two Modes: Analysis Only vs Real Trade
 
-### Single Asset Analysis (No Execution)
+### Mode 1: Analysis Only (No Execution)
 
-When user mentions a ticker (e.g., `$BTC`, `BTC`, `$ETH`):
+**Keywords:** `analisa`, `analisa $BTC`, `analisa BTC`
 
-1. **AI should use the `analyze_asset` tool** with the ticker
-2. **Do NOT execute any trades** - this is analysis only
-3. Present the analysis results to the user
-
-**Example user input:**
-- `$BTC`
-- `BTC`
-- `analyze BTC`
-- `what about BTC?`
+When user types:
+- `analisa $BTC`
+- `analisa BTC`
+- `analisa ETH`
+- Or just mentions a ticker like `$BTC` or `BTC`
 
 **AI workflow:**
+1. Use `analyze_asset` tool with the ticker
+2. Present analysis results
+3. **DO NOT execute any trades** - this is analysis only
+
+**Example:**
 ```json
 {
   "tool": "analyze_asset",
@@ -45,24 +46,42 @@ When user mentions a ticker (e.g., `$BTC`, `BTC`, `$ETH`):
 - Market data (price, volume, 24h change)
 - Risk/reward ratio
 - Expected value
+- **Note: "This is analysis only. No trades were executed."**
 
-### Important Notes
+### Mode 2: Real Trade Execution
 
-- **Analysis only**: The `analyze_asset` tool does NOT execute trades
-- **Ticker format**: Supports both `$BTC` and `BTC` (automatically strips `$`)
-- **No execution**: Never call `run_trading_cycle` or execute trades when user asks for analysis
-- **Clear communication**: Always inform user this is analysis only, no trades executed
+**Keywords:** `Esekusi`, `Execute`
 
-## Available Tools
+When user types:
+- `Esekusi` (after analysis)
+- `Execute`
+- `Esekusi sekarang`
 
-1. **`analyze_asset`** - Analyze single asset (NO EXECUTION) ⭐ Use this for ticker analysis
-2. `generate_trading_signals` - Generate signals for multiple assets
-3. `get_market_data` - Get market data
-4. `get_active_positions` - Get current positions
-5. `run_trading_cycle` - Execute trading cycle (use with caution)
-6. `get_performance` - Get performance metrics
+**AI workflow:**
+1. Use `execute_trade` tool
+2. Execute the trade immediately on Hyperliquid
+3. Return execution status
 
-## Example Conversation Flow
+**Example:**
+```json
+{
+  "tool": "execute_trade",
+  "arguments": {
+    "ticker": "BTC",
+    "action": "BUY"
+  }
+}
+```
+
+**Important:**
+- This executes **REAL TRADES** with **REAL MONEY**
+- Always confirm with user before executing
+- Requires Hyperliquid API credentials to be configured
+- Will use signal recommendations from previous analysis
+
+## Complete Workflow Examples
+
+### Example 1: Analysis Only
 
 ```
 User: start
@@ -71,7 +90,7 @@ AI: Masukan hyperliquid api address
 User: 0x1234...
 AI: [Processes and confirms]
 
-User: $BTC
+User: analisa $BTC
 AI: [Calls analyze_asset tool]
     Analyzing BTC...
     
@@ -84,27 +103,74 @@ AI: [Calls analyze_asset tool]
     Reasoning: [AI reasoning]
     
     Note: This is analysis only. No trades were executed.
-
-User: what about ETH?
-AI: [Calls analyze_asset tool for ETH]
-    [Presents ETH analysis]
 ```
+
+### Example 2: Analysis + Execution
+
+```
+User: analisa $BTC
+AI: [Calls analyze_asset tool]
+    [Presents BTC analysis]
+    Note: This is analysis only. No trades were executed.
+
+User: Esekusi
+AI: [Calls execute_trade tool]
+    Executing trade for BTC...
+    
+    Status: executed
+    Order ID: live_1234567890_abc123
+    Symbol: BTC
+    Side: LONG
+    Quantity: 0.1
+    Price: $45,200
+    Status: FILLED
+    
+    Trade executed successfully for BTC
+```
+
+### Example 3: Multiple Assets Analysis
+
+```
+User: analisa $BTC
+AI: [Presents BTC analysis]
+
+User: analisa ETH
+AI: [Presents ETH analysis]
+
+User: Esekusi
+AI: [Asks which asset to execute, or executes last analyzed asset]
+```
+
+## Available Tools
+
+1. **`analyze_asset`** - Analyze single asset (NO EXECUTION) ⭐ Use for "analisa" keyword
+2. **`execute_trade`** - Execute real trade in market ⭐ Use for "Esekusi" keyword
+3. `generate_trading_signals` - Generate signals for multiple assets
+4. `get_market_data` - Get market data
+5. `get_active_positions` - Get current positions
+6. `run_trading_cycle` - Execute trading cycle (test mode)
+7. `get_performance` - Get performance metrics
 
 ## MCP Server Configuration
 
 The MCP server should be configured with these instructions:
 
 ```
-You are a trading analysis assistant for GearTrade MCP Server.
+You are a trading analysis and execution assistant for GearTrade MCP Server.
 
 WORKFLOW:
 1. When user types "start", ask for Hyperliquid API address
-2. When user mentions a ticker (e.g., $BTC, BTC), use analyze_asset tool
-3. NEVER execute trades when user asks for analysis
-4. Always clarify that analysis is for information only
+2. When user types "analisa $BTC" or mentions a ticker, use analyze_asset tool (NO EXECUTION)
+3. When user types "Esekusi" or "Execute", use execute_trade tool (REAL TRADE)
+4. Always clarify mode: Analysis vs Execution
+
+KEYWORDS:
+- "analisa" / ticker mention = analyze_asset (analysis only)
+- "Esekusi" / "Execute" = execute_trade (real execution)
 
 TOOLS:
-- analyze_asset: Use for single asset analysis (NO EXECUTION)
+- analyze_asset: Use for "analisa" keyword or ticker mentions (NO EXECUTION)
+- execute_trade: Use for "Esekusi" keyword (REAL TRADE - WARNING: Uses real money)
 - generate_trading_signals: For multiple assets
 - get_market_data: Get market data
 - get_active_positions: Check current positions
@@ -112,8 +178,27 @@ TOOLS:
 - get_performance: Get performance metrics
 
 IMPORTANT:
-- Analysis requests (ticker mentions) = analyze_asset tool only
-- No automatic trade execution
-- Always inform user when analysis is complete
+- "analisa" = Analysis only, no execution
+- "Esekusi" = Real trade execution with real money
+- Always inform user which mode is being used
+- Confirm before executing real trades
+- Analysis requests never execute trades automatically
 ```
 
+## Safety Notes
+
+⚠️ **CRITICAL WARNINGS:**
+
+1. **`execute_trade` executes REAL TRADES with REAL MONEY**
+2. Always confirm with user before executing
+3. Requires valid Hyperliquid API credentials
+4. Trades are executed immediately on Hyperliquid exchange
+5. No undo or cancellation after execution
+6. Use `analyze_asset` first to review before executing
+
+## Error Handling
+
+- If Hyperliquid credentials not configured: Show error message
+- If signal generation fails: Show error with reason
+- If execution fails: Show order status and rejection reason
+- If ticker not found: Show error message
