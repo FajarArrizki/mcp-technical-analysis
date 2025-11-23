@@ -53,6 +53,26 @@ npm run build
 npm start
 ```
 
+### Testing with MCP Inspector
+
+Test the MCP server using the MCP Inspector tool:
+
+```bash
+npm run inspector
+```
+
+This will:
+1. Start the MCP Inspector web interface
+2. Connect to the GearTrade MCP server
+3. Allow you to test all tools and resources interactively
+
+The inspector will open in your browser at `http://localhost:6274` (or similar port).
+
+**Note:** Make sure you have set up your `.env` file with required API keys before testing:
+- `OPENROUTER_API_KEY` or `AI_PROVIDER_API_KEY`
+- `MODEL_ID`
+- `HYPERLIQUID_API_URL` (optional, has default)
+
 ## MCP Tools
 
 The server provides the following tools:
