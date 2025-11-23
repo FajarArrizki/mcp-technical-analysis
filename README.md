@@ -330,6 +330,32 @@ Monitor open positions and provide status update.
 **Usage:**
 AI agents can use this prompt to monitor open positions, track PnL, and provide recommendations for position management.
 
+### `comprehensive_analysis`
+Perform comprehensive market analysis for crypto assets without execution.
+
+**Arguments:**
+- `ticker` (optional) - Single ticker to analyze (e.g., "BTC", "ETH", "SOL"). If not provided, can analyze multiple tickers
+- `tickers` (optional) - Array of tickers to analyze (e.g., ["BTC", "ETH", "SOL"]). Use this for multiple assets
+- `capital` (optional) - Trading capital in USD (default: 10000)
+- `riskPct` (optional) - Risk percentage per trade (default: 1.0)
+- `strategy` (optional) - Trading strategy timeframe: "short_term", "long_term", or "flexible" (default: "flexible")
+
+**Usage:**
+AI agents can use this prompt to perform deep market analysis without any execution. The prompt guides AI to:
+- Analyze single or multiple assets comprehensively
+- Present detailed technical, volume, and multi-timeframe analysis
+- Include advanced analysis (Fibonacci, Order Book, Volume Profile, etc.)
+- Provide trading signals with confidence levels
+- Calculate entry, stop loss, take profit levels
+- Assess risk without executing trades
+
+**Key Features:**
+- Analysis-only workflow (no execution)
+- Supports both single and multiple asset analysis
+- Comprehensive reporting with all available indicators
+- Ranking and comparison for multiple assets
+- Clear risk assessment and recommendations
+
 ## MCP Tools
 
 The server provides the following tools:

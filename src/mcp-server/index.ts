@@ -9252,6 +9252,186 @@ Provide actionable recommendations for each position.`,
   }
 )
 
+server.registerPrompt(
+  'comprehensive_analysis',
+  {
+    title: 'Comprehensive Analysis',
+    description: 'Perform comprehensive market analysis for crypto assets without execution',
+    argsSchema: {
+      ticker: z.string().optional().describe('Single ticker to analyze (e.g., BTC, ETH, SOL). If not provided, can analyze multiple tickers'),
+      tickers: z.array(z.string()).optional().describe('Array of tickers to analyze (e.g., ["BTC", "ETH", "SOL"]). Use this for multiple assets'),
+      capital: z.number().optional().describe('Trading capital in USD (default: 10000)'),
+      riskPct: z.number().optional().describe('Risk percentage per trade (default: 1.0)'),
+      strategy: z.enum(['short_term', 'long_term', 'flexible']).optional().describe('Trading strategy timeframe (default: flexible)'),
+    },
+  },
+  async (args) => {
+    const ticker = args.ticker
+    const tickers = args.tickers
+    const capital = args.capital || 10000
+    const riskPct = args.riskPct || 1.0
+    const strategy = args.strategy || 'flexible'
+
+    if (ticker) {
+      // Single asset analysis
+      return {
+        messages: [
+          {
+            role: 'user',
+            content: {
+              type: 'text',
+              text: `Please perform comprehensive analysis for ${ticker} using the analisis_crypto tool with:
+- capital: ${capital}
+- riskPct: ${riskPct}
+- strategy: ${strategy}
+
+After analysis, present a detailed report with:
+
+1. **Price & Market Overview**
+   - Current price and 24h change
+   - Volume trends
+   - Market sentiment
+
+2. **Technical Analysis**
+   - RSI levels (14, 7, 4H) and interpretation
+   - EMA trends (20, 50)
+   - MACD signals
+   - Bollinger Bands position
+   - Support and Resistance levels
+   - Trend direction and strength
+
+3. **Volume Analysis**
+   - Buy/Sell pressure
+   - CVD (Cumulative Volume Delta) trend
+   - POC, VAH/VAL levels
+   - Liquidity zones
+   - Volume-based recommendation
+
+4. **Multi-Timeframe Analysis**
+   - Daily, 4H, 1H trend alignment
+   - Trend strength score
+   - Timeframe conflicts or confirmations
+
+5. **Advanced Analysis**
+   - Fibonacci retracement levels (if available)
+   - Order book depth and imbalance (if available)
+   - Volume profile key levels (if available)
+   - Market structure (COC, swing patterns)
+   - Candlestick patterns detected
+   - RSI divergence signals
+   - Liquidation levels and zones
+   - Long/Short ratio sentiment
+   - Spot-Futures divergence (if available)
+
+6. **External Data**
+   - Funding rate and trend
+   - Open Interest and trend
+   - Volatility analysis
+
+7. **Trading Signal**
+   - Recommended signal: BUY / SELL / HOLD
+   - Confidence level (0-100%)
+   - Reasoning based on all indicators
+
+8. **Entry, Stop Loss, Take Profit Levels**
+   - Optimal entry price
+   - Stop loss level with risk percentage
+   - Take profit level with reward percentage
+   - Risk/Reward ratio
+
+9. **Position Setup (if signal is BUY/SELL)**
+   - Recommended position size
+   - Suggested leverage
+   - Margin requirements
+   - Risk amount in USD
+
+10. **Risk Assessment**
+    - Overall risk level (Low/Medium/High)
+    - Key risk factors
+    - Market conditions to watch
+
+**Important:** This is analysis only. Do NOT execute any trades. Present the analysis clearly and wait for user's decision on next steps.`,
+            },
+          },
+        ],
+      }
+    } else if (tickers && tickers.length > 0) {
+      // Multiple assets analysis
+      return {
+        messages: [
+          {
+            role: 'user',
+            content: {
+              type: 'text',
+              text: `Please perform comprehensive analysis for multiple assets using analisis_multiple_crypto with:
+- tickers: ${JSON.stringify(tickers)}
+- capital: ${capital}
+- riskPct: ${riskPct}
+
+After analysis, for each asset present:
+
+1. **Quick Summary**
+   - Ticker and current price
+   - Signal (BUY/SELL/HOLD) and confidence
+   - Key technical indicators summary
+
+2. **Ranking**
+   Rank all assets by:
+   - Signal confidence (highest first)
+   - Risk/Reward ratio (best first)
+   - Trend alignment strength
+
+3. **Top Opportunities**
+   Present the top 3 opportunities with:
+   - Complete technical analysis
+   - Volume analysis summary
+   - Multi-timeframe alignment
+   - Entry, Stop Loss, Take Profit levels
+   - Risk/Reward ratio
+   - Position setup recommendations
+
+4. **Comparison Table**
+   Create a comparison table showing:
+   - Ticker | Price | Signal | Confidence | R/R Ratio | Risk Level
+
+**Important:** This is analysis only. Do NOT execute any trades. Present the analysis clearly and let user decide which assets to focus on or execute.`,
+            },
+          },
+        ],
+      }
+    } else {
+      // No ticker provided
+      return {
+        messages: [
+          {
+            role: 'user',
+            content: {
+              type: 'text',
+              text: `Please perform comprehensive market analysis. 
+
+You can analyze:
+- Single asset: Use analisis_crypto with a specific ticker
+- Multiple assets: Use analisis_multiple_crypto with an array of tickers
+
+For comprehensive analysis, include:
+- Technical indicators (RSI, EMA, MACD, Bollinger Bands, etc.)
+- Volume analysis (buy/sell pressure, CVD, liquidity zones)
+- Multi-timeframe trend alignment
+- Advanced analysis (Fibonacci, Order Book, Volume Profile, Market Structure, etc.)
+- External data (funding rate, open interest)
+- Trading signals with confidence levels
+- Entry, Stop Loss, Take Profit recommendations
+- Risk assessment
+
+**Important:** This is analysis only. Do NOT execute any trades. Present findings clearly and wait for user's input on which assets to analyze.`,
+            },
+          },
+        ],
+      }
+    }
+  }
+)
+
 // Start server
 async function main() {
   try {
