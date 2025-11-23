@@ -10,7 +10,7 @@
     "inspector": "bash scripts/run-mcp-inspector.sh"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.0.0"
+    "@modelcontextprotocol/sdk": "^1.22.0"
   },
   "devDependencies": {
     "@types/node": "^20.11.20",
