@@ -229,15 +229,43 @@ AI: [Processes and confirms]
 
 User: analisa $BTC
 AI: [Calls analyze_asset tool]
-    Analyzing BTC...
     
-    Signal: BUY
-    Confidence: 75%
-    Entry: $45,200
-    Stop Loss: $44,500
-    Take Profit: $46,500
-    Leverage: 2x
-    Reasoning: [AI reasoning]
+    ┌──────────────────────────────────────────────────────────────────────┐
+    │ Signal #1                                                            │
+    ├──────────────────────────────────────────────────────────────────────┤
+    │ Asset:          │ BTC                                                 │
+    │ Signal:         │ BUY_TO_ENTER (Short Term)                           │
+    │ Current Price:  │ $45,200                                              │
+    ├──────────────────────────────────────────────────────────────────────┤
+    │ Technical:                                                           │
+    │ [RSI, EMA, MACD, Bollinger Bands, ATR, ADX, OBV, VWAP, etc.]        │
+    ├──────────────────────────────────────────────────────────────────────┤
+    │ Volume Analysis:                                                     │
+    │ [Buy/Sell Volume, Net Delta, CVD Trend, Liquidity Zones]             │
+    ├──────────────────────────────────────────────────────────────────────┤
+    │ Multi-Timeframe:                                                     │
+    │ [Daily/4H/1H Trend Alignment]                                        │
+    ├──────────────────────────────────────────────────────────────────────┤
+    │ External Data:                                                       │
+    │ [Funding Rate, Open Interest, Volume Trend]                          │
+    ├──────────────────────────────────────────────────────────────────────┤
+    │ POSITION SETUP                                                       │
+    │ [Entry Price, Quantity, Margin, Position Value]                     │
+    ├──────────────────────────────────────────────────────────────────────┤
+    │ RISK MANAGEMENT                                                      │
+    │ [Stop Loss (Fixed/Flexible), Take Profit, Risk/Reward]               │
+    ├──────────────────────────────────────────────────────────────────────┤
+    │ Confidence:     │ 73.86%                                               │
+    ├──────────────────────────────────────────────────────────────────────┤
+    │ Justification:                                                       │
+    │ [Detailed reasoning with quality-weighted indicators]                │
+    ├──────────────────────────────────────────────────────────────────────┤
+    │ RED FLAGS TO MONITOR:                                                │
+    │ [Risk warnings and monitoring points]                                │
+    ├──────────────────────────────────────────────────────────────────────┤
+    │ Invalidation:                                                        │
+    │ [Price levels and conditions that invalidate the signal]             │
+    └──────────────────────────────────────────────────────────────────────┘
     
     Note: This is analysis only. No trades were executed.
 ```
