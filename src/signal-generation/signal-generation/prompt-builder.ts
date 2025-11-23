@@ -729,7 +729,7 @@ export function buildSystemPromptForAsset(
       **Technical Analysis Data:**
 
   ${technicalAnalysisSummary}
-${SYSTEM_PROMPT_STATIC_PARTS.constraints}  - Allowed Assets: ${allowedAssetsStr}${SYSTEM_PROMPT_STATIC_PARTS.footer}${asset}${SYSTEM_PROMPT_STATIC_PARTS.footer2}${asset}${SYSTEM_PROMPT_STATIC_PARTS.footer3}${asset}${SYSTEM_PROMPT_STATIC_PARTS.footerEnd}`
+${SYSTEM_PROMPT_STATIC_PARTS.constraints}  - Allowed Assets: ${allowedAssetsStr}${SYSTEM_PROMPT_STATIC_PARTS.footer}${asset}${SYSTEM_PROMPT_STATIC_PARTS.footer2}${asset}${SYSTEM_PROMPT_STATIC_PARTS.footer3}`
 }
 
 /**

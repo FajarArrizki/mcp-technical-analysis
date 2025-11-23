@@ -22,7 +22,6 @@ import { calculateDynamicLeverage } from '../signal-generation/risk-management/l
 import { calculateDynamicMarginPercentage } from '../signal-generation/risk-management/margin'
 import { calculateFibonacciRetracement } from '../signal-generation/technical-indicators/fibonacci'
 import type { FibonacciRetracement } from '../signal-generation/technical-indicators/fibonacci'
-import { calculateOrderBookDepth } from '../signal-generation/analysis/orderbook'
 import type { OrderBookDepth } from '../signal-generation/analysis/orderbook'
 import type { SessionVolumeProfile, CompositeVolumeProfile } from '../signal-generation/analysis/volume-profile'
 import { detectChangeOfCharacter } from '../signal-generation/analysis/market-structure'
@@ -8319,7 +8318,6 @@ server.registerResource(
   'trading-strategies',
   'geartrade://docs/trading-strategies',
   {
-    name: 'Trading Strategies Guide',
     description: 'Comprehensive guide on trading strategies, technical analysis, and best practices for using GearTrade MCP Server',
     mimeType: 'text/markdown',
   },
@@ -8471,7 +8469,6 @@ server.registerResource(
   'risk-management',
   'geartrade://docs/risk-management',
   {
-    name: 'Risk Management Guide',
     description: 'Guide on risk management, position sizing, stop loss, and take profit strategies',
     mimeType: 'text/markdown',
   },
@@ -8687,7 +8684,6 @@ server.registerResource(
   'tools-overview',
   'geartrade://docs/tools-overview',
   {
-    name: 'Tools Overview',
     description: 'Complete overview of all 38+ MCP tools available in GearTrade',
     mimeType: 'text/markdown',
   },
@@ -8811,7 +8807,6 @@ server.registerResource(
   'execution-workflow',
   'geartrade://docs/execution-workflow',
   {
-    name: 'Execution Workflow',
     description: 'Step-by-step guide for analysis to execution workflow with safety best practices',
     mimeType: 'text/markdown',
   },
@@ -9071,14 +9066,14 @@ server.registerPrompt(
     description: 'Analyze a crypto asset and prepare execution plan with risk management',
     argsSchema: {
       ticker: z.string().describe('Asset ticker to analyze (e.g., BTC, ETH, SOL)'),
-      capital: z.number().optional().describe('Trading capital in USD (default: 10000)'),
-      riskPct: z.number().optional().describe('Risk percentage per trade (default: 1.0)'),
-    },
+      capital: z.string().optional().describe('Trading capital in USD (default: 10000)'),
+      riskPct: z.string().optional().describe('Risk percentage per trade (default: 1.0)'),
+    } as any,
   },
-  async (args) => {
+  async (args: any) => {
     const ticker = args.ticker || 'BTC'
-    const capital = args.capital || 10000
-    const riskPct = args.riskPct || 1.0
+    const capital = args.capital ? parseFloat(args.capital) : 10000
+    const riskPct = args.riskPct ? parseFloat(args.riskPct) : 1.0
 
     return {
       messages: [
@@ -9118,13 +9113,13 @@ server.registerPrompt(
     title: 'Multi Asset Scan',
     description: 'Scan multiple assets for trading opportunities and rank by confidence',
     argsSchema: {
-      tickers: z.array(z.string()).describe('Array of tickers to scan (e.g., ["BTC", "ETH", "SOL"])'),
-      capital: z.number().optional().describe('Trading capital in USD (default: 10000)'),
-    },
+      tickers: z.string().describe('Comma-separated tickers to scan (e.g., "BTC,ETH,SOL")'),
+      capital: z.string().optional().describe('Trading capital in USD (default: 10000)'),
+    } as any,
   },
-  async (args) => {
-    const tickers = args.tickers || ['BTC', 'ETH', 'SOL']
-    const capital = args.capital || 10000
+  async (args: any) => {
+    const tickers = args.tickers ? args.tickers.split(',').map((t: string) => t.trim()) : ['BTC', 'ETH', 'SOL']
+    const capital = args.capital ? parseFloat(args.capital) : 10000
 
     return {
       messages: [
@@ -9163,16 +9158,16 @@ server.registerPrompt(
     description: 'Perform comprehensive risk analysis for a trading position',
     argsSchema: {
       ticker: z.string().describe('Asset ticker to analyze'),
-      entry: z.number().describe('Entry price'),
-      side: z.enum(['LONG', 'SHORT']).describe('Trade side (LONG or SHORT)'),
-      capital: z.number().describe('Trading capital in USD'),
-    },
+      entry: z.string().describe('Entry price'),
+      side: z.string().describe('Trade side (LONG or SHORT)'),
+      capital: z.string().describe('Trading capital in USD'),
+    } as any,
   },
-  async (args) => {
+  async (args: any) => {
     const ticker = args.ticker || 'BTC'
-    const entry = args.entry
+    const entry = parseFloat(args.entry)
     const side = args.side || 'LONG'
-    const capital = args.capital || 10000
+    const capital = parseFloat(args.capital) || 10000
 
     return {
       messages: [
@@ -9213,11 +9208,11 @@ server.registerPrompt(
     title: 'Position Monitoring',
     description: 'Monitor open positions and provide status update',
     argsSchema: {
-      tickers: z.array(z.string()).optional().describe('Array of tickers to monitor (monitors all positions if not provided)'),
-    },
+      tickers: z.string().optional().describe('Comma-separated tickers to monitor (monitors all positions if not provided)'),
+    } as any,
   },
-  async (args) => {
-    const tickers = args.tickers
+  async (args: any) => {
+    const tickers = args.tickers ? args.tickers.split(',').map((t: string) => t.trim()) : undefined
 
     return {
       messages: [
@@ -9259,17 +9254,17 @@ server.registerPrompt(
     description: 'Perform comprehensive market analysis for crypto assets without execution',
     argsSchema: {
       ticker: z.string().optional().describe('Single ticker to analyze (e.g., BTC, ETH, SOL). If not provided, can analyze multiple tickers'),
-      tickers: z.array(z.string()).optional().describe('Array of tickers to analyze (e.g., ["BTC", "ETH", "SOL"]). Use this for multiple assets'),
-      capital: z.number().optional().describe('Trading capital in USD (default: 10000)'),
-      riskPct: z.number().optional().describe('Risk percentage per trade (default: 1.0)'),
-      strategy: z.enum(['short_term', 'long_term', 'flexible']).optional().describe('Trading strategy timeframe (default: flexible)'),
-    },
+      tickers: z.string().optional().describe('Comma-separated tickers to analyze (e.g., "BTC,ETH,SOL"). Use this for multiple assets'),
+      capital: z.string().optional().describe('Trading capital in USD (default: 10000)'),
+      riskPct: z.string().optional().describe('Risk percentage per trade (default: 1.0)'),
+      strategy: z.string().optional().describe('Trading strategy timeframe: short_term, long_term, or flexible (default: flexible)'),
+    } as any,
   },
-  async (args) => {
+  async (args: any) => {
     const ticker = args.ticker
-    const tickers = args.tickers
-    const capital = args.capital || 10000
-    const riskPct = args.riskPct || 1.0
+    const tickers = args.tickers ? args.tickers.split(',').map((t: string) => t.trim()) : undefined
+    const capital = args.capital ? parseFloat(args.capital) : 10000
+    const riskPct = args.riskPct ? parseFloat(args.riskPct) : 1.0
     const strategy = args.strategy || 'flexible'
 
     if (ticker) {

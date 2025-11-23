@@ -125,7 +125,7 @@ export async function callAIAPI(
       }>
     }
     
-    const result: OpenRouterResponse = await response.json()
+    const result = await response.json() as OpenRouterResponse
 
     // Extract text from response
     const text = result.choices?.[0]?.message?.content || ''
