@@ -157,9 +157,27 @@ class GearTradeMCPServer {
               throw new Error('assets array is required')
             }
 
-            const config = getTradingConfig()
-            const marketData = await getMarketData(assets)
-            const signals = await generateSignals(marketData, config, topN)
+            const { marketDataMap, allowedAssets } = await getMarketData(assets)
+            const positions = getActivePositions()
+            const positionsMap = new Map<string, any>()
+            positions.forEach((pos) => {
+              positionsMap.set(pos.asset, pos)
+            })
+
+            const accountState = {
+              availableCash: 10000,
+              totalValue: 10000,
+            }
+
+            // Generate signals (model can be null, will use config from env)
+            const signals = await generateSignals(
+              null, // model - will use config from environment
+              marketDataMap,
+              accountState,
+              allowedAssets.length > 0 ? allowedAssets : assets,
+              new Map(), // signalHistory
+              positionsMap // positions
+            )
 
             return {
               content: [
