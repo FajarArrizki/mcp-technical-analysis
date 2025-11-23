@@ -367,21 +367,46 @@ class GearTradeMCPServer {
             }
 
             // Generate signal for single asset (analysis only, no execution)
-            const signal = await generateSignalForSingleAsset(
-              ticker,
-              marketDataMap,
-              accountState,
-              positionsMap,
-              1000, // equalCapitalPerSignal (not used for analysis)
-              0, // signalIndex (not used for analysis)
-              allowedAssets.length > 0 ? allowedAssets : [ticker], // allowedAssets
-              true, // marketDataIsMap
-              null, // assetRank
-              null // qualityScore
-            )
+            let signal: Signal | null = null
+            let errorMessage = ''
+            
+            try {
+              signal = await generateSignalForSingleAsset(
+                ticker,
+                marketDataMap,
+                accountState,
+                positionsMap,
+                1000, // equalCapitalPerSignal (not used for analysis)
+                0, // signalIndex (not used for analysis)
+                allowedAssets.length > 0 ? allowedAssets : [ticker], // allowedAssets
+                true, // marketDataIsMap
+                null, // assetRank
+                null // qualityScore
+              )
+            } catch (error: any) {
+              errorMessage = error?.message || String(error) || 'Unknown error'
+              console.error(`Error generating signal for ${ticker}:`, errorMessage)
+            }
 
             if (!signal) {
-              throw new Error(`Could not generate signal for ${ticker}. Analysis may have rejected the trade.`)
+              // Check if market data is available
+              const assetData = marketDataMap.get(ticker)
+              if (!assetData) {
+                throw new Error(`No market data available for ${ticker}. Please check if the ticker is valid and supported.`)
+              }
+              
+              // Check if API key is configured
+              const apiKey = process.env.OPENROUTER_API_KEY || process.env.AI_PROVIDER_API_KEY
+              if (!apiKey) {
+                throw new Error(`Could not generate signal for ${ticker}. AI Provider API key not configured. Please set OPENROUTER_API_KEY or AI_PROVIDER_API_KEY in your .env file.`)
+              }
+              
+              // Provide detailed error message
+              const detailedError = errorMessage 
+                ? `Could not generate signal for ${ticker}. Error: ${errorMessage}. This may be due to: 1) Low confidence signal rejected by filters, 2) Market data issues, 3) AI API error, or 4) Invalid ticker symbol.`
+                : `Could not generate signal for ${ticker}. Analysis may have rejected the trade due to low confidence, invalid market data, or AI processing error. Please check: 1) Ticker symbol is correct, 2) Market data is available, 3) AI API key is valid, 4) Check console logs for detailed error messages.`
+              
+              throw new Error(detailedError)
             }
 
             // Get full market data for the asset
