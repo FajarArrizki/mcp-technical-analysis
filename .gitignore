@@ -179,7 +179,7 @@ dist
 
 # Wrangler
 .wrangler/
-wrangler.toml
+# wrangler.toml is kept for deployment configuration
 
 # Environment variables
 .env

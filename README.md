@@ -122,6 +122,56 @@ GearTrade MCP Server supports a complete workflow from market analysis to order 
 npm install
 ```
 
+## Deployment (Nullshot + Cloudflare)
+
+GearTrade MCP Server can be deployed to Nullshot platform with Cloudflare Workers integration for production use.
+
+### Quick Start
+
+1. **Install Wrangler CLI**
+   ```bash
+   npm install -g wrangler
+   ```
+
+2. **Login to Cloudflare**
+   ```bash
+   wrangler login
+   ```
+
+3. **Set Secrets**
+   ```bash
+   wrangler secret put HYPERLIQUID_ACCOUNT_ADDRESS
+   wrangler secret put HYPERLIQUID_WALLET_API_KEY
+   ```
+
+4. **Deploy**
+   ```bash
+   bash .cloudflare/deploy.sh
+   ```
+
+### Detailed Deployment Guide
+
+See [`.nullshot/deploy.md`](.nullshot/deploy.md) for complete deployment instructions including:
+- Nullshot platform integration
+- Cloudflare Workers configuration
+- Zero Trust security setup
+- Monitoring and troubleshooting
+
+### Configuration Files
+
+- **`nullshot.config.json`** - Nullshot MCP server configuration
+- **`wrangler.toml`** - Cloudflare Workers configuration
+- **`.cloudflare/deploy.sh`** - Deployment script
+
+### Features
+
+- ✅ **Cloudflare Workers**: Serverless deployment with global edge network
+- ✅ **Zero Trust Security**: Access control via Cloudflare Zero Trust
+- ✅ **MCP Server Portal**: Centralized management via Cloudflare
+- ✅ **Auto-scaling**: Automatic scaling based on demand
+- ✅ **Monitoring**: Built-in analytics and logging
+- ✅ **HTTPS**: Secure connections by default
+
 ## Configuration
 
 Set the following environment variables:
