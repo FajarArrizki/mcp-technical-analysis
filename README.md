@@ -90,6 +90,10 @@ npx @modelcontextprotocol/inspector -e OPENROUTER_API_KEY=your_key -e MODEL_ID=a
    - `get_multiple_prices` - Get prices for multiple tickers (e.g., ["BTC", "ETH", "SOL"])
    - `get_indicator` - Get technical analysis for a single ticker (e.g., "BTC")
    - `get_multiple_indicators` - Get technical analysis for multiple tickers (e.g., ["BTC", "ETH", "SOL"])
+   - `get_volume_analysis` - Get volume analysis for a single ticker (e.g., "BTC")
+   - `get_multiple_volume_analysis` - Get volume analysis for multiple tickers (e.g., ["BTC", "ETH", "SOL"])
+   - `get_multitimeframe` - Get multi-timeframe analysis for a single ticker (e.g., "BTC")
+   - `get_multiple_multitimeframe` - Get multi-timeframe analysis for multiple tickers (e.g., ["BTC", "ETH", "SOL"])
 4. **Test Resources** - Access:
    - `geartrade://state` - Current trading cycle state
    - `geartrade://performance` - Trading performance metrics
@@ -316,6 +320,100 @@ The server provides the following tools:
     }
     ```
   - **Note:** All technical data is fetched in parallel for better performance
+
+### Volume Analysis Tools
+
+- **`get_volume_analysis`** - Get comprehensive volume analysis for a single trading ticker
+  - **Input:** `ticker` (string) - Asset ticker symbol (e.g., "BTC", "ETH", "SOL")
+  - **Output:** Volume analysis including:
+    - Buy/Sell Volume & Net Delta
+    - Buy/Sell Pressure & Dominant Side
+    - Key Level & Delta
+    - POC (Point of Control)
+    - VAH/VAL (Value Area High/Low)
+    - HVN/LVN (High/Low Volume Nodes)
+    - CVD Trend & Delta
+    - Top Liquidity Zones
+    - Recommendation (ENTER/EXIT/HOLD/WAIT)
+    - Confidence & Risk Level
+  - **Example:**
+    ```json
+    {
+      "name": "get_volume_analysis",
+      "arguments": {
+        "ticker": "BTC"
+      }
+    }
+    ```
+
+- **`get_multiple_volume_analysis`** - Get comprehensive volume analysis for multiple trading tickers at once
+  - **Input:** `tickers` (array of strings) - Array of asset ticker symbols (e.g., ["BTC", "ETH", "SOL"])
+  - **Output:** Array of volume analysis for each ticker
+  - **Example:**
+    ```json
+    {
+      "name": "get_multiple_volume_analysis",
+      "arguments": {
+        "tickers": ["BTC", "ETH", "SOL"]
+      }
+    }
+    ```
+  - **Note:** All volume analysis data is fetched in parallel for better performance
+
+### Multi-Timeframe Analysis Tools
+
+- **`get_multitimeframe`** - Get multi-timeframe trend alignment analysis for a single trading ticker
+  - **Input:** `ticker` (string) - Asset ticker symbol (e.g., "BTC", "ETH", "SOL")
+  - **Output:** Multi-timeframe analysis including:
+    - Daily Trend (uptrend/downtrend/neutral)
+    - 4H Aligned (Yes/No)
+    - 1H Aligned (Yes/No)
+    - Overall Alignment Status
+    - Alignment Score (0-100)
+    - Additional timeframe data (Daily, 4H, 1H) with price, EMA, RSI
+  - **Example:**
+    ```json
+    {
+      "name": "get_multitimeframe",
+      "arguments": {
+        "ticker": "BTC"
+      }
+    }
+    ```
+  - **Output Example:**
+    ```json
+    {
+      "ticker": "BTC",
+      "price": 87000,
+      "multiTimeframe": {
+        "dailyTrend": "downtrend",
+        "h4Aligned": true,
+        "h1Aligned": true,
+        "overall": "Aligned",
+        "score": 100,
+        "daily": {
+          "price": 87000,
+          "ema20": 86500,
+          "ema50": 86000,
+          "rsi14": 45.5
+        }
+      }
+    }
+    ```
+
+- **`get_multiple_multitimeframe`** - Get multi-timeframe trend alignment analysis for multiple trading tickers at once
+  - **Input:** `tickers` (array of strings) - Array of asset ticker symbols (e.g., ["BTC", "ETH", "SOL"])
+  - **Output:** Array of multi-timeframe analysis for each ticker
+  - **Example:**
+    ```json
+    {
+      "name": "get_multiple_multitimeframe",
+      "arguments": {
+        "tickers": ["BTC", "ETH", "SOL"]
+      }
+    }
+    ```
+  - **Note:** All multi-timeframe data is fetched in parallel for better performance
 
 ### Trading Tools (Planned)
 
