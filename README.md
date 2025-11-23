@@ -68,6 +68,10 @@ This will:
 
 The inspector will open in your browser at `http://localhost:6274` (or similar port).
 
+**Troubleshooting:**
+- If you see "PORT IS IN USE", kill the process: `lsof -ti:6274 | xargs kill -9`
+- If you see "Command not found", make sure `tsx` is installed: `npm install`
+
 **Note:** Make sure you have set up your `.env` file with required API keys before testing:
 - `OPENROUTER_API_KEY` or `AI_PROVIDER_API_KEY`
 - `MODEL_ID`
