@@ -23,15 +23,17 @@ if [ ! -f "dist/mcp-server/index.js" ]; then
     exit 1
 fi
 
-# Check required environment variables
-echo "🔍 Checking environment variables..."
-if [ -z "$HYPERLIQUID_ACCOUNT_ADDRESS" ]; then
-    echo "⚠️  Warning: HYPERLIQUID_ACCOUNT_ADDRESS not set"
-fi
-
-if [ -z "$HYPERLIQUID_WALLET_API_KEY" ]; then
-    echo "⚠️  Warning: HYPERLIQUID_WALLET_API_KEY not set"
-fi
+# Check if secrets are set in Cloudflare
+echo "🔍 Checking Cloudflare secrets..."
+echo "⚠️  Note: Secrets must be set via Cloudflare Dashboard or 'wrangler secret put'"
+echo "⚠️  Required secrets:"
+echo "   - HYPERLIQUID_ACCOUNT_ADDRESS"
+echo "   - HYPERLIQUID_WALLET_API_KEY"
+echo ""
+echo "💡 To set secrets, run:"
+echo "   wrangler secret put HYPERLIQUID_ACCOUNT_ADDRESS"
+echo "   wrangler secret put HYPERLIQUID_WALLET_API_KEY"
+echo ""
 
 # Deploy to Cloudflare
 echo "☁️  Deploying to Cloudflare Workers..."
@@ -46,9 +48,17 @@ fi
 echo "✅ Deployment complete!"
 echo ""
 echo "📋 Next steps:"
-echo "1. Set secrets via: wrangler secret put SECRET_NAME"
-echo "2. Configure environment variables in Cloudflare Dashboard"
+echo "1. ⚠️  Set secrets via Cloudflare Dashboard or:"
+echo "   wrangler secret put HYPERLIQUID_ACCOUNT_ADDRESS"
+echo "   wrangler secret put HYPERLIQUID_WALLET_API_KEY"
+echo ""
+echo "2. Configure non-sensitive environment variables in Cloudflare Dashboard"
 echo "3. Test the MCP server connection"
 echo ""
 echo "🔗 MCP Server URL: https://mcp.geartrade.ai"
+echo ""
+echo "🔒 Security Reminder:"
+echo "   - Never commit secrets to Git"
+echo "   - Always use Cloudflare's secret management"
+echo "   - Secrets are encrypted and never exposed in code"
 

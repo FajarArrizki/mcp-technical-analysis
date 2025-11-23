@@ -138,11 +138,23 @@ GearTrade MCP Server can be deployed to Nullshot platform with Cloudflare Worker
    wrangler login
    ```
 
-3. **Set Secrets**
+3. **Set Secrets (IMPORTANT: Do this manually, never commit secrets!)**
+   
+   Set secrets via Cloudflare Dashboard or Wrangler CLI:
+   
+   **Via Wrangler CLI:**
    ```bash
+   # You will be prompted to enter the secret value
    wrangler secret put HYPERLIQUID_ACCOUNT_ADDRESS
    wrangler secret put HYPERLIQUID_WALLET_API_KEY
    ```
+   
+   **Via Cloudflare Dashboard:**
+   1. Go to Workers & Pages → Your Worker → Settings → Variables
+   2. Click "Add variable" → Select "Secret"
+   3. Add each secret: `HYPERLIQUID_ACCOUNT_ADDRESS`, `HYPERLIQUID_WALLET_API_KEY`
+   
+   ⚠️ **Security Note**: Never commit secrets to the repository. Always use Cloudflare's secret management.
 
 4. **Deploy**
    ```bash

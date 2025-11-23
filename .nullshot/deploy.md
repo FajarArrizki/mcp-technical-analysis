@@ -35,23 +35,45 @@ npm install
 
 ### 1. Environment Variables
 
+⚠️ **IMPORTANT SECURITY NOTE**: 
+- **Never commit secrets to the repository**
+- **Never hardcode secrets in configuration files**
+- Always use Cloudflare's secret management system
+- Secrets are stored encrypted and never exposed in logs or code
+
 Set the following environment variables in Cloudflare Dashboard or via Wrangler:
 
-**Required:**
+**Required Secrets:**
 ```bash
+# Via Wrangler CLI (you will be prompted to enter the value)
 wrangler secret put HYPERLIQUID_ACCOUNT_ADDRESS
 wrangler secret put HYPERLIQUID_WALLET_API_KEY
 ```
 
-**Optional:**
+**Optional Secrets:**
 ```bash
 wrangler secret put AI_PROVIDER_API_KEY
 wrangler secret put MODEL_ID
 ```
 
-Or set via Cloudflare Dashboard:
-1. Go to Workers & Pages → Your Worker → Settings → Variables
-2. Add environment variables and secrets
+**Via Cloudflare Dashboard (Recommended for first-time setup):**
+1. Go to [Cloudflare Dashboard](https://dash.cloudflare.com)
+2. Navigate to Workers & Pages → Your Worker → Settings → Variables
+3. Click "Add variable" → Select "Secret" (not "Environment Variable")
+4. Add each secret:
+   - `HYPERLIQUID_ACCOUNT_ADDRESS` - Your Hyperliquid wallet address
+   - `HYPERLIQUID_WALLET_API_KEY` - Your Hyperliquid private key (64 hex chars)
+   - `AI_PROVIDER_API_KEY` (optional) - AI provider API key
+   - `MODEL_ID` (optional) - AI model identifier
+
+**Non-sensitive Environment Variables:**
+These can be set in `wrangler.toml` under `[vars]`:
+```toml
+[vars]
+HYPERLIQUID_API_URL = "https://api.hyperliquid.xyz"
+CYCLE_INTERVAL_MS = "10000"
+PAPER_CAPITAL = "10000"
+```
 
 ### 2. Configure Domain (Optional)
 
@@ -178,13 +200,27 @@ Monitor MCP server usage in Nullshot:
 
 ## Security Best Practices
 
-1. **Use Secrets**: Store sensitive data (API keys, private keys) as Cloudflare secrets
+1. **Use Secrets**: 
+   - ✅ Store sensitive data (API keys, private keys) as Cloudflare secrets
+   - ❌ Never commit secrets to Git
+   - ❌ Never hardcode secrets in code or config files
+   - ❌ Never share secrets in documentation or public channels
+
 2. **Enable Zero Trust**: Implement access control via Cloudflare Zero Trust
+
 3. **Rate Limiting**: Configure rate limits to prevent abuse
+
 4. **HTTPS Only**: Ensure all connections use HTTPS
+
 5. **API Keys**: Use API keys for authentication
+
 6. **CORS**: Configure CORS properly if needed
+
 7. **Input Validation**: Validate all inputs in your MCP server
+
+8. **Secret Rotation**: Regularly rotate secrets and API keys
+
+9. **Access Control**: Limit who can access and modify secrets in Cloudflare Dashboard
 
 ## Troubleshooting
 
