@@ -35,6 +35,87 @@ Order execution capabilities support both spot trading (1x leverage) and leverag
 - **Market Research**: Perform deep market analysis across multiple assets and timeframes
 - **Backtesting**: Simulate trading strategies with paper trading executor
 
+## Workflow: Analysis → Execution
+
+GearTrade MCP Server supports a complete workflow from market analysis to order execution. AI agents can use tools sequentially to analyze markets and execute trades with user confirmation.
+
+### Recommended Workflow
+
+1. **Comprehensive Analysis**
+   - Use `analisis_crypto` (single) or `analisis_multiple_crypto` (multiple) to gather complete market data
+   - These tools aggregate:
+     - Real-time price data
+     - Technical indicators (20+ indicators)
+     - Volume analysis (buy/sell pressure, CVD, liquidity zones)
+     - Multi-timeframe analysis (Daily, 4H, 1H alignment)
+     - External data (funding rate, open interest, volatility)
+     - Position information (if exists)
+     - Position setup calculations (leverage, margin, position size)
+     - Risk management (stop loss, take profit, R:R ratio)
+
+2. **AI Analysis & User Confirmation**
+   - AI processes the comprehensive data
+   - AI presents analysis results to user
+   - AI asks: "Mau dieksekusi ke Hyperliquid? (YES/NO)"
+
+3. **Execution (if user confirms)**
+   - If user responds "YES":
+     - AI calls `get_execution_spot` or `get_execution_futures`
+     - With parameters: `execute: true`, `useLiveExecutor: true`
+     - Order is executed on Hyperliquid with EIP-712 signing
+   - If user responds "NO":
+     - No execution, analysis only
+
+### Example Workflow
+
+```json
+// Step 1: Comprehensive Analysis
+{
+  "name": "analisis_crypto",
+  "arguments": {
+    "ticker": "BTC",
+    "capital": 10000,
+    "riskPct": 1.0,
+    "strategy": "flexible"
+  }
+}
+
+// AI processes data and asks user:
+// "Berdasarkan analisis, sinyal SELL dengan confidence 73.86%.
+//  Entry: $180.14, Stop Loss: $183.38, Take Profit: $172.03.
+//  Mau dieksekusi ke Hyperliquid? (YES/NO)"
+
+// Step 2: Execution (if user confirms "YES")
+{
+  "name": "get_execution_futures",
+  "arguments": {
+    "ticker": "BTC",
+    "side": "SHORT",
+    "quantity": 0.1,
+    "leverage": 5,
+    "orderType": "MARKET",
+    "execute": true,
+    "useLiveExecutor": true
+  }
+}
+```
+
+### Safety Features
+
+- **Paper Trading First**: Always test with `execute: false` or `useLiveExecutor: false` first
+- **User Confirmation**: AI should always ask for user confirmation before live execution
+- **Multiple Executions**: `get_multiple_execution_*` tools default to paper trading for safety
+- **Risk Management**: All position setup and risk calculations are included in analysis results
+
+### Best Practices for AI Agents
+
+1. **Always analyze first** - Use `analisis_crypto` before considering execution
+2. **Present clear summary** - Show key metrics (signal, confidence, entry, stop loss, take profit)
+3. **Ask for confirmation** - Never execute without explicit user approval
+4. **Show risk details** - Display position size, leverage, margin, and potential loss/profit
+5. **Use paper trading** - Test strategies with paper trading before live execution
+6. **Monitor positions** - Use `get_position` to track open positions after execution
+
 ## Installation
 
 ```bash
@@ -738,6 +819,60 @@ The server provides the following tools:
 - **`get_multiple_spot_futures_divergence`** - Get spot-futures divergence for multiple tickers at once
   - **Input:** `tickers` (array of strings) - Array of asset ticker symbols
   - **Output:** Array of spot-futures divergence data for each ticker
+
+### Comprehensive Analysis Tools
+
+These tools aggregate all available market data into a single comprehensive analysis, perfect for AI agents that need complete market context before making trading decisions.
+
+- **`analisis_crypto`** - Get comprehensive trading analysis for a single crypto asset
+  - **Input:**
+    - `ticker` (string, required) - Asset ticker symbol (e.g., "BTC", "ETH", "SOL")
+    - `capital` (number, optional) - Total trading capital in USD (default: 10000)
+    - `riskPct` (number, optional) - Risk percentage per trade (default: 1.0)
+    - `strategy` (enum, optional) - Trading strategy timeframe: "short_term", "long_term", or "flexible" (default: "flexible")
+  - **Output:** Complete analysis including:
+    - Real-time price
+    - Technical indicators (20+ indicators)
+    - Volume analysis (buy/sell pressure, CVD, liquidity zones)
+    - Multi-timeframe analysis (Daily, 4H, 1H alignment)
+    - External data (funding rate, open interest, volatility)
+    - Position information (if exists)
+    - Position setup (leverage, margin, position size)
+    - Risk management (stop loss, take profit, R:R ratio)
+  - **Example:**
+    ```json
+    {
+      "name": "analisis_crypto",
+      "arguments": {
+        "ticker": "BTC",
+        "capital": 10000,
+        "riskPct": 1.0,
+        "strategy": "flexible"
+      }
+    }
+    ```
+  - **Use Case:** Perfect for AI agents that need complete market context before making trading decisions. Use this tool first, then ask user for execution confirmation.
+
+- **`analisis_multiple_crypto`** - Get comprehensive trading analysis for multiple crypto assets at once
+  - **Input:**
+    - `tickers` (array of strings, required) - Array of asset ticker symbols (e.g., ["BTC", "ETH", "SOL"])
+    - `capital` (number, optional) - Total trading capital in USD (default: 10000)
+    - `riskPct` (number, optional) - Risk percentage per trade (default: 1.0)
+    - `strategy` (enum, optional) - Trading strategy timeframe: "short_term", "long_term", or "flexible" (default: "flexible")
+  - **Output:** Array of comprehensive analysis for each ticker
+  - **Example:**
+    ```json
+    {
+      "name": "analisis_multiple_crypto",
+      "arguments": {
+        "tickers": ["BTC", "ETH", "SOL"],
+        "capital": 10000,
+        "riskPct": 1.0,
+        "strategy": "flexible"
+      }
+    }
+    ```
+  - **Use Case:** Analyze multiple assets simultaneously to compare opportunities and identify the best trading setups.
 
 ### Execution Tools
 
