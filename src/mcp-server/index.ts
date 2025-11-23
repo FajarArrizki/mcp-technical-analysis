@@ -16,6 +16,7 @@ import {
 
 // Import trading logic
 import { generateSignals } from '../signal-generation/signal-generation/generate-signals'
+import { generateSignalForSingleAsset } from '../signal-generation/signal-generation/generate-single-asset'
 import { getMarketData } from '../signal-generation/data-fetchers/market-data'
 import { getActivePositions } from '../signal-generation/position-management/positions'
 import { getTradingConfig } from '../signal-generation/config'
@@ -123,6 +124,20 @@ class GearTradeMCPServer {
           inputSchema: {
             type: 'object',
             properties: {},
+          },
+        },
+        {
+          name: 'analyze_asset',
+          description: 'Analyze a single asset (ticker) without executing trades. Use this when user mentions a ticker like $BTC or BTC. Returns detailed analysis only, no trade execution.',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              ticker: {
+                type: 'string',
+                description: 'Asset ticker symbol (e.g., "BTC", "ETH", "$BTC" - $ will be stripped automatically)',
+              },
+            },
+            required: ['ticker'],
           },
         },
       ],
@@ -274,6 +289,89 @@ class GearTradeMCPServer {
                 {
                   type: 'text',
                   text: JSON.stringify(performance || { message: 'No performance data available' }, null, 2),
+                },
+              ],
+            }
+          }
+
+          case 'analyze_asset': {
+            let ticker = (args?.ticker as string) || ''
+            
+            // Strip $ symbol if present
+            ticker = ticker.replace(/^\$/, '').toUpperCase().trim()
+            
+            if (!ticker) {
+              throw new Error('ticker is required')
+            }
+
+            // Get market data for the asset
+            const { marketDataMap, allowedAssets } = await getMarketData([ticker])
+            const config = getTradingConfig()
+            const positions = getActivePositions()
+            
+            // Convert positions to Map format expected by generateSignalForSingleAsset
+            const positionsMap = new Map<string, any>()
+            positions.forEach((pos) => {
+              positionsMap.set(pos.asset, pos)
+            })
+
+            // Get account state (simplified for analysis)
+            const accountState = {
+              availableCash: 10000, // Default for analysis
+              totalValue: 10000,
+            }
+
+            // Generate signal for single asset (analysis only, no execution)
+            const signal = await generateSignalForSingleAsset(
+              ticker,
+              marketDataMap,
+              accountState,
+              positionsMap,
+              1000, // equalCapitalPerSignal (not used for analysis)
+              0, // signalIndex (not used for analysis)
+              allowedAssets.length > 0 ? allowedAssets : [ticker], // allowedAssets
+              true, // marketDataIsMap
+              null, // assetRank
+              null // qualityScore
+            )
+
+            // Get full market data for the asset
+            const assetMarketData = marketDataMap.get(ticker)
+
+            return {
+              content: [
+                {
+                  type: 'text',
+                  text: JSON.stringify(
+                    {
+                      asset: ticker,
+                      analysis: signal
+                        ? {
+                            action: signal.action,
+                            confidence: signal.confidence,
+                            entryPrice: signal.entryPrice,
+                            stopLoss: signal.stopLoss,
+                            takeProfit: signal.takeProfit,
+                            leverage: signal.leverage,
+                            reasoning: signal.reasoning,
+                            justification: signal.justification,
+                            riskRewardRatio: signal.riskRewardRatio,
+                            expectedValue: signal.expectedValue,
+                          }
+                        : null,
+                      marketData: assetMarketData
+                        ? {
+                            price: assetMarketData.price,
+                            volume24h: assetMarketData.volume24h,
+                            change24h: assetMarketData.change24h,
+                          }
+                        : null,
+                      timestamp: new Date().toISOString(),
+                      note: 'This is analysis only. No trades were executed.',
+                    },
+                    null,
+                    2
+                  ),
                 },
               ],
             }
