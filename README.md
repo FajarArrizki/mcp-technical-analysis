@@ -963,6 +963,129 @@ These tools aggregate all available market data into a single comprehensive anal
         "volumeTrend": "increasing",
         "volatility": "low"
       },
+      "fibonacci": {
+        "levels": {
+          "level0": 87159.42,
+          "level236": 86925.40,
+          "level382": 86750.35,
+          "level500": 86575.30,
+          "level618": 86400.25,
+          "level786": 86150.15,
+          "level100": 85900.05,
+          "level1272": 85625.00,
+          "level1618": 85350.00,
+          "level2000": 85000.00
+        },
+        "currentLevel": "23.6%",
+        "distanceFromLevel": 55.25,
+        "isNearLevel": true,
+        "nearestLevel": "23.6%",
+        "nearestLevelPrice": 86925.40,
+        "swingHigh": 87532.00,
+        "swingLow": 85900.05,
+        "range": 1631.95,
+        "direction": "uptrend",
+        "strength": 75,
+        "signal": "buy"
+      },
+      "orderBook": {
+        "bidPrice": 87530.50,
+        "askPrice": 87533.50,
+        "midPrice": 87532.00,
+        "spread": 3.00,
+        "spreadPercent": 0.0034,
+        "bidDepth": 1250.50,
+        "askDepth": 980.25,
+        "imbalance": 0.21,
+        "supportZones": [
+          {
+            "price": 87500.00,
+            "depth": 500.00,
+            "distance": 32.00
+          }
+        ],
+        "resistanceZones": [
+          {
+            "price": 87600.00,
+            "depth": 450.00,
+            "distance": -68.00
+          }
+        ],
+        "liquidityScore": 0.75,
+        "timestamp": 1732381171201
+      },
+      "volumeProfile": {
+        "session": {
+          "poc": 86679.03,
+          "vah": 87344.13,
+          "val": 86627.87,
+          "hvn": [
+            {"price": 86679.03, "volume": 1250.50},
+            {"price": 87037.16, "volume": 980.25}
+          ],
+          "lvn": [
+            {"price": 87523.19, "volume": 120.50},
+            {"price": 86423.22, "volume": 95.25}
+          ]
+        },
+        "composite": {
+          "poc": 86679.03,
+          "vah": 87344.13,
+          "val": 86627.87,
+          "accumulationZones": [
+            {"priceRange": "86478.51-86705.44", "strength": "high"}
+          ],
+          "distributionZones": [
+            {"priceRange": "86709.02-87560.26", "strength": "high"}
+          ]
+        }
+      },
+      "liquidationLevels": {
+        "clusters": [
+          {
+            "price": 88000.00,
+            "liquidity": 2500000.00,
+            "distance": 468.00,
+            "type": "long_liquidation"
+          }
+        ],
+        "liquidityGrabZones": [
+          {
+            "priceRange": "87800.00-88200.00",
+            "risk": "high",
+            "distance": 268.00
+          }
+        ],
+        "stopHuntPrediction": {
+          "likely": true,
+          "direction": "up",
+          "targetPrice": 88000.00
+        },
+        "cascadeRisk": "medium",
+        "safeEntryZones": [
+          {
+            "priceRange": "87000.00-87500.00",
+            "risk": "low"
+          }
+        ]
+      },
+      "longShortRatio": {
+        "ratio": 1.25,
+        "longs": 55.56,
+        "shorts": 44.44,
+        "sentiment": "bullish",
+        "contrarianSignal": "bearish",
+        "extremeRatio": false,
+        "divergence": "none"
+      },
+      "spotFuturesDivergence": {
+        "premium": 0.0015,
+        "premiumPercent": 0.15,
+        "direction": "premium",
+        "arbitrageOpportunity": false,
+        "meanReversionSignal": "neutral",
+        "trend": "stable"
+      },
       "position": null,
       "positionSetup": {
         "ticker": "BTC",
@@ -997,6 +1120,12 @@ These tools aggregate all available market data into a single comprehensive anal
     - **`volumeAnalysis`**: Buy/sell volume, net delta, buy/sell pressure, dominant side, key level, POC (Point of Control), VAH/VAL (Value Area High/Low), HVN/LVN (High/Low Volume Nodes), CVD trend & delta, top liquidity zones, recommendation, confidence, risk level
     - **`multiTimeframe`**: Daily trend, 4H/1H alignment status, overall alignment, score (0-100), reason, detailed data for daily/4H/1H timeframes (price, EMA20, RSI14)
     - **`externalData`**: Funding rate, funding rate trend, open interest, open interest trend, volume trend, volatility
+    - **`fibonacci`**: Complete Fibonacci retracement analysis with levels (0%, 23.6%, 38.2%, 50%, 61.8%, 78.6%, 100%, 127.2%, 161.8%, 200%), current level, distance from level, nearest level, swing high/low, range, direction, strength, signal
+    - **`orderBook`**: Order book depth analysis with bid/ask prices, spread, bid/ask depth, imbalance, support/resistance zones, liquidity score
+    - **`volumeProfile`**: Session and composite volume profiles with POC, VAH/VAL, HVN/LVN, accumulation/distribution zones
+    - **`liquidationLevels`**: Liquidation cluster analysis with liquidity grab zones, stop hunt predictions, cascade risk, safe entry zones
+    - **`longShortRatio`**: Long/short ratio analysis with sentiment, contrarian signals, extreme ratio detection, divergence
+    - **`spotFuturesDivergence`**: Spot-futures premium analysis with arbitrage opportunities, mean reversion signals, trend
     - **`position`**: Current position information (if exists) including quantity, entry price, unrealized PnL, MAE
     - **`positionSetup`**: Calculated position setup with ticker, entry price, side (LONG/SHORT), position size USD, quantity, leverage, margin percentage, margin used, position value, capital, capital allocated, capital allocated percentage, risk percentage
     - **`riskManagement`**: Stop loss (fixed & flexible), take profit levels, potential loss/profit, risk/reward ratio
