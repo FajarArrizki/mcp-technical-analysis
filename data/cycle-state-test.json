@@ -1,0 +1,51 @@
+{
+  "cycleId": null,
+  "startTime": null,
+  "status": "RUNNING",
+  "positions": [],
+  "trades": [],
+  "performance": {
+    "totalTrades": 0,
+    "winningTrades": 0,
+    "losingTrades": 0,
+    "winRate": 0,
+    "totalReturnPct": 0,
+    "totalReturnUsd": 0,
+    "averageReturnPct": 0,
+    "averageRMultiple": 0,
+    "maxSingleTradeLoss": 0,
+    "maxDrawdownPct": 0,
+    "sharpeRatio": 0,
+    "tradesPerAsset": {},
+    "equityCurve": [],
+    "consecutiveWins": 0,
+    "consecutiveLosses": 0,
+    "averageHoldingTimeMinutes": 0
+  },
+  "circuitBreaker": {
+    "enabled": true,
+    "dailyLossLimit": 0.05,
+    "maxDrawdownLimit": 0.20,
+    "dailyLoss": 0,
+    "maxDrawdown": 0,
+    "lastResetTime": null,
+    "tripped": false
+  },
+  "lastRankingTime": null,
+  "topNAssets": 15,
+  "config": {
+    "intervalMs": 10000,
+    "mode": "TEST",
+    "topNAssets": 15,
+    "enabledExitConditions": {
+      "stopLoss": true,
+      "takeProfit": true,
+      "trailingStop": true,
+      "signalReversal": true,
+      "rankingDrop": true,
+      "indicatorBased": true
+    }
+  },
+  "lastSaved": null
+}
+

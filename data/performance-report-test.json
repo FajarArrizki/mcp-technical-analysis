@@ -1,0 +1,18 @@
+{
+  "totalReturnPct": 0,
+  "totalReturnUsd": 0,
+  "totalTrades": 0,
+  "winningTrades": 0,
+  "losingTrades": 0,
+  "winRate": 0,
+  "averageReturnPct": 0,
+  "averageReturnUsd": 0,
+  "averageRMultiple": 0,
+  "maxDrawdownPct": 0,
+  "sharpeRatio": 0,
+  "consecutiveWins": 0,
+  "consecutiveLosses": 0,
+  "equityCurve": []
+}
+
+

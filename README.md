@@ -1,0 +1,83 @@
+# GearTrade MCP Server
+
+Model Context Protocol (MCP) server for autonomous AI trading on Hyperliquid.
+
+## Overview
+
+GearTrade MCP Server exposes trading functionality through the Model Context Protocol, allowing AI agents to:
+- Generate trading signals using technical analysis and AI
+- Get real-time market data
+- Manage trading positions
+- Run trading cycles
+- Monitor performance metrics
+
+## Installation
+
+```bash
+npm install
+```
+
+## Configuration
+
+Set the following environment variables:
+
+```bash
+# AI Provider Configuration
+AI_PROVIDER=openrouter  # or zai, anthropic, etc.
+AI_PROVIDER_API_KEY=your_api_key_here
+MODEL_ID=anthropic/claude-3-5-sonnet  # or glm-4.5, etc.
+
+# Hyperliquid Configuration
+HYPERLIQUID_API_URL=https://api.hyperliquid.xyz
+HYPERLIQUID_WALLET_ADDRESS=0x...
+HYPERLIQUID_ACCOUNT_ADDRESS=0x...
+
+# Trading Configuration
+CYCLE_INTERVAL_MS=10000
+PAPER_CAPITAL=10000
+TOP_ASSETS_FOR_AI=15
+```
+
+## Usage
+
+### Development
+
+```bash
+npm run dev
+```
+
+### Production
+
+```bash
+npm run build
+npm start
+```
+
+## MCP Tools
+
+The server provides the following tools:
+
+- `generate_trading_signals` - Generate AI-powered trading signals for assets
+- `get_market_data` - Get current market data for specified assets
+- `get_active_positions` - Get current active trading positions
+- `run_trading_cycle` - Run a single trading cycle (test mode)
+- `get_performance` - Get trading performance metrics
+
+## MCP Resources
+
+The server provides the following resources:
+
+- `geartrade://state` - Current trading cycle state
+- `geartrade://performance` - Trading performance metrics
+- `geartrade://config` - Current trading configuration
+
+## Architecture
+
+- `src/signal-generation/` - Core trading logic (analysis, execution, risk management)
+- `src/mcp-server/` - MCP server implementation
+- `data/` - State persistence (cycle state, trades, performance)
+
+## License
+
+See LICENSE file.
+
