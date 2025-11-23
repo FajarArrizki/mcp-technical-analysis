@@ -7735,10 +7735,9 @@ server.registerTool(
 
         // Calculate Order Book Depth
         try {
-          const assetCtx = assetData?.assetCtx || assetData?.data?.assetCtx || null
-          if (assetCtx && assetCtx.impactPxs && Array.isArray(assetCtx.impactPxs) && assetCtx.impactPxs.length >= 2 && currentPrice) {
-            const orderBookResult = calculateOrderBookDepth(assetCtx.impactPxs, currentPrice, assetCtx)
-            orderBook = formatOrderBookDepth(orderBookResult)
+          const orderBookDepth = assetData?.externalData?.orderBook || assetData?.data?.externalData?.orderBook || null
+          if (orderBookDepth) {
+            orderBook = formatOrderBookDepth(orderBookDepth)
           }
         } catch (obError) {
           // Order book calculation failed
@@ -7757,7 +7756,8 @@ server.registerTool(
 
         // Calculate Liquidation Levels
         try {
-          const liquidationData = assetData?.externalData?.liquidationData || assetData?.data?.externalData?.liquidationData || null
+          const futuresData = assetData?.externalData?.futures || assetData?.data?.externalData?.futures || null
+          const liquidationData = futuresData?.liquidation || null
           if (liquidationData && currentPrice) {
             const liquidationResult = calculateLiquidationIndicators(liquidationData, currentPrice)
             liquidationLevels = formatLiquidationLevels(liquidationResult)
@@ -7768,7 +7768,8 @@ server.registerTool(
 
         // Calculate Long/Short Ratio
         try {
-          const longShortRatioData = assetData?.externalData?.longShortRatio || assetData?.data?.externalData?.longShortRatio || null
+          const futuresData = assetData?.externalData?.futures || assetData?.data?.externalData?.futures || null
+          const longShortRatioData = futuresData?.longShortRatio || null
           if (longShortRatioData) {
             const ratioResult = calculateLongShortRatioIndicators(longShortRatioData)
             longShortRatio = formatLongShortRatio(ratioResult)
@@ -7779,7 +7780,8 @@ server.registerTool(
 
         // Calculate Spot-Futures Divergence
         try {
-          const premiumIndexData = assetData?.externalData?.premiumIndex || assetData?.data?.externalData?.premiumIndex || null
+          const futuresData = assetData?.externalData?.futures || assetData?.data?.externalData?.futures || null
+          const premiumIndexData = futuresData?.premiumIndex || null
           if (premiumIndexData) {
             const divergenceResult = calculateSpotFuturesDivergenceIndicators(premiumIndexData)
             spotFuturesDivergence = formatSpotFuturesDivergence(divergenceResult)
@@ -8097,10 +8099,9 @@ server.registerTool(
 
           // Calculate Order Book Depth
           try {
-            const assetCtx = assetData?.assetCtx || assetData?.data?.assetCtx || null
-            if (assetCtx && assetCtx.impactPxs && Array.isArray(assetCtx.impactPxs) && assetCtx.impactPxs.length >= 2 && currentPrice) {
-              const orderBookResult = calculateOrderBookDepth(assetCtx.impactPxs, currentPrice, assetCtx)
-              orderBook = formatOrderBookDepth(orderBookResult)
+            const orderBookDepth = assetData?.externalData?.orderBook || assetData?.data?.externalData?.orderBook || null
+            if (orderBookDepth) {
+              orderBook = formatOrderBookDepth(orderBookDepth)
             }
           } catch (obError) {
             // Order book calculation failed
@@ -8119,7 +8120,8 @@ server.registerTool(
 
           // Calculate Liquidation Levels
           try {
-            const liquidationData = assetData?.externalData?.liquidationData || assetData?.data?.externalData?.liquidationData || null
+            const futuresData = assetData?.externalData?.futures || assetData?.data?.externalData?.futures || null
+            const liquidationData = futuresData?.liquidation || null
             if (liquidationData && currentPrice) {
               const liquidationResult = calculateLiquidationIndicators(liquidationData, currentPrice)
               liquidationLevels = formatLiquidationLevels(liquidationResult)
@@ -8130,7 +8132,8 @@ server.registerTool(
 
           // Calculate Long/Short Ratio
           try {
-            const longShortRatioData = assetData?.externalData?.longShortRatio || assetData?.data?.externalData?.longShortRatio || null
+            const futuresData = assetData?.externalData?.futures || assetData?.data?.externalData?.futures || null
+            const longShortRatioData = futuresData?.longShortRatio || null
             if (longShortRatioData) {
               const ratioResult = calculateLongShortRatioIndicators(longShortRatioData)
               longShortRatio = formatLongShortRatio(ratioResult)
@@ -8141,7 +8144,8 @@ server.registerTool(
 
           // Calculate Spot-Futures Divergence
           try {
-            const premiumIndexData = assetData?.externalData?.premiumIndex || assetData?.data?.externalData?.premiumIndex || null
+            const futuresData = assetData?.externalData?.futures || assetData?.data?.externalData?.futures || null
+            const premiumIndexData = futuresData?.premiumIndex || null
             if (premiumIndexData) {
               const divergenceResult = calculateSpotFuturesDivergenceIndicators(premiumIndexData)
               spotFuturesDivergence = formatSpotFuturesDivergence(divergenceResult)
