@@ -86,13 +86,9 @@ npx @modelcontextprotocol/inspector -e OPENROUTER_API_KEY=your_key -e MODEL_ID=a
 1. **Open the UI** - Browser should open automatically, or navigate to `http://localhost:6274`
 2. **Authenticate** - Session token is automatically included in URL, or enter it manually in Configuration
 3. **Test Tools** - Use the UI to test:
-   - `analyze_asset` - Analyze single asset (e.g., "BTC")
-   - `generate_trading_signals` - Generate signals for multiple assets
-   - `get_market_data` - Get market data
-   - `get_active_positions` - Get current positions
-   - `execute_trade` - Execute trades (⚠️ uses real money)
-   - `run_trading_cycle` - Run trading cycle
-   - `get_performance` - Get performance metrics
+   - `get_price` - Get price for a single ticker (e.g., "BTC")
+   - `get_multiple_prices` - Get prices for multiple tickers (e.g., ["BTC", "ETH", "SOL"])
+   - *(More tools coming soon)*
 4. **Test Resources** - Access:
    - `geartrade://state` - Current trading cycle state
    - `geartrade://performance` - Trading performance metrics
@@ -170,6 +166,60 @@ Example exported config:
 ## MCP Tools
 
 The server provides the following tools:
+
+### Price Tools
+
+- **`get_price`** - Get latest price for a single trading ticker/symbol
+  - **Input:** `ticker` (string) - Asset ticker symbol (e.g., "BTC", "ETH", "SOL")
+  - **Output:** 
+    ```json
+    {
+      "ticker": "BTC",
+      "price": 43250.50,
+      "timestamp": "2024-01-15T10:30:00.000Z"
+    }
+    ```
+  - **Example:**
+    ```json
+    {
+      "name": "get_price",
+      "arguments": {
+        "ticker": "BTC"
+      }
+    }
+    ```
+
+- **`get_multiple_prices`** - Get latest prices for multiple trading tickers at once
+  - **Input:** `tickers` (array of strings) - Array of asset ticker symbols (e.g., ["BTC", "ETH", "SOL"])
+  - **Output:**
+    ```json
+    {
+      "results": [
+        {
+          "ticker": "BTC",
+          "price": 43250.50,
+          "timestamp": "2024-01-15T10:30:00.000Z"
+        },
+        {
+          "ticker": "ETH",
+          "price": 2650.75,
+          "timestamp": "2024-01-15T10:30:00.000Z"
+        }
+      ]
+    }
+    ```
+  - **Example:**
+    ```json
+    {
+      "name": "get_multiple_prices",
+      "arguments": {
+        "tickers": ["BTC", "ETH", "SOL", "BNB"]
+      }
+    }
+    ```
+  - **Note:** All prices are fetched in parallel for better performance
+
+### Trading Tools (Planned)
 
 - `generate_trading_signals` - Generate AI-powered trading signals for assets
 - `get_market_data` - Get current market data for specified assets
