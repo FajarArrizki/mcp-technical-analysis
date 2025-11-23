@@ -69,9 +69,33 @@ This will:
 The inspector will open in your browser at `http://localhost:6274` (or similar port).
 
 **Troubleshooting:**
-- If you see "PORT IS IN USE", kill the process: `lsof -ti:6274 | xargs kill -9` or `lsof -ti:6277 | xargs kill -9`
-- If you see "Command not found", make sure `tsx` is installed: `npm install`
-- If connection fails, check that the wrapper script has execute permissions: `chmod +x scripts/run-mcp-inspector.sh`
+
+1. **"PORT IS IN USE" error:**
+   ```bash
+   lsof -ti:6274 | xargs kill -9
+   lsof -ti:6277 | xargs kill -9
+   ```
+
+2. **"Command not found" error:**
+   - Make sure dependencies are installed: `npm install`
+   - Check that `tsx` exists: `ls node_modules/.bin/tsx`
+
+3. **"Cannot find package @modelcontextprotocol/sdk" error:**
+   ```bash
+   npm install @modelcontextprotocol/sdk@latest
+   npm install
+   ```
+
+4. **Connection error to MCP Inspector Proxy:**
+   - Make sure MCP server can run: `node_modules/.bin/tsx src/mcp-server/index.ts`
+   - Check that wrapper script has execute permissions: `chmod +x scripts/run-mcp-inspector.sh`
+   - Verify `.env` file is configured with required API keys
+
+5. **Test MCP server directly:**
+   ```bash
+   # Should output: "GearTrade MCP Server running on stdio"
+   node_modules/.bin/tsx src/mcp-server/index.ts
+   ```
 
 **Note:** Make sure you have set up your `.env` file with required API keys before testing:
 - `OPENROUTER_API_KEY` or `AI_PROVIDER_API_KEY`
