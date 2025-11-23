@@ -108,8 +108,8 @@ export async function generateSignalForSingleAsset(
       const currentPrice = indicators?.price || assetData?.price || assetDataData?.price || assetDataData?.markPx || 0
       const priceString = assetDataData?.priceString || assetDataData?.markPxString || assetData?.priceString || assetData?.markPxString || null
       
-      // If entry_price is not set or is "current" (string), use current price from Hyperliquid
-      if (!signal.entry_price || signal.entry_price === 0 || (typeof signal.entry_price === 'string' && signal.entry_price.toLowerCase() === 'current')) {
+      // If entry_price is not set or is 0, use current price from Hyperliquid
+      if (!signal.entry_price || signal.entry_price === 0) {
         signal.entry_price = currentPrice
       }
       

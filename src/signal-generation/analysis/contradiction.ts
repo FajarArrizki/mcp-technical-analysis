@@ -291,11 +291,14 @@ export function detectContradictions(
     (!!indicators?.aroon) &&
     ((indicators.aroon.down > 80 && emaUptrend) || (indicators.aroon.up > 80 && emaDowntrend))
   
+  const stochasticK = Array.isArray(indicators?.stochastic?.k) 
+    ? (indicators.stochastic.k[indicators.stochastic.k.length - 1] ?? 0)
+    : (indicators?.stochastic?.k ?? 0)
   const dualOverboughtDetected =
-    ((indicators?.stochastic?.k ?? 0) >= 90) &&
+    (stochasticK >= 90) &&
     ((indicators?.williamsR ?? -100) > -20)
     // CCI > 100 also suggests overbought; include as alternative confirmation
-    || ((indicators?.cci ?? 0) > 100 && (indicators?.stochastic?.k ?? 0) >= 85)
+    || ((indicators?.cci ?? 0) > 100 && stochasticK >= 85)
   
   // Ensure score is capped at 4 (max)
   contradictionScore = Math.min(contradictionScore, 4)

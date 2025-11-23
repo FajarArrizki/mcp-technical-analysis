@@ -1092,7 +1092,7 @@ export async function formatSignal(
             }
           } else {
             // OPTIMIZATION FINAL: Reuse cached tradingMode instead of repeated getTradingConfig() call
-            if (tradingMode === 'AUTONOMOUS' || tradingMode === 'SEMI_AUTONOMOUS' || tradingMode === 'MANUAL') {
+            if (tradingMode === 'SEMI_AUTONOMOUS' || tradingMode === 'MANUAL') {
               tableRow('Trading Mode:', tradingMode, 'cyan')
             } else {
               tableRow('Trading Mode:', 'MANUAL_REVIEW', 'yellow')

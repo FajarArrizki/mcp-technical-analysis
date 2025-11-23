@@ -237,7 +237,7 @@ export async function generateSignals(
 
       // OPTIMIZATION 100000x: Pre-compute status checks for branch prediction
       const isFulfilled = result.status === 'fulfilled'
-      const value = result.value
+      const value = isFulfilled ? (result as PromiseFulfilledResult<Signal | null>).value : null
       const hasValue = value != null
       
       if (isFulfilled && hasValue) {

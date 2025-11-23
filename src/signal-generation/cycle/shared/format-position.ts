@@ -121,8 +121,8 @@ export function formatPositionBox(
     : currentPrice <= tp1Price * 1.005
   
   // Volatility status
-  const atr = assetData?.indicators?.atr || assetData?.data?.indicators?.atr || 0
-  const atrPercent = assetData?.indicators?.atrPercent || assetData?.data?.indicators?.atrPercent || 0
+  const atr = assetData?.indicators?.atr || 0
+  const atrPercent = assetData?.indicators?.atrPercent || 0
   const volatilityStatus = atrPercent > 2 ? '↑' : atrPercent < 1 ? '↓' : '→'
   const volatilityLevel = atrPercent > 2 ? 'Tinggi' : atrPercent < 1 ? 'Rendah' : 'Normal'
   
@@ -267,8 +267,8 @@ export function formatClosedPositionBox(
   
   // Exit Reason
   const exitReasonStr = `Alasan Keluar: ${exitReason}`
-  const exitReasonColor = exitReason === 'TAKE_PROFIT' || exitReason === 'TAKE_PROFIT_HIT' ? '\x1b[32m' : 
-                          exitReason === 'STOP_LOSS' || exitReason === 'STOP_LOSS_HIT' ? '\x1b[31m' : '\x1b[33m'
+  const exitReasonColor = exitReason === 'TAKE_PROFIT' ? '\x1b[32m' : 
+                          exitReason === 'STOP_LOSS' ? '\x1b[31m' : '\x1b[33m'
   result += `│ ${padText(`${exitReasonColor}${exitReasonStr}\x1b[0m`, tableWidth - 4)} │\n`
   
   // Exit Details

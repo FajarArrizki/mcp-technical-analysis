@@ -144,7 +144,10 @@ export async function monitorPosition(
     fundingImpact24h: isNaN(positionFundingImpact) || !isFinite(positionFundingImpact) ? 0 : positionFundingImpact,
     btcCorrelationImpact: isNaN(btcCorrelationImpact) || !isFinite(btcCorrelationImpact) ? 0 : btcCorrelationImpact,
     riskLevel,
-    emergencyExit,
+    emergencyExit: {
+      ...emergencyExit,
+      triggered: emergencyExit.shouldExit
+    },
     warnings,
     recommendations
   }

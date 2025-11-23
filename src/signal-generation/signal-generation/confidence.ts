@@ -816,12 +816,13 @@ export function calculateConfidenceScore(
   // Apply COMPREHENSIVE volume analysis penalty (CONSOLIDATED - was 4 separate penalties)
   // FIX: Consolidated volume-related penalties into single comprehensive penalty to avoid quadruple penalty
   // This includes: volume recommendation, resistance zones, net delta, and volume trend all in one
-  if (externalData?.comprehensiveVolumeAnalysis || externalData?.enhancedMetrics?.volumeTrend) {
-    const volAnalysis = externalData?.comprehensiveVolumeAnalysis
+  const extDataAny = externalData as any
+  if (extDataAny?.comprehensiveVolumeAnalysis || extDataAny?.enhancedMetrics?.volumeTrend) {
+    const volAnalysis = extDataAny?.comprehensiveVolumeAnalysis
     const volRecommendation = volAnalysis?.recommendations?.action
     const volConfidence = volAnalysis?.recommendations?.confidence || 0
     const price = indicators?.price || 0
-    const volumeTrend = externalData?.enhancedMetrics?.volumeTrend
+    const volumeTrend = extDataAny?.enhancedMetrics?.volumeTrend
     
     let comprehensiveVolPenalty = 0
     const volPenaltyReasons: string[] = []

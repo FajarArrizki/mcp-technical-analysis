@@ -9078,9 +9078,9 @@ server.registerPrompt(
     return {
       messages: [
         {
-          role: 'user',
+          role: 'user' as const,
           content: {
-            type: 'text',
+            type: 'text' as const,
             text: `Please analyze ${ticker} using the analisis_crypto tool with capital=${capital} and riskPct=${riskPct}.
 
 After analysis, present a clear summary with:
@@ -9124,9 +9124,9 @@ server.registerPrompt(
     return {
       messages: [
         {
-          role: 'user',
+          role: 'user' as const,
           content: {
-            type: 'text',
+            type: 'text' as const,
             text: `Please scan multiple assets using analisis_multiple_crypto with tickers=${JSON.stringify(tickers)} and capital=${capital}.
 
 After scanning, rank the assets by:
@@ -9172,9 +9172,9 @@ server.registerPrompt(
     return {
       messages: [
         {
-          role: 'user',
+          role: 'user' as const,
           content: {
-            type: 'text',
+            type: 'text' as const,
             text: `Please perform comprehensive risk analysis for ${ticker}:
 - Entry: ${entry}
 - Side: ${side}
@@ -9217,9 +9217,9 @@ server.registerPrompt(
     return {
       messages: [
         {
-          role: 'user',
+          role: 'user' as const,
           content: {
-            type: 'text',
+            type: 'text' as const,
             text: `Please monitor open positions${tickers ? ` for ${JSON.stringify(tickers)}` : ' (all positions)'}.
 
 Use ${tickers ? 'get_multiple_positions' : 'get_position'} to get current status.
@@ -9272,9 +9272,9 @@ server.registerPrompt(
       return {
         messages: [
           {
-            role: 'user',
+            role: 'user' as const,
             content: {
-              type: 'text',
+              type: 'text' as const,
               text: `Please perform comprehensive analysis for ${ticker} using the analisis_crypto tool with:
 - capital: ${capital}
 - riskPct: ${riskPct}
@@ -9355,9 +9355,9 @@ After analysis, present a detailed report with:
       return {
         messages: [
           {
-            role: 'user',
+            role: 'user' as const,
             content: {
-              type: 'text',
+              type: 'text' as const,
               text: `Please perform comprehensive analysis for multiple assets using analisis_multiple_crypto with:
 - tickers: ${JSON.stringify(tickers)}
 - capital: ${capital}
@@ -9399,9 +9399,9 @@ After analysis, for each asset present:
       return {
         messages: [
           {
-            role: 'user',
+            role: 'user' as const,
             content: {
-              type: 'text',
+              type: 'text' as const,
               text: `Please perform comprehensive market analysis. 
 
 You can analyze:
