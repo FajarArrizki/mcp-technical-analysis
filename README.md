@@ -53,6 +53,8 @@ pnpm run install:mcp
 
 ### Usage with Claude Desktop:
 Add this to your Claude Desktop configuration (`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS):
+
+**Option 1: Direct Command Execution**
 ```json
 {
   "mcpServers": {
@@ -64,6 +66,18 @@ Add this to your Claude Desktop configuration (`~/Library/Application Support/Cl
         "MODEL_ID": "openai/gpt-4-turbo",
         "AI_PROVIDER_API_KEY": "your-api-key-here"
       }
+    }
+  }
+}
+```
+
+**Option 2: HTTP Server Deployment**
+```json
+{
+  "mcpServers": {
+    "ai-trading": {
+      "type": "http",
+      "url": "https://your-deployed-server.com/mcp"
     }
   }
 }
