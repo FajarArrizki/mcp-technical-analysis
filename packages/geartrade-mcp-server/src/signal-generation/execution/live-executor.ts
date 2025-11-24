@@ -7,12 +7,14 @@ import { Signal, Order, OrderStatus, OrderType, PositionState, ExitReason } from
 import { fetchHyperliquid } from '../data-fetchers/hyperliquid'
 import { getHyperliquidWalletApiKey, getHyperliquidAccountAddress } from '../config'
 import { getAssetIndex, createOrderMessage, signHyperliquidOrder, createWalletFromPrivateKey } from './hyperliquid-signing'
-import * as fs from 'node:fs'
-import * as path from 'node:path'
+// Note: Node.js fs and path modules are not available in Cloudflare Workers
+// File operations have been replaced with in-memory storage or commented out
+// import * as fs from 'node:fs'
+// import * as path from 'node:path'
 // import * as crypto from 'crypto'
 
 export interface LiveExecutorConfig {
-  tradesFile: string
+  tradesFile: string // Note: File path not used in Cloudflare Workers, kept for compatibility
   orderFillTimeoutMs: number
   retryOnTimeout: boolean
   maxRetries: number
@@ -42,12 +44,14 @@ export class LiveExecutor {
   private apiRequestCount: number
   private walletApiKey?: string
   private accountAddress?: string
+  private tradeHistory: any[] // In-memory storage for trade history (Cloudflare Workers compatible)
 
   constructor(config: LiveExecutorConfig) {
     this.config = config
     this.pendingOrders = new Map()
     this.apiErrorCount = 0
     this.apiRequestCount = 0
+    this.tradeHistory = [] // Initialize in-memory storage
     // Store credentials if provided, otherwise will use env vars when needed
     this.walletApiKey = config.walletApiKey
     this.accountAddress = config.accountAddress
@@ -110,8 +114,10 @@ export class LiveExecutor {
       const filledOrder = await this.waitForFill(order, this.config.orderFillTimeoutMs)
 
       if (filledOrder.status === 'FILLED' || filledOrder.status === 'PARTIAL_FILLED') {
-        // Save to file
-        this.saveTradeToFile(filledOrder, 'ENTRY')
+        // Save to in-memory storage (Cloudflare Workers compatible)
+        this.saveTradeToMemory(filledOrder, 'ENTRY')
+        // Note: File saving disabled in Cloudflare Workers environment
+        // this.saveTradeToFile(filledOrder, 'ENTRY')
       }
 
       this.apiRequestCount++
@@ -161,12 +167,18 @@ export class LiveExecutor {
       const filledOrder = await this.waitForFill(order, this.config.orderFillTimeoutMs)
 
       if (filledOrder.status === 'FILLED' || filledOrder.status === 'PARTIAL_FILLED') {
-        // Save to file
-        this.saveTradeToFile(filledOrder, 'EXIT', {
+        // Save to in-memory storage (Cloudflare Workers compatible)
+        this.saveTradeToMemory(filledOrder, 'EXIT', {
           exitReason,
           originalQuantity: totalQuantity,
           exitSizePct: exitSize
         })
+        // Note: File saving disabled in Cloudflare Workers environment
+        // this.saveTradeToFile(filledOrder, 'EXIT', {
+        //   exitReason,
+        //   originalQuantity: totalQuantity,
+        //   exitSizePct: exitSize
+        // })
       }
 
       this.apiRequestCount++
@@ -457,13 +469,44 @@ export class LiveExecutor {
   }
 
   /**
-   * Save trade to file
+   * Save trade to in-memory storage (Cloudflare Workers compatible)
+   */
+  private saveTradeToMemory(
+    order: Order,
+    type: 'ENTRY' | 'EXIT',
+    metadata?: Record<string, any>
+  ): void {
+    try {
+      const trade = {
+        ...order,
+        type,
+        metadata,
+        savedAt: Date.now()
+      }
+
+      // Add to in-memory trade history
+      this.tradeHistory.push(trade)
+
+      console.log(`[CLOUDFLARE_WORKERS] Saved trade ${trade.id} (${type}) to memory storage`)
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error)
+      console.error(`Failed to save live trade to memory: ${errorMsg}`)
+    }
+  }
+
+  /**
+   * Save trade to file (DISABLED - not compatible with Cloudflare Workers)
    */
   private saveTradeToFile(
     order: Order,
     type: 'ENTRY' | 'EXIT',
     metadata?: Record<string, any>
   ): void {
+    // Note: This method is disabled in Cloudflare Workers environment
+    // File system operations are not available in Cloudflare Workers
+    console.log(`[CLOUDFLARE_WORKERS] File saving disabled: Would save trade ${order.id} (${type}) to ${this.config.tradesFile}`)
+
+    /* Original implementation commented out:
     try {
       const fileDir = path.dirname(this.config.tradesFile)
       if (!fs.existsSync(fileDir)) {
@@ -489,5 +532,13 @@ export class LiveExecutor {
       const errorMsg = error instanceof Error ? error.message : String(error)
       console.error(`Failed to save live trade to file: ${errorMsg}`)
     }
+    */
+  }
+
+  /**
+   * Get trade history from in-memory storage (Cloudflare Workers compatible)
+   */
+  getTradeHistory(): any[] {
+    return [...this.tradeHistory] // Return a copy to prevent external modifications
   }
 }

@@ -1,0 +1,23 @@
+name = "geartrade-mcp-server"
+main = "src/index.ts"
+compatibility_date = "2024-01-15"
+
+# Environment variables for Cloudflare Workers
+[vars]
+AI_PROVIDER = "openrouter"  # openrouter, anthropic, openai, etc.
+MODEL_ID = "anthropic/claude-3-5-sonnet"      # e.g., anthropic/claude-3-5-sonnet
+HYPERLIQUID_API_URL = "https://api.hyperliquid.xyz"
+
+# Secrets (use wrangler secret put for these)
+# wrangler secret put HYPERLIQUID_ACCOUNT_ADDRESS
+# wrangler secret put HYPERLIQUID_WALLET_API_KEY
+# wrangler secret put AI_PROVIDER_API_KEY
+
+# Cloudflare Workers configuration
+# No build step - deploy directly from TypeScript
+# [build]
+# command = "npm run build"
+
+# No limits for free plan
+# [limits]
+# cpu_ms = 50000

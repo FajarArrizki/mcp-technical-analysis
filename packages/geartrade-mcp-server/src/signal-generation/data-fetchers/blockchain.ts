@@ -3,9 +3,6 @@
  * fetchPublicBlockchainData function
  */
 
-import * as https from 'node:https'
-// import * as http from 'http'
-
 export interface BlockchainData {
   largeTransactions: Array<{
     amount: number
@@ -56,25 +53,15 @@ export async function fetchPublicBlockchainData(
         // Blockchair API for BTC (free, no key needed for basic stats)
         const blockchairUrl = 'https://api.blockchair.com/bitcoin/stats'
         
-        const blockchairData = await new Promise<any>((resolve, reject) => {
-          const req = https.get(blockchairUrl, { timeout: 10000 }, (res) => {
-            let data = ''
-            res.on('data', (chunk) => { data += chunk })
-            res.on('end', () => {
-              try {
-                const result = JSON.parse(data)
-                resolve(result)
-              } catch (e) {
-                reject(new Error('Failed to parse Blockchair response'))
-              }
-            })
-          })
-          req.on('error', reject)
-          req.on('timeout', () => {
-            req.destroy()
-            reject(new Error('Blockchair API timeout'))
-          })
+        const response = await fetch(blockchairUrl, {
+          signal: AbortSignal.timeout(10000)
         })
+
+        if (!response.ok) {
+          throw new Error(`Blockchair API returned ${response.status}`)
+        }
+
+        const blockchairData = await response.json()
         
         // Extract large transaction data from stats
         // Blockchair stats include transaction volume data
@@ -117,29 +104,20 @@ export async function fetchPublicBlockchainData(
           // Get latest block number to estimate recent activity
           const blockNumberUrl = `https://api.etherscan.io/api?module=proxy&action=eth_blockNumber${etherscanApiKey ? `&apikey=${etherscanApiKey}` : ''}`
           
-          await new Promise<number>((resolve, reject) => {
-            const req = https.get(blockNumberUrl, { timeout: 10000 }, (res) => {
-              let data = ''
-              res.on('data', (chunk) => { data += chunk })
-              res.on('end', () => {
-                try {
-                  const result = JSON.parse(data)
-                  if (result.result) {
-                    resolve(parseInt(result.result, 16)) // Convert hex to decimal
-                  } else {
-                    reject(new Error('No block number in response'))
-                  }
-                } catch (e) {
-                  reject(new Error('Failed to parse Etherscan response'))
-                }
-              })
-            })
-            req.on('error', reject)
-            req.on('timeout', () => {
-              req.destroy()
-              reject(new Error('Etherscan API timeout'))
-            })
+          const response = await fetch(blockNumberUrl, {
+            signal: AbortSignal.timeout(10000)
           })
+
+          if (!response.ok) {
+            throw new Error(`Etherscan API returned ${response.status}`)
+          }
+
+          const result = await response.json()
+          if (!result.result) {
+            throw new Error('No block number in response')
+          }
+
+          parseInt(result.result, 16) // Convert hex to decimal
           
           // Get recent blocks (last 100 blocks) to find large transactions
           // Note: This is simplified - in production, would iterate through blocks
@@ -180,25 +158,15 @@ export async function fetchPublicBlockchainData(
         const solscanUrl = 'https://public-api.solscan.io/transaction/last?limit=100'
         
         try {
-          const solscanData = await new Promise<any>((resolve, reject) => {
-            const req = https.get(solscanUrl, { timeout: 10000 }, (res) => {
-              let data = ''
-              res.on('data', (chunk) => { data += chunk })
-              res.on('end', () => {
-                try {
-                  const result = JSON.parse(data)
-                  resolve(result)
-                } catch (e) {
-                  reject(new Error('Failed to parse Solscan response'))
-                }
-              })
-            })
-            req.on('error', reject)
-            req.on('timeout', () => {
-              req.destroy()
-              reject(new Error('Solscan API timeout'))
-            })
+          const response = await fetch(solscanUrl, {
+            signal: AbortSignal.timeout(10000)
           })
+
+          if (!response.ok) {
+            throw new Error(`Solscan API returned ${response.status}`)
+          }
+
+          const solscanData = await response.json()
           
           // Filter large transactions (> 1000 SOL or > $1M)
           if (Array.isArray(solscanData)) {

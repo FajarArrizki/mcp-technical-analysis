@@ -1,21 +1,20 @@
 {
-  "name": "geartrade-mcp-server",
+  "name": "geartrade-workspace",
   "version": "1.0.0",
   "private": true,
   "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "tsx src/mcp-server/index.ts",
-    "build": "tsc",
-    "start": "node dist/mcp-server/index.js",
-    "inspector": "bash scripts/run-mcp-inspector.sh"
-  },
-  "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.22.0",
-    "ethers": "^6.15.0"
+    "dev": "nullshot dev",
+    "build": "npm run build --workspaces",
+    "install:mcp": "nullshot install",
+    "validate": "nullshot validate",
+    "list": "nullshot list"
   },
   "devDependencies": {
-    "@types/node": "^20.11.20",
-    "tsx": "^4.7.1",
+    "@nullshot/cli": "latest",
     "typescript": "^5.0.0"
   }
 }

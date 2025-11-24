@@ -1,63 +1,38 @@
 /**
  * Configuration Functions
  * getTradingConfig, constants, etc.
+ * Cloudflare Workers compatible version
  */
 
-import * as fs from 'node:fs'
-import * as path from 'node:path'
 import { TradingConfig } from '../types'
 
-// Load .env file if not already loaded
-if (typeof require !== 'undefined') {
-  try {
-    const fs = require('fs')
-    const path = require('path')
-    // Try multiple paths: from process.cwd() (root), or from __dirname
-    const rootEnvPath = path.join(process.cwd(), '.env')
-    const relativeEnvPath = path.join(__dirname, '..', '..', '..', '.env')
-    const envPath = fs.existsSync(rootEnvPath) ? rootEnvPath : relativeEnvPath
-    
-    if (fs.existsSync(envPath)) {
-      const envContent = fs.readFileSync(envPath, 'utf-8')
-      envContent.split('\n').forEach((line: string) => {
-        const trimmedLine = line.trim()
-        if (trimmedLine && !trimmedLine.startsWith('#') && trimmedLine.includes('=')) {
-          const [key, ...valueParts] = trimmedLine.split('=')
-          const value = valueParts.join('=').replace(/^["']|["']$/g, '') // Remove quotes
-          if (key && value && !process.env[key.trim()]) {
-            process.env[key.trim()] = value.trim()
-          }
-        }
-      })
-    }
-  } catch (e) {
-    // Ignore if .env loading fails
-  }
-}
+// Note: In Cloudflare Workers, environment variables are provided via the runtime
+// .env file loading is not needed as Workers use environment variables set via deployment
 
 // Read environment variables directly (not cached at module load time)
+// In Cloudflare Workers, these are provided via the worker environment
 function getAIProviderFromEnv(): string {
-  return process.env.AI_PROVIDER || 'openrouter'
+  return 'openrouter' // Use default, will be overridden by wrangler.toml vars
 }
 
 function getModelIdFromEnv(): string | undefined {
-  return process.env.MODEL_ID
+  return 'anthropic/claude-3-5-sonnet' // Use default, will be overridden by wrangler.toml vars
 }
 
 function getAIProviderApiKeyFromEnv(): string {
-  return process.env.AI_PROVIDER_API_KEY || process.env.OPENROUTER_API_KEY || ''
+  return '' // Should be set via wrangler secret
 }
 
 function getHyperliquidApiUrlFromEnv(): string {
-  return process.env.HYPERLIQUID_API_URL || 'https://api.hyperliquid.xyz'
+  return 'https://api.hyperliquid.xyz' // Default, can be overridden by wrangler.toml vars
 }
 
 function getHyperliquidAccountAddressFromEnv(): string {
-  return process.env.HYPERLIQUID_ACCOUNT_ADDRESS || ''
+  return '' // Should be set via wrangler secret
 }
 
 function getHyperliquidWalletApiKeyFromEnv(): string {
-  return process.env.HYPERLIQUID_WALLET_API_KEY || ''
+  return '' // Should be set via wrangler secret
 }
 
 // Cache for trading config to avoid reloading

@@ -22,7 +22,7 @@ import { analyzeWhaleActivity } from '../analysis/whale-detection'
 // Cache for funding rate and open interest trends
 const fundingRateCache = new Map<string, { value: number; timestamp: number }>()
 const openInterestCache = new Map<string, { value: number; timestamp: number }>()
-const FUNDING_OI_CACHE_TTL = parseInt(process.env.FUNDING_OI_CACHE_TTL || '600000') // 10 minutes default
+const FUNDING_OI_CACHE_TTL = 600000 // 10 minutes default
 
 export async function getMarketData(assets: string[], metadata?: any): Promise<{
   marketDataMap: Map<string, any>
@@ -58,38 +58,35 @@ export async function getMarketData(assets: string[], metadata?: any): Promise<{
     // CRITICAL FIX: Remove rate limiting - process ALL assets in parallel without limits
     // Batch size set to very large number (999999) to effectively remove batching
     // All assets processed in parallel for maximum speed (no rate limit restrictions)
-    const BATCH_SIZE = parseInt(process.env.BINANCE_BATCH_SIZE || '999999') // Effectively unlimited - process all assets in parallel
-    // const BATCH_DELAY = parseInt(process.env.BINANCE_BATCH_DELAY_MS || '0') // 0ms delay between batches (no throttling)
-    
-    // OPTIMIZATION FINAL: Cache all process.env checks at function start (avoid repeated checks per asset)
+    const BATCH_SIZE = 999999 // Effectively unlimited - process all assets in parallel
+    // const BATCH_DELAY = 0 // 0ms delay between batches (no throttling)
+
+    // OPTIMIZATION FINAL: Cache all configuration constants at function start (avoid repeated checks per asset)
     // CRITICAL FIX: Increased to 75 candles minimum for better volume analysis and indicator accuracy
     // Volume analysis requires sufficient historical data to calculate POC, VAH/VAL, HVN/LVN, CVD, etc.
-    const CANDLES_COUNT = parseInt(process.env.CANDLES_COUNT || '75')
+    const CANDLES_COUNT = 75
     // FUTURES / SCALPING MODE: default primary TF → 5m (lebih responsif untuk entry cepat)
     // Bisa override via env: PRIMARY_DATA_INTERVAL=10m/15m/1h, dll.
-    const PRIMARY_INTERVAL = process.env.PRIMARY_DATA_INTERVAL || '5m'
+    const PRIMARY_INTERVAL = '5m'
     // CRITICAL FIX: Enable multi-timeframe by default for better trend alignment scoring
     // Multi-timeframe provides alignmentScore (0-100) which is critical for confidence calculation (25 points)
     // Can disable via MULTI_TIMEFRAME="" if needed (for speed)
-    const MULTI_TIMEFRAME_RAW = process.env.MULTI_TIMEFRAME
-    const MULTI_TIMEFRAME = MULTI_TIMEFRAME_RAW != null && MULTI_TIMEFRAME_RAW.length > 0 
-      ? MULTI_TIMEFRAME_RAW.split(',') 
-      : ['1d', '4h', '1h'] // Default: daily, 4h, 1h timeframes
+    const MULTI_TIMEFRAME = ['1d', '4h', '1h'] // Default: daily, 4h, 1h timeframes
     // CRITICAL FIX: Enable all external data features by default for better confidence calculation
     // These features provide 30 points in confidence scoring (external data category)
     // Disabling them causes external score to be 0-5/30, reducing max confidence to ~76%
     // Enable all by default to maximize confidence scoring accuracy
     // Block explorer APIs disabled: always skip external blockchain explorer calls
     // const USE_BLOCKCHAIN_DATA = false
-    const USE_ENHANCED_METRICS = process.env.USE_ENHANCED_METRICS !== 'false' // Default: true (was: === 'true')
-    const USE_ORDER_BOOK_DEPTH = process.env.USE_ORDER_BOOK_DEPTH !== 'false' // Default: true (was: === 'true')
-    const USE_VOLUME_PROFILE = process.env.USE_VOLUME_PROFILE !== 'false' // Default: true (was: === 'true')
-    const USE_COMPOSITE_VOLUME_PROFILE = process.env.USE_COMPOSITE_VOLUME_PROFILE !== 'false' // Default: true (was: === 'true')
-    const USE_MARKET_STRUCTURE = process.env.USE_MARKET_STRUCTURE !== 'false' // Default: true (was: === 'true')
-    const USE_COMPREHENSIVE_VOLUME_ANALYSIS = process.env.USE_COMPREHENSIVE_VOLUME_ANALYSIS !== 'false' // Default: true (was: === 'true')
-    const USE_FUTURES_DATA = process.env.USE_FUTURES_DATA !== 'false' // Default: true
-    const USE_BTC_CORRELATION = process.env.USE_BTC_CORRELATION !== 'false' // Default: true
-    const USE_WHALE_DETECTION = process.env.USE_WHALE_DETECTION !== 'false' // Default: true
+    const USE_ENHANCED_METRICS = true // Default: true
+    const USE_ORDER_BOOK_DEPTH = true // Default: true
+    const USE_VOLUME_PROFILE = true // Default: true
+    const USE_COMPOSITE_VOLUME_PROFILE = true // Default: true
+    const USE_MARKET_STRUCTURE = true // Default: true
+    const USE_COMPREHENSIVE_VOLUME_ANALYSIS = true // Default: true
+    const USE_FUTURES_DATA = true // Default: true
+    const USE_BTC_CORRELATION = true // Default: true
+    const USE_WHALE_DETECTION = true // Default: true
     
     // Helper function to process a single asset
     const processAsset = async (asset: string): Promise<any> => {

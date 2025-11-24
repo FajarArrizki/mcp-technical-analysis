@@ -3,7 +3,6 @@
  * getHistoricalDataFromBinance function
  */
 
-import * as https from 'node:https'
 import { HistoricalDataPoint } from '../types'
 
 const BINANCE_BINANCE_PAIRS: Record<string, string> = {
@@ -153,121 +152,99 @@ export async function getHistoricalDataFromBinance(
   // NO RETRY LOGIC - fail fast for maximum speed (retries=0 by default)
   // Single attempt - no retry
   try {
-    // Use https module for better compatibility
-    const result = await new Promise<HistoricalDataPoint[]>((resolve, reject) => {
-        const options: https.RequestOptions = {
-          hostname: 'api.binance.com',
-          port: 443,
-          path: path,
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-            'User-Agent': 'Mozilla/5.0 (compatible; GEARTRADE/1.0)'
-          },
-          timeout: 8000 // 8 second timeout (optimized for faster failure detection)
+    // Use fetch API for Cloudflare Workers compatibility
+    const url = `https://api.binance.com${path}`
+
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 8000) // 8 second timeout
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'User-Agent': 'Mozilla/5.0 (compatible; GEARTRADE/1.0)'
+      },
+      signal: controller.signal
+    })
+
+    clearTimeout(timeoutId)
+
+    // CRITICAL FIX: Remove rate limit restrictions - process all requests without limits
+    // Ignore 429 (rate limit) errors and continue processing
+    // No rate limiting - all requests proceed in parallel
+    if (response.status === 429) {
+      // Rate limit hit - skip this request but don't fail
+      // Log warning and return empty array to allow other requests to continue
+      console.warn(`⚠️  Binance rate limit hit for ${symbol} (429), skipping but continuing...`)
+      return [] // Return empty array instead of throwing
+    }
+
+    // Handle other non-200 status codes - return [] for invalid symbols (not in Binance)
+    if (response.status !== 200) {
+      // If symbol not found (400/404) or invalid, return [] instead of throwing
+      // This allows assets not on Binance to still be processed (just without historical data)
+      if (response.status === 400 || response.status === 404) {
+        return [] // Return empty array for invalid symbols
+      }
+
+      const errorText = await response.text()
+      const errorMsg = errorText ? errorText.substring(0, 200) : 'Unknown error'
+      throw new Error(`Binance API error: ${response.status} - ${errorMsg}`)
+    }
+
+    const data = await response.text()
+    const result = JSON.parse(data) as Array<any>
+
+    if (!Array.isArray(result)) {
+      throw new Error(`Binance API returned invalid data format: ${typeof result}`)
+    }
+
+    if (result.length === 0) {
+      throw new Error('No data returned from Binance')
+    }
+
+    // Convert to our format
+    const candles: HistoricalDataPoint[] = result
+      .map((candle) => {
+        if (!Array.isArray(candle) || candle.length < 6) {
+          return null
         }
-        
-        const req = https.request(options, (res) => {
-          let data = ''
-          
-          res.on('data', (chunk) => {
-            data += chunk
-          })
-          
-          res.on('end', () => {
-            try {
-              // CRITICAL FIX: Remove rate limit restrictions - process all requests without limits
-              // Ignore 429 (rate limit) errors and continue processing
-              // No rate limiting - all requests proceed in parallel
-              if (res.statusCode === 429) {
-                // Rate limit hit - skip this request but don't fail
-                // Log warning and return empty array to allow other requests to continue
-                console.warn(`⚠️  Binance rate limit hit for ${symbol} (429), skipping but continuing...`)
-                resolve([]) // Return empty array instead of rejecting
-                return
-              }
-              
-              // Handle other non-200 status codes - return [] for invalid symbols (not in Binance)
-              if (res.statusCode !== 200) {
-                const errorMsg = data ? data.substring(0, 200) : 'Unknown error'
-                // If symbol not found (400/404) or invalid, return [] instead of throwing
-                // This allows assets not on Binance to still be processed (just without historical data)
-                if (res.statusCode === 400 || res.statusCode === 404) {
-                  resolve([]) // Return empty array for invalid symbols
-                  return
-                }
-                reject(new Error(`Binance API error: ${res.statusCode} - ${errorMsg}`))
-                return
-              }
-              
-              const result = JSON.parse(data) as Array<any>
-              
-              if (!Array.isArray(result)) {
-                reject(new Error(`Binance API returned invalid data format: ${typeof result}`))
-                return
-              }
-              
-              if (result.length === 0) {
-                reject(new Error('No data returned from Binance'))
-                return
-              }
-              
-              // Convert to our format
-              const candles: HistoricalDataPoint[] = result
-                .map((candle) => {
-                  if (!Array.isArray(candle) || candle.length < 6) {
-                    return null
-                  }
-                  
-                  const [
-                    openTime,
-                    open,
-                    high,
-                    low,
-                    close,
-                    volume
-                  ] = candle
-                  
-                  return {
-                    time: parseInt(openTime),
-                    open: parseFloat(open),
-                    high: parseFloat(high),
-                    low: parseFloat(low),
-                    close: parseFloat(close),
-                    volume: parseFloat(volume)
-                  }
-                })
-                .filter((c): c is HistoricalDataPoint => 
-                  c !== null && c.close > 0 && c.open > 0 && c.high >= c.low
-                )
-              
-              if (candles.length === 0) {
-                reject(new Error('No valid candles found in Binance response'))
-                return
-              }
-              
-              resolve(candles)
-            } catch (error: any) {
-              reject(new Error(`Failed to parse Binance response: ${error.message}`))
-            }
-          })
-        })
-        
-        req.on('error', (error) => {
-          reject(new Error(`Binance API network error: ${error.message}`))
-        })
-        
-        req.on('timeout', () => {
-          req.destroy()
-          reject(new Error('Binance API request timeout'))
-        })
-        
-        req.end()
+
+        const [
+          openTime,
+          open,
+          high,
+          low,
+          close,
+          volume
+        ] = candle
+
+        return {
+          time: parseInt(openTime),
+          open: parseFloat(open),
+          high: parseFloat(high),
+          low: parseFloat(low),
+          close: parseFloat(close),
+          volume: parseFloat(volume)
+        }
       })
-      
-    return result
-    
+      .filter((c): c is HistoricalDataPoint =>
+        c !== null && c.close > 0 && c.open > 0 && c.high >= c.low
+      )
+
+    if (candles.length === 0) {
+      throw new Error('No valid candles found in Binance response')
+    }
+
+    return candles
+
   } catch (error: any) {
+    // Handle abort error (timeout)
+    if (error.name === 'AbortError') {
+      console.warn(`⚠️  Binance API request timeout for ${symbol}`)
+      return []
+    }
+
     // NO RETRY - fail fast for maximum speed
     // Return [] instead of throwing to allow assets without Binance data to still be processed
     // (They can still use Hyperliquid price/volume data, just without historical indicators)

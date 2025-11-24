@@ -4,12 +4,12 @@
  */
 
 import { Signal, Order, PositionState, ExitReason } from '../types'
-import * as fs from 'node:fs'
-import * as path from 'node:path'
+// Note: Node.js fs and path modules are not available in Cloudflare Workers
+// File operations have been replaced with in-memory storage or commented out
 
 export interface PaperExecutorConfig {
   paperCapital: number
-  tradesFile: string
+  tradesFile: string // Note: File path not used in Cloudflare Workers, kept for compatibility
   simulateSlippage: boolean
   slippagePct: number
 }
@@ -34,12 +34,15 @@ export class PaperExecutor {
   private config: PaperExecutorConfig
   private virtualPositions: Map<string, PaperTrade>
   private virtualBalance: number
+  private tradeHistory: PaperTrade[] // In-memory storage for trade history (Cloudflare Workers compatible)
 
   constructor(config: PaperExecutorConfig) {
     this.config = config
     this.virtualPositions = new Map()
     this.virtualBalance = config.paperCapital
-    this.loadTradesFromFile()
+    this.tradeHistory = []
+    // Note: File loading disabled in Cloudflare Workers environment
+    // this.loadTradesFromFile()
   }
 
   /**
@@ -127,8 +130,10 @@ export class PaperExecutor {
     }
     this.virtualPositions.set(signal.coin || '', paperTrade)
 
-    // Save to file
-    this.saveTradeToFile(paperTrade)
+    // Save to in-memory storage (Cloudflare Workers compatible)
+    this.saveTradeToMemory(paperTrade)
+    // Note: File saving disabled in Cloudflare Workers environment
+    // this.saveTradeToFile(paperTrade)
 
     return order
   }
@@ -208,7 +213,9 @@ export class PaperExecutor {
         // Partial close - update quantity
         paperTrade.quantity = remainingQuantity
       }
-      this.saveTradeToFile(paperTrade)
+      this.saveTradeToMemory(paperTrade)
+      // Note: File saving disabled in Cloudflare Workers environment
+      // this.saveTradeToFile(paperTrade)
     }
 
     return order
@@ -252,9 +259,32 @@ export class PaperExecutor {
   }
 
   /**
-   * Save trade to file
+   * Save trade to in-memory storage (Cloudflare Workers compatible)
+   */
+  private saveTradeToMemory(trade: PaperTrade): void {
+    try {
+      // Update or add trade in memory
+      const existingIndex = this.tradeHistory.findIndex(t => t.id === trade.id)
+      if (existingIndex >= 0) {
+        this.tradeHistory[existingIndex] = trade
+      } else {
+        this.tradeHistory.push(trade)
+      }
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error)
+      console.error(`Failed to save paper trade to memory: ${errorMsg}`)
+    }
+  }
+
+  /**
+   * Save trade to file (DISABLED - not compatible with Cloudflare Workers)
    */
   private saveTradeToFile(trade: PaperTrade): void {
+    // Note: This method is disabled in Cloudflare Workers environment
+    // File system operations are not available in Cloudflare Workers
+    console.log(`[CLOUDFLARE_WORKERS] File saving disabled: Would save trade ${trade.id} to ${this.config.tradesFile}`)
+
+    /* Original implementation commented out:
     try {
       const fileDir = path.dirname(this.config.tradesFile)
       if (!fs.existsSync(fileDir)) {
@@ -280,12 +310,18 @@ export class PaperExecutor {
       const errorMsg = error instanceof Error ? error.message : String(error)
       console.error(`Failed to save paper trade to file: ${errorMsg}`)
     }
+    */
   }
 
   /**
-   * Load trades from file
+   * Load trades from file (DISABLED - not compatible with Cloudflare Workers)
    */
   private loadTradesFromFile(): void {
+    // Note: This method is disabled in Cloudflare Workers environment
+    // File system operations are not available in Cloudflare Workers
+    console.log(`[CLOUDFLARE_WORKERS] File loading disabled: Would load trades from ${this.config.tradesFile}`)
+
+    /* Original implementation commented out:
     try {
       if (!fs.existsSync(this.config.tradesFile)) {
         return
@@ -304,5 +340,13 @@ export class PaperExecutor {
       const errorMsg = error instanceof Error ? error.message : String(error)
       console.warn(`Failed to load paper trades from file: ${errorMsg}`)
     }
+    */
+  }
+
+  /**
+   * Get trade history from in-memory storage (Cloudflare Workers compatible)
+   */
+  getTradeHistory(): PaperTrade[] {
+    return [...this.tradeHistory] // Return a copy to prevent external modifications
   }
 }

@@ -3,7 +3,6 @@
  * Fetch funding rate, open interest, long/short ratio, liquidations, premium index
  */
 
-import * as https from 'node:https'
 import {
   FundingRateData,
   OpenInterestData,
@@ -61,9 +60,9 @@ const BINANCE_FUTURES_SYMBOLS: Record<string, string> = {
 const MAX_RETRIES = 3
 const REQUEST_TIMEOUT = 5000
 // Limit controls: if set to '0' (default), we omit the limit param to avoid server-side capping
-const FUNDING_RATE_LIMIT = parseInt(process.env.BINANCE_FUNDING_RATE_LIMIT || '0')
-const TOP_LS_ACCOUNT_LIMIT = parseInt(process.env.BINANCE_TOP_LS_ACCOUNT_LIMIT || '0')
-const TOP_LS_POSITION_LIMIT = parseInt(process.env.BINANCE_TOP_LS_POSITION_LIMIT || '0')
+const FUNDING_RATE_LIMIT = 0
+const TOP_LS_ACCOUNT_LIMIT = 0
+const TOP_LS_POSITION_LIMIT = 0
 
 function withLimitParam(basePath: string, limit: number): string {
   if (!limit || limit <= 0) return basePath
@@ -72,7 +71,7 @@ function withLimitParam(basePath: string, limit: number): string {
 }
 
 /**
- * Make HTTPS request with retry logic
+ * Make HTTPS request with retry logic using fetch API for Cloudflare Workers compatibility
  */
 async function httpsRequest(
   hostname: string,
@@ -81,65 +80,49 @@ async function httpsRequest(
 ): Promise<any> {
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
-      return await new Promise<any>((resolve, reject) => {
-        const options: https.RequestOptions = {
-          hostname,
-          port: 443,
-          path,
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-            'User-Agent': 'Mozilla/5.0 (compatible; GEARTRADE/1.0)'
-          },
-          timeout: REQUEST_TIMEOUT
-        }
+      const url = `https://${hostname}${path}`
 
-        const req = https.request(options, (res) => {
-          let data = ''
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT)
 
-          res.on('data', (chunk) => {
-            data += chunk
-          })
-
-          res.on('end', () => {
-            try {
-              if (res.statusCode === 429) {
-                // Rate limit - wait and retry
-                if (attempt < retries) {
-                  setTimeout(() => {
-                    httpsRequest(hostname, path, retries).then(resolve).catch(reject)
-                  }, 1000 * (attempt + 1))
-                  return
-                }
-                reject(new Error(`Binance API rate limit (429)`))
-                return
-              }
-
-              if (res.statusCode !== 200) {
-                reject(new Error(`Binance API error: ${res.statusCode} - ${data.substring(0, 200)}`))
-                return
-              }
-
-              const result = JSON.parse(data)
-              resolve(result)
-            } catch (error: any) {
-              reject(new Error(`Failed to parse response: ${error.message}`))
-            }
-          })
-        })
-
-        req.on('error', (error) => {
-          reject(new Error(`Network error: ${error.message}`))
-        })
-
-        req.on('timeout', () => {
-          req.destroy()
-          reject(new Error('Request timeout'))
-        })
-
-        req.end()
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'User-Agent': 'Mozilla/5.0 (compatible; GEARTRADE/1.0)'
+        },
+        signal: controller.signal
       })
+
+      clearTimeout(timeoutId)
+
+      if (response.status === 429) {
+        // Rate limit - wait and retry
+        if (attempt < retries) {
+          await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)))
+          continue
+        }
+        throw new Error(`Binance API rate limit (429)`)
+      }
+
+      if (response.status !== 200) {
+        const errorText = await response.text()
+        const errorMsg = errorText ? errorText.substring(0, 200) : 'Unknown error'
+        throw new Error(`Binance API error: ${response.status} - ${errorMsg}`)
+      }
+
+      const data = await response.text()
+      return JSON.parse(data)
     } catch (error: any) {
+      // Handle abort error (timeout)
+      if (error.name === 'AbortError') {
+        if (attempt < retries) {
+          await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)))
+          continue
+        }
+        throw new Error('Request timeout')
+      }
+
       if (attempt < retries) {
         // Wait before retry
         await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)))

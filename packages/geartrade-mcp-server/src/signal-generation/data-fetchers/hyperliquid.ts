@@ -8,46 +8,36 @@
  * - Exchange endpoint (/exchange) requires signed messages, not Bearer tokens
  */
 
-import * as https from 'node:https'
-
-const HYPERLIQUID_API_URL = process.env.HYPERLIQUID_API_URL || 'https://api.hyperliquid.xyz'
+const HYPERLIQUID_API_URL = 'https://api.hyperliquid.xyz'
 
 export async function fetchHyperliquid(endpoint: string, data: any): Promise<any> {
-  return new Promise((resolve, reject) => {
-    const url = new URL(endpoint, HYPERLIQUID_API_URL)
-    const postData = JSON.stringify(data)
-    
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      'Content-Length': Buffer.byteLength(postData).toString()
-    }
-    
-    // Note: Hyperliquid Info endpoint does NOT require HTTP authentication
-    // API wallets are used for signing transactions, not HTTP auth headers
-    // See: https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api
-    
-    const options: https.RequestOptions = {
-      method: 'POST',
-      headers
-    }
+  const url = new URL(endpoint, HYPERLIQUID_API_URL)
+  const postData = JSON.stringify(data)
 
-    const req = https.request(url.toString(), options, (res) => {
-      let body = ''
-      res.on('data', (chunk) => { body += chunk })
-      res.on('end', () => {
-        try {
-          const result = JSON.parse(body)
-          resolve(result)
-        } catch (error: any) {
-          reject(new Error(`Failed to parse response: ${error.message}`))
-        }
-      })
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json'
+  }
+
+  // Note: Hyperliquid Info endpoint does NOT require HTTP authentication
+  // API wallets are used for signing transactions, not HTTP auth headers
+  // See: https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api
+
+  try {
+    const response = await fetch(url.toString(), {
+      method: 'POST',
+      headers,
+      body: postData
     })
 
-    req.on('error', reject)
-    req.write(postData)
-    req.end()
-  })
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+
+    const result = await response.json()
+    return result
+  } catch (error: any) {
+    throw new Error(`Failed to fetch Hyperliquid data: ${error.message}`)
+  }
 }
 
 export async function getAssetMetadata(): Promise<any> {
