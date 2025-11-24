@@ -3,7 +3,7 @@
  * fetchPublicBlockchainData function
  */
 
-import * as https from 'https'
+import * as https from 'node:https'
 // import * as http from 'http'
 
 export interface BlockchainData {

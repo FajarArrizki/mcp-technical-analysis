@@ -3,8 +3,8 @@
  * getTradingConfig, constants, etc.
  */
 
-import * as fs from 'fs'
-import * as path from 'path'
+import * as fs from 'node:fs'
+import * as path from 'node:path'
 import { TradingConfig } from '../types'
 
 // Load .env file if not already loaded

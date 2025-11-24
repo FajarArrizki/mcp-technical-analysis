@@ -3,7 +3,7 @@
  * getHistoricalDataFromBinance function
  */
 
-import * as https from 'https'
+import * as https from 'node:https'
 import { HistoricalDataPoint } from '../types'
 
 const BINANCE_BINANCE_PAIRS: Record<string, string> = {

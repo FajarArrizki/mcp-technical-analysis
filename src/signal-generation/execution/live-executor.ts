@@ -7,8 +7,8 @@ import { Signal, Order, OrderStatus, OrderType, PositionState, ExitReason } from
 import { fetchHyperliquid } from '../data-fetchers/hyperliquid'
 import { getHyperliquidWalletApiKey, getHyperliquidAccountAddress } from '../config'
 import { getAssetIndex, createOrderMessage, signHyperliquidOrder, createWalletFromPrivateKey } from './hyperliquid-signing'
-import * as fs from 'fs'
-import * as path from 'path'
+import * as fs from 'node:fs'
+import * as path from 'node:path'
 // import * as crypto from 'crypto'
 
 export interface LiveExecutorConfig {

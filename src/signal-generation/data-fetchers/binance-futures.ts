@@ -3,7 +3,7 @@
  * Fetch funding rate, open interest, long/short ratio, liquidations, premium index
  */
 
-import * as https from 'https'
+import * as https from 'node:https'
 import {
   FundingRateData,
   OpenInterestData,

@@ -8,7 +8,7 @@
  * - Exchange endpoint (/exchange) requires signed messages, not Bearer tokens
  */
 
-import * as https from 'https'
+import * as https from 'node:https'
 
 const HYPERLIQUID_API_URL = process.env.HYPERLIQUID_API_URL || 'https://api.hyperliquid.xyz'
 
