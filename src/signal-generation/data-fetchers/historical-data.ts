@@ -5,11 +5,11 @@
 
 import { HistoricalDataPoint } from '../types'
 import { getHistoricalDataFromBinance } from './binance'
-import { interpolateToHourly } from '../utils/interpolation'
-import { getCacheTTLForInterval } from '../utils/cache'
+// import { interpolateToHourly } from '../utils/interpolation'
+// import { getCacheTTLForInterval } from '../utils/cache'
 
 // Simple in-memory cache (could be improved with Redis or similar)
-const historicalDataCache = new Map<string, { data: HistoricalDataPoint[]; timestamp: number }>()
+// const historicalDataCache = new Map<string, { data: HistoricalDataPoint[]; timestamp: number }>()
 
 export async function getHistoricalData(
   asset: string,
@@ -77,7 +77,7 @@ export async function getMultiTimeframeData(
   // Wait for all timeframes to complete in parallel
   const results = await Promise.allSettled(fetchPromises)
   
-  results.forEach((result, index) => {
+  results.forEach((result) => {
     if (result.status === 'fulfilled' && result.value.data.length > 0) {
       multiTimeframeData[result.value.tf] = result.value.data
     }

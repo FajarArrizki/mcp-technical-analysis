@@ -4,9 +4,7 @@
  */
 
 import { initializeLiveMode, runLiveModeCycle } from './signal-generation/cycle/live-mode'
-import { getAIModel, getAIProvider } from './signal-generation/config'
 import { formatSignal } from './signal-generation/formatting/format-signal'
-import { Signal } from './signal-generation/types'
 import { createSection, formatKeyValue } from './signal-generation/cycle/shared/format-box'
 import { formatPositionBox, formatClosedPositionBox } from './signal-generation/cycle/shared/format-position'
 import { formatPortfolioSummary, formatSystemStatus } from './signal-generation/cycle/shared/format-portfolio'
@@ -35,16 +33,8 @@ async function main() {
     process.exit(1)
   }
 
-  let modelId: string
-  try {
-    modelId = getAIModel()
-  } catch (error) {
-    // Use default model if MODEL_ID not set
-    modelId = process.env.MODEL_ID || 'anthropic/claude-3-5-sonnet'
-    console.warn(`⚠️  MODEL_ID not set, using default: ${modelId}`)
-  }
-
-  const aiProvider = getAIProvider()
+  const modelId = process.env.MODEL_ID || 'anthropic/claude-3-5-sonnet'
+  const aiProvider = process.env.AI_PROVIDER || 'openrouter'
   const model = {
     provider: aiProvider,
     modelId

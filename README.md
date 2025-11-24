@@ -95,7 +95,9 @@ GearTrade MCP Server supports a complete workflow from market analysis to order 
     "leverage": 5,
     "orderType": "MARKET",
     "execute": true,
-    "useLiveExecutor": true
+    "useLiveExecutor": true,
+    "accountAddress": "0x...",  // User's Hyperliquid account address
+    "walletApiKey": "..."       // User's Hyperliquid private key
   }
 }
 ```
@@ -154,7 +156,10 @@ GearTrade MCP Server can be deployed to Nullshot platform with Cloudflare Worker
    2. Click "Add variable" → Select "Secret"
    3. Add each secret: `HYPERLIQUID_ACCOUNT_ADDRESS`, `HYPERLIQUID_WALLET_API_KEY`
    
-   ⚠️ **Security Note**: Never commit secrets to the repository. Always use Cloudflare's secret management.
+   ⚠️ **Security Note**: 
+   - Never commit secrets to the repository
+   - Always use Cloudflare's secret management (if using environment variables)
+   - **Recommended**: Users provide credentials via tool parameters for multi-user support
 
 4. **Deploy**
    ```bash
@@ -196,8 +201,9 @@ MODEL_ID=anthropic/claude-3-5-sonnet  # or glm-4.5, etc.
 
 # Hyperliquid Configuration
 HYPERLIQUID_API_URL=https://api.hyperliquid.xyz
-HYPERLIQUID_ACCOUNT_ADDRESS=0x...  # Your wallet address
-HYPERLIQUID_WALLET_API_KEY=your_private_key_here  # Private key (64 hex chars) for EIP-712 signing
+# Optional: For backward compatibility (users can also provide credentials via tool parameters)
+HYPERLIQUID_ACCOUNT_ADDRESS=0x...  # Your wallet address (optional)
+HYPERLIQUID_WALLET_API_KEY=your_private_key_here  # Private key (64 hex chars) for EIP-712 signing (optional)
 
 # Trading Configuration
 CYCLE_INTERVAL_MS=10000
@@ -1321,7 +1327,9 @@ These tools aggregate all available market data into a single comprehensive anal
     - `price` (number, optional) - Limit price (if not provided, uses current market price)
     - `orderType` (enum: "MARKET" | "LIMIT", default: "MARKET") - Order type
     - `execute` (boolean, default: false) - Whether to actually execute the order via Hyperliquid
-    - `useLiveExecutor` (boolean, default: false) - Whether to use live executor (requires HYPERLIQUID_WALLET_API_KEY)
+    - `useLiveExecutor` (boolean, default: false) - Whether to use live executor (requires walletApiKey and accountAddress)
+    - `accountAddress` (string, optional) - Hyperliquid account address (if not provided, uses environment variable HYPERLIQUID_ACCOUNT_ADDRESS)
+    - `walletApiKey` (string, optional) - Hyperliquid wallet API key / private key (if not provided, uses environment variable HYPERLIQUID_WALLET_API_KEY)
   - **Output:** Execution data including order ID, position value, margin required, status, estimated fill price, slippage
   - **Example (Simulation):**
     ```json
@@ -1397,7 +1405,9 @@ These tools aggregate all available market data into a single comprehensive anal
     - `price` (number, optional) - Limit price (if not provided, uses current market price)
     - `orderType` (enum: "MARKET" | "LIMIT", default: "MARKET") - Order type
     - `execute` (boolean, default: false) - Whether to actually execute the order via Hyperliquid
-    - `useLiveExecutor` (boolean, default: false) - Whether to use live executor (requires HYPERLIQUID_WALLET_API_KEY)
+    - `useLiveExecutor` (boolean, default: false) - Whether to use live executor (requires walletApiKey and accountAddress)
+    - `accountAddress` (string, optional) - Hyperliquid account address (if not provided, uses environment variable HYPERLIQUID_ACCOUNT_ADDRESS)
+    - `walletApiKey` (string, optional) - Hyperliquid wallet API key / private key (if not provided, uses environment variable HYPERLIQUID_WALLET_API_KEY)
   - **Output:** Execution data including order ID, leverage, position value, margin required, status, estimated fill price, slippage
   - **Example (Simulation):**
     ```json
@@ -1422,7 +1432,9 @@ These tools aggregate all available market data into a single comprehensive anal
         "quantity": 0.1,
         "leverage": 10,
         "execute": true,
-        "useLiveExecutor": true
+        "useLiveExecutor": true,
+        "accountAddress": "0x...",
+        "walletApiKey": "..."
       }
     }
     ```
@@ -1435,6 +1447,8 @@ These tools aggregate all available market data into a single comprehensive anal
   - **Input:**
     - `executions` (array) - Array of execution requests, each with `ticker`, `side`, `quantity`, `leverage` (optional, default: 10), `price` (optional), `orderType` (optional)
     - `execute` (boolean, default: false) - Whether to actually execute orders (uses PaperExecutor for safety)
+    - `accountAddress` (string, optional) - Hyperliquid account address (if not provided, uses environment variable HYPERLIQUID_ACCOUNT_ADDRESS)
+    - `walletApiKey` (string, optional) - Hyperliquid wallet API key / private key (if not provided, uses environment variable HYPERLIQUID_WALLET_API_KEY)
   - **Output:** Array of execution results with summary
   - **Example:**
     ```json
@@ -1458,10 +1472,14 @@ These tools aggregate all available market data into a single comprehensive anal
 - **EIP-712 Signing:** Fully implemented with proper domain separator and message structure
 - **Order Submission:** Submits signed orders to Hyperliquid `/exchange` endpoint
 - **Order Status Polling:** Polls Hyperliquid API for order fill confirmation
+- **Credentials:** Can be provided via:
+  - Tool parameters: `accountAddress` and `walletApiKey` (recommended for multi-user scenarios)
+  - Environment variables: `HYPERLIQUID_ACCOUNT_ADDRESS` and `HYPERLIQUID_WALLET_API_KEY` (for backward compatibility)
 - **Requirements:**
-  - `HYPERLIQUID_WALLET_API_KEY` - Private key (64 hex characters, 32 bytes)
-  - `HYPERLIQUID_ACCOUNT_ADDRESS` - Wallet address matching the private key
+  - `walletApiKey` - Private key (64 hex characters, 32 bytes)
+  - `accountAddress` - Wallet address matching the private key
 - **Safety:** Validates wallet address matches account address before execution
+- **Multi-User Support:** Each user can provide their own credentials via tool parameters, making this server suitable for open-source deployment
 
 #### PaperExecutor (Simulation)
 

@@ -14,8 +14,8 @@ import { calculateQualityWeightedJustification, QualityWeightedResult } from '..
 export function generateJustificationFromIndicators(
   signal: Signal,
   indicators: TechnicalIndicators | null | undefined,
-  bullishCount: number = 0,
-  bearishCount: number = 0,
+  _bullishCount: number = 0,
+  _bearishCount: number = 0,
   trendAlignment: TrendAlignment | null | undefined,
   externalData: ExternalData | null | undefined
 ): string {

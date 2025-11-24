@@ -4,7 +4,7 @@
  */
 import { analyzeInfluence } from './influence-graph'
 
-export function computeExpectedConfidence(asset: string, marketData: any): {
+export function computeExpectedConfidence(_asset: string, marketData: any): {
   expected: number
   reasons: string[]
   majorMismatches: number
@@ -12,8 +12,8 @@ export function computeExpectedConfidence(asset: string, marketData: any): {
   const reasons: string[] = []
   const indicators = marketData?.indicators || {}
   const trend = marketData?.trendAlignment || {}
-  const ext = marketData?.externalData || {}
-  const futures = ext?.futures || {}
+  // const ext = marketData?.externalData || {}
+  // const futures = ext?.futures || {}
 
   let score = 0
   let max = 100

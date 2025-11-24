@@ -17,8 +17,8 @@ export interface AutoExecuteResult {
 
 export function shouldAutoExecute(
   signal: Signal,
-  indicators: TechnicalIndicators | null | undefined,
-  accountState: any = null,
+  _indicators: TechnicalIndicators | null | undefined,
+  _accountState: any = null,
   tradingConfig: TradingConfig | null = null
 ): AutoExecuteResult {
   const TRADING_CONFIG = tradingConfig || {
@@ -117,7 +117,7 @@ export function shouldAutoExecute(
     // FUTURES MODE: Allow low confidence signals (>= 10%) even without extreme conditions
     // OPTIMIZATION: Use cached positionSizing
     const basePositionMultiplier = (positionSizing?.lowConfidence ?? 0.5) * 0.5
-    const isCounterTrend = false // Simplified - can be enhanced
+    // const isCounterTrend = false // Simplified - can be enhanced
     
     return {
       execute: true,

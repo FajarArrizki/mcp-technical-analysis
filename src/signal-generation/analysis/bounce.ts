@@ -438,7 +438,7 @@ export function calculateBounceDecay(
     bounce_type?: 'BUY_BOUNCE' | 'SELL_BOUNCE'
   },
   historicalData: HistoricalDataPoint[],
-  timeframe: string = '1h'
+  _timeframe: string = '1h'
 ): BounceDecayResult {
   if (!signal.bounce_mode || !historicalData || historicalData.length < 5) {
     return { decayPercent: 0, isDecaying: false, reason: 'Insufficient data' }

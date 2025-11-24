@@ -18,7 +18,7 @@ export interface EmergencyExitCondition {
 
 // BTC price cache for shock detection
 let btcPriceHistory: Array<{ price: number; timestamp: number }> = []
-const BTC_SHOCK_THRESHOLD = 5 // 5% BTC move in short time
+// const BTC_SHOCK_THRESHOLD = 5 // 5% BTC move in short time
 
 /**
  * Check liquidation risk
@@ -97,7 +97,7 @@ export function checkFundingRateExtreme(
 
   if (Math.abs(fundingRate) > threshold) {
     const side = fundingRate > 0 ? 'LONG' : 'SHORT'
-    const reason = fundingRate > 0 ? 'SHORT' : 'LONG' // Opposite side is at risk
+    // const reason = fundingRate > 0 ? 'SHORT' : 'LONG' // Opposite side is at risk
 
     return {
       triggered: true,
@@ -123,7 +123,7 @@ export function checkFundingRateExtreme(
 export async function checkBTCShock(
   position: PositionState,
   correlationData: BTCCorrelationData,
-  futuresData: FuturesMarketData
+  _futuresData: FuturesMarketData
 ): Promise<EmergencyExitCondition> {
   try {
     // Get current BTC price

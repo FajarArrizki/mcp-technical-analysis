@@ -19,8 +19,8 @@ export interface EnhancedMetrics {
  */
 export function calculateEnhancedMetrics(
   historicalData: HistoricalDataPoint[],
-  indicators: any,
-  externalData: any
+  _indicators: any,
+  _externalData: any
 ): EnhancedMetrics | null {
   if (!historicalData || historicalData.length < 14) {
     return null

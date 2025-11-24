@@ -9,7 +9,7 @@ import { generateJustificationFromIndicators } from './justification'
 import { calculateBounceTP, calculateDynamicTP } from '../risk-management/take-profit'
 import { calculateBounceTPTrail, calculateBounceSLOffset } from '../risk-management/bounce'
 import { calculateConfidenceScore } from './confidence'
-import { calculateQualityWeightedJustification } from '../analysis/quality-weighted-justification'
+// import { calculateQualityWeightedJustification } from '../analysis/quality-weighted-justification'
 import { collectWarning } from '../position-management/warnings'
 import { getTradingConfig } from '../config'
 
@@ -21,7 +21,7 @@ export async function processSignal(
   marketData: Map<string, any> | Record<string, any>,
   accountState: any,
   equalCapitalPerSignal: number,
-  signalIndex: number,
+  _signalIndex: number,
   assetRank: number | null = null, // PHASE 1: Asset rank for confidence calculation
   qualityScore: number | null = null // PHASE 1: Quality score for confidence calculation
 ): Promise<Signal> {
@@ -501,7 +501,7 @@ export async function processSignal(
     // Quality-weighted-justification only considers indicator weights, which is incomplete
     // PHASE 1: Pass asset rank and quality score to confidence calculation
     const confidenceResult = calculateConfidenceScore(signal, indicators, trendAlignment, marketRegime, riskRewardRatio, externalData, assetRank, qualityScore)
-    const weightedResult = calculateQualityWeightedJustification(signal, indicators, trendAlignment, externalData)
+    // const weightedResult = calculateQualityWeightedJustification(signal, indicators, trendAlignment, externalData)
     
     // Use calculateConfidenceScore result as primary (it's more comprehensive)
     // Quality-weighted-justification result is only used for justification text, not confidence

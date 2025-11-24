@@ -30,7 +30,7 @@ export function interpolateToHourly(
   // If we have enough daily data, spread it across targetCount hours
   const hourlyPoints: HistoricalDataPoint[] = []
   const hoursPerDay = 24
-  const totalHours = dailyPoints.length * hoursPerDay
+  // const totalHours = dailyPoints.length * hoursPerDay
   
   // Simple linear interpolation between daily candles
   for (let i = 0; i < dailyPoints.length - 1; i++) {

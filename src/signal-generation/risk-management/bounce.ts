@@ -22,7 +22,7 @@ export interface BounceTPTrailResult {
  * Trails TP based on EMA8 cross detection for faster exit
  */
 export function calculateBounceTPTrail(
-  entryPrice: number,
+  _entryPrice: number,
   signal: Signal & {
     bounce_mode?: boolean
     bounce_type?: 'BUY_BOUNCE' | 'SELL_BOUNCE'
@@ -55,7 +55,7 @@ export function calculateBounceTPTrail(
   
   const currentPrice = historicalData[historicalData.length - 1].close
   const previousPrice = historicalData[historicalData.length - 2].close
-  const previousEma8 = indicators.ema8 // For simplicity, use current EMA8 (in real implementation, track EMA8 history)
+  // const previousEma8 = indicators.ema8 // For simplicity, use current EMA8 (in real implementation, track EMA8 history)
   
   // For BUY bounce: TP trail = min(bounceTP, price when EMA8 crossdown occurs)
   if (isBuyBounce) {

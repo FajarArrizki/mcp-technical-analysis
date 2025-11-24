@@ -4,7 +4,7 @@
  */
 
 import { Signal } from '../../types'
-import { createSection, formatKeyValue } from './format-box'
+// import { createSection, formatKeyValue } from './format-box'
 
 const tableWidth = 62
 

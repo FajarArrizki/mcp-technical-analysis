@@ -25,7 +25,7 @@ export interface OrderBookDepth {
 export function calculateOrderBookDepth(
   impactPxs: any[],
   currentPrice: number,
-  assetCtx: any
+  _assetCtx: any
 ): OrderBookDepth | null {
   if (!impactPxs || !Array.isArray(impactPxs) || impactPxs.length < 2 || !currentPrice || currentPrice <= 0) {
     return null
@@ -33,7 +33,7 @@ export function calculateOrderBookDepth(
   
   const bidPrice = parseFloat(impactPxs[0] || '0') // Impact price for buy side
   const askPrice = parseFloat(impactPxs[1] || '0') // Impact price for sell side
-  const midPx = assetCtx.midPx ? parseFloat(assetCtx.midPx) : (bidPrice + askPrice) / 2
+  // const midPx = assetCtx.midPx ? parseFloat(assetCtx.midPx) : (bidPrice + askPrice) / 2
   
   if (bidPrice <= 0 || askPrice <= 0) {
     return null

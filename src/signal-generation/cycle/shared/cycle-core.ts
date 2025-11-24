@@ -10,16 +10,12 @@ import { getAssetMetadata, getUserState } from '../../data-fetchers/hyperliquid'
 import { rankAssetsByIndicatorQuality } from '../../analysis/indicator-quality'
 import { countBullishBearishIndicators } from '../../analysis/count-indicators'
 import { getHyperliquidAccountAddress } from '../../config'
-import { getActivePositions } from '../../position-management/positions'
-import { updatePositionPrices, convertToPositionState } from './position-monitor'
+import { updatePositionPrices } from './position-monitor'
 import { checkAllExitConditions, getHighestPriorityExit, determineExitAction } from './exit-manager'
 import { PerformanceTracker } from './performance-tracker'
-import { getBTCCurrentPrice, BTC_CORRELATION_EXPLANATION } from '../../analysis/btc-correlation'
-import { generateAIFeedback, saveAIFeedback } from './ai-feedback'
-import { saveCycleState, loadCycleState } from './state-manager'
+// import { getBTCCurrentPrice } from '../../analysis/btc-correlation'
 import { syncPositionsWithHyperliquid, reconcilePositionState } from './position-sync'
-import { checkCircuitBreaker, updateCircuitBreakerState } from './circuit-breaker'
-import { Position } from '../../position-management/positions'
+import { checkCircuitBreaker } from './circuit-breaker'
 
 export interface CycleCoreConfig {
   cycleConfig: CycleConfig
@@ -89,7 +85,7 @@ export async function executeCycle(
           currentState.positions = reconciled.updatedPositions
 
           // Record manual closes as trades
-          for (const close of reconciled.closedPositions) {
+          for (const _close of reconciled.closedPositions) {
             // Would create TradeRecord for manual closes
           }
         }
@@ -158,18 +154,18 @@ export async function executeCycle(
     } catch { /* no-op */ }
 
     // Precompute BTC price for indicator column using btc-correlation indicator (fallback to marketData)
-    let btcPriceStr = '$-'
-    try {
-      const btcPrice = await getBTCCurrentPrice()
-      if (typeof btcPrice === 'number' && isFinite(btcPrice) && btcPrice > 0) {
-        btcPriceStr = `$${btcPrice.toFixed(2)}`
-      }
-    } catch {
-      const btcDataObj = marketData instanceof Map ? marketData.get('BTC') : (marketData as any)['BTC']
-      const btcv = btcDataObj?.price ?? btcDataObj?.markPx ?? btcDataObj?.data?.price ?? btcDataObj?.data?.markPx
-      const btcn = typeof btcv === 'string' ? parseFloat(btcv) : (typeof btcv === 'number' ? btcv : 0)
-      btcPriceStr = (isFinite(btcn) && btcn > 0) ? `$${btcn.toFixed(2)}` : '$-'
-    }
+    // let _btcPriceStr = '$-'
+    // try {
+    //   const btcPrice = await getBTCCurrentPrice()
+    //   if (typeof btcPrice === 'number' && isFinite(btcPrice) && btcPrice > 0) {
+    //     _btcPriceStr = `$${btcPrice.toFixed(2)}`
+    //   }
+    // } catch {
+    //   const btcDataObj = marketData instanceof Map ? marketData.get('BTC') : (marketData as any)['BTC']
+    //   const btcv = btcDataObj?.price ?? btcDataObj?.markPx ?? btcDataObj?.data?.price ?? btcDataObj?.data?.markPx
+    //   const btcn = typeof btcv === 'string' ? parseFloat(btcv) : (typeof btcv === 'number' ? btcv : 0)
+    //   _btcPriceStr = (isFinite(btcn) && btcn > 0) ? `$${btcn.toFixed(2)}` : '$-'
+    // }
     // Removed verbose BTC correlation explanation output per user request
     for (let i = 0; i < displayCount; i++) {
       const ranked = rankedScores[i]
@@ -1385,7 +1381,7 @@ export async function executeCycle(
 /**
  * Get assets for cycle based on top N
  */
-function getAssetsForCycle(topN: number, metadata: any): string[] {
+function getAssetsForCycle(_topN: number, metadata: any): string[] {
   let universe: any[] = []
 
   if (Array.isArray(metadata) && metadata.length >= 2) {

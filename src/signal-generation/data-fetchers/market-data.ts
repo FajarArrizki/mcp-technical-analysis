@@ -4,7 +4,7 @@
  */
 
 import { log } from '../utils/logger'
-import { getAssetMetadata, getRealTimePrice } from './hyperliquid'
+import { getAssetMetadata } from './hyperliquid'
 import { getHistoricalData, getMultiTimeframeData } from './historical-data'
 import { calculateTechnicalIndicators } from '../technical-indicators'
 import { calculateMultiTimeframeIndicators, checkTrendAlignment } from '../utils/multi-timeframe'
@@ -59,7 +59,7 @@ export async function getMarketData(assets: string[], metadata?: any): Promise<{
     // Batch size set to very large number (999999) to effectively remove batching
     // All assets processed in parallel for maximum speed (no rate limit restrictions)
     const BATCH_SIZE = parseInt(process.env.BINANCE_BATCH_SIZE || '999999') // Effectively unlimited - process all assets in parallel
-    const BATCH_DELAY = parseInt(process.env.BINANCE_BATCH_DELAY_MS || '0') // 0ms delay between batches (no throttling)
+    // const BATCH_DELAY = parseInt(process.env.BINANCE_BATCH_DELAY_MS || '0') // 0ms delay between batches (no throttling)
     
     // OPTIMIZATION FINAL: Cache all process.env checks at function start (avoid repeated checks per asset)
     // CRITICAL FIX: Increased to 75 candles minimum for better volume analysis and indicator accuracy
@@ -80,7 +80,7 @@ export async function getMarketData(assets: string[], metadata?: any): Promise<{
     // Disabling them causes external score to be 0-5/30, reducing max confidence to ~76%
     // Enable all by default to maximize confidence scoring accuracy
     // Block explorer APIs disabled: always skip external blockchain explorer calls
-    const USE_BLOCKCHAIN_DATA = false
+    // const USE_BLOCKCHAIN_DATA = false
     const USE_ENHANCED_METRICS = process.env.USE_ENHANCED_METRICS !== 'false' // Default: true (was: === 'true')
     const USE_ORDER_BOOK_DEPTH = process.env.USE_ORDER_BOOK_DEPTH !== 'false' // Default: true (was: === 'true')
     const USE_VOLUME_PROFILE = process.env.USE_VOLUME_PROFILE !== 'false' // Default: true (was: === 'true')
@@ -147,12 +147,12 @@ export async function getMarketData(assets: string[], metadata?: any): Promise<{
           // OPTIMIZATION: Fetch primary and multi-timeframe data in parallel (if enabled)
           // Multi-timeframe doesn't depend on primary data, so they can be fetched simultaneously
           const [primaryData, mtfData] = await Promise.all([
-            getHistoricalData(asset, PRIMARY_INTERVAL, CANDLES_COUNT).catch(err => {
+            getHistoricalData(asset, PRIMARY_INTERVAL, CANDLES_COUNT).catch(_err => {
               // OPTIMIZATION: Removed error logging - only show successful fetches
             return []
             }),
             MULTI_TIMEFRAME.length > 0 
-              ? getMultiTimeframeData(asset, MULTI_TIMEFRAME).catch(err => {
+              ? getMultiTimeframeData(asset, MULTI_TIMEFRAME).catch(_err => {
                   // OPTIMIZATION: Removed error logging - only show successful fetches
               return {}
             })
@@ -487,7 +487,7 @@ export async function getMarketData(assets: string[], metadata?: any): Promise<{
       const allBatchResults = await Promise.allSettled(allBatchPromises)
       
       // Collect results from all batches - only process successful results (no error logging)
-      allBatchResults.forEach((batchResult, batchIndex) => {
+      allBatchResults.forEach((batchResult) => {
         if (batchResult.status === 'fulfilled' && Array.isArray(batchResult.value)) {
           batchResult.value.forEach((result) => {
         if (result.status === 'fulfilled' && result.value) {

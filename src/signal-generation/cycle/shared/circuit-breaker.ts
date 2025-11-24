@@ -26,7 +26,7 @@ export interface CircuitBreakerCheckResult {
 export function checkCircuitBreaker(
   currentState: CircuitBreakerState,
   config: CircuitBreakerConfig,
-  recentTrades: TradeRecord[],
+  _recentTrades: TradeRecord[],
   apiErrorCount: number = 0,
   apiRequestCount: number = 0,
   marginLevel?: number
@@ -95,7 +95,7 @@ export function updateCircuitBreakerState(
   trade: TradeRecord,
   startOfDayTimestamp: number
 ): CircuitBreakerState {
-  const now = Date.now()
+  // const now = Date.now()
   const isToday = trade.exitTime >= startOfDayTimestamp
 
   // Calculate daily PnL (only from today's trades)

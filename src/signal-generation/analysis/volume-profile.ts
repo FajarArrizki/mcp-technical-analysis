@@ -57,10 +57,10 @@ export function calculateSessionVolumeProfile(
     return null
   }
   
-  const closes = historicalData.map(d => d.close)
+  // const closes = historicalData.map(d => d.close)
   const highs = historicalData.map(d => d.high)
   const lows = historicalData.map(d => d.low)
-  const volumes = historicalData.map(d => d.volume || 0)
+  // const volumes = historicalData.map(d => d.volume || 0)
   
   // Determine price range and create bins
   const minPrice = Math.min(...lows)
@@ -95,7 +95,7 @@ export function calculateSessionVolumeProfile(
     // Distribute volume evenly across price range of this candle
     const candleRange = high - low
     if (candleRange > 0) {
-      const volumePerBin = volume / numBins
+      // const volumePerBin = volume / numBins
       
       // Find bins that overlap with this candle's price range
       for (let j = 0; j < numBins; j++) {

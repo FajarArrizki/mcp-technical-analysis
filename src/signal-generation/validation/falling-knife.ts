@@ -26,7 +26,7 @@ export interface TechnicalIndicators {
  * Returns true if all conditions are met for falling knife scenario
  */
 export function isCatchingFallingKnife(
-  signal: Signal,
+  _signal: Signal,
   indicators: TechnicalIndicators | null,
   trendAlignment: TrendAlignment | null
 ): boolean {

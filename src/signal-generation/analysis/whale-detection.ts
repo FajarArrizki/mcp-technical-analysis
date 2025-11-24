@@ -3,7 +3,7 @@
  * Detect large orders, spoofing, wash trading, smart money flow
  */
 
-import { WhaleActivity, WhaleOrder } from '../types/futures-types'
+import { WhaleOrder } from '../types/futures-types'
 import { HistoricalDataPoint } from '../types'
 
 export interface WhaleDetectionResult {
@@ -17,8 +17,8 @@ export interface WhaleDetectionResult {
 }
 
 // Order tracking (in-memory cache for spoofing detection)
-const orderCache = new Map<string, Array<{ price: number; size: number; timestamp: number; side: 'buy' | 'sell'; canceled: boolean }>>()
-const ORDER_CACHE_TTL = 60000 // 1 minute
+// const orderCache = new Map<string, Array<{ price: number; size: number; timestamp: number; side: 'buy' | 'sell'; canceled: boolean }>>()
+// const ORDER_CACHE_TTL = 60000 // 1 minute
 const SPOOFING_THRESHOLD = 3 // Orders cancelled within 5 seconds
 const LARGE_ORDER_THRESHOLD = 100000 // $100k USD
 
@@ -93,7 +93,7 @@ export function detectSpoofing(orders: WhaleOrder[]): boolean {
   }
 
   // Check for rapid order placement and cancellation at same levels
-  for (const [key, groupOrders] of orderGroups) {
+  for (const [, groupOrders] of orderGroups) {
     if (groupOrders.length >= SPOOFING_THRESHOLD) {
       // Multiple orders at same price level in short time = spoofing
       const timeRange = Math.max(...groupOrders.map(o => o.timestamp)) - Math.min(...groupOrders.map(o => o.timestamp))
@@ -128,7 +128,7 @@ export function detectWashTrading(
   })
 
   const avgVolume = volumes.reduce((sum, v) => sum + v, 0) / volumes.length
-  const avgPriceChange = priceChanges.reduce((sum, p) => sum + p, 0) / priceChanges.length
+  // const avgPriceChange = priceChanges.reduce((sum, p) => sum + p, 0) / priceChanges.length
 
   // Wash trading: high volume with low price movement
   // If volume is 2x average but price change < 0.1%, likely wash trading

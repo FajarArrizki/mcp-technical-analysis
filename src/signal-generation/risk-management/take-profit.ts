@@ -142,7 +142,7 @@ export function calculateDynamicTP(
   signal: Signal,
   indicators: TechnicalIndicators | null | undefined,
   trendAlignment: TrendAlignment | null | undefined,
-  marketRegime: MarketRegime | null | undefined,
+  _marketRegime: MarketRegime | null | undefined,
   slDistance: number
 ): TPResult {
   const MIN_TP_PERCENT = 0.02 // 2% minimum

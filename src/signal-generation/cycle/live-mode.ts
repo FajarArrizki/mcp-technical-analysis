@@ -3,10 +3,10 @@
  * Real trading with API execution and safety checks
  */
 
-import { CycleState, CycleConfig, PositionState, Signal, MarketData } from '../types'
+import { CycleState, PositionState, Signal, MarketData } from '../types'
 import { LiveExecutor, LiveExecutorConfig } from '../execution/live-executor'
 import { PerformanceTracker, PerformanceTrackerConfig } from './shared/performance-tracker'
-import { CircuitBreakerState } from '../types'
+// import { CircuitBreakerState } from '../types'
 import { initializeCircuitBreakerState } from './shared/circuit-breaker'
 import { executeCycle, CycleCoreConfig } from './shared/cycle-core'
 import { saveCycleState, loadCycleState, reconcileStateWithAPI, StateManagerConfig } from './shared/state-manager'
@@ -121,7 +121,7 @@ export async function initializeLiveMode(config: LiveModeConfig, model: any): Pr
 export async function runLiveModeCycle(
   currentState: Partial<CycleState>,
   cycleConfig: CycleCoreConfig,
-  performanceTracker: PerformanceTracker
+  _performanceTracker: PerformanceTracker
 ): Promise<{
   success: boolean
   newState?: Partial<CycleState>

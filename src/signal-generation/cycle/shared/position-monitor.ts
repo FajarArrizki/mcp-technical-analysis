@@ -3,7 +3,7 @@
  * Track PnL for all open positions and check exit conditions
  */
 
-import { PositionState, MarketData, ExitCondition } from '../../types'
+import { PositionState, MarketData } from '../../types'
 import { Position } from '../../position-management/positions'
 
 export interface PositionMonitorConfig {
@@ -56,16 +56,16 @@ export function updatePositionPrices(
     }
 
     // Calculate liquidation distance (for leveraged positions)
-    let liquidationDistance: number | undefined
+    // let liquidationDistance: number | undefined
     if (position.leverage > 1) {
       // Simplified: liquidation at 100% loss (should use actual Hyperliquid liquidation price)
-      const liquidationPrice = position.side === 'LONG'
-        ? entryPrice * (1 - 1 / position.leverage)
-        : entryPrice * (1 + 1 / position.leverage)
+      // const liquidationPrice = position.side === 'LONG'
+      //   ? entryPrice * (1 - 1 / position.leverage)
+      //   : entryPrice * (1 + 1 / position.leverage)
 
-      liquidationDistance = position.side === 'LONG'
-        ? ((currentPrice - liquidationPrice) / currentPrice) * 100
-        : ((liquidationPrice - currentPrice) / currentPrice) * 100
+      // liquidationDistance = position.side === 'LONG'
+      //   ? ((currentPrice - liquidationPrice) / currentPrice) * 100
+      //   : ((liquidationPrice - currentPrice) / currentPrice) * 100
     }
 
     updatedPositions.set(symbol, {

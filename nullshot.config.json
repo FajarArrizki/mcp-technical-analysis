@@ -18,18 +18,18 @@
     "license": "MIT"
   },
   "environment": {
-    "required": [
-      "HYPERLIQUID_ACCOUNT_ADDRESS",
-      "HYPERLIQUID_WALLET_API_KEY"
-    ],
+    "required": [],
     "optional": [
+      "HYPERLIQUID_ACCOUNT_ADDRESS",
+      "HYPERLIQUID_WALLET_API_KEY",
       "AI_PROVIDER",
       "AI_PROVIDER_API_KEY",
       "MODEL_ID",
       "HYPERLIQUID_API_URL",
       "CYCLE_INTERVAL_MS",
       "PAPER_CAPITAL"
-    ]
+    ],
+    "note": "Credentials can be provided as tool parameters (accountAddress, walletApiKey) or via environment variables. Each user can use their own credentials."
   },
   "deployment": {
     "platform": "cloudflare",

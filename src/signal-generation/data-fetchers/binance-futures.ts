@@ -182,7 +182,7 @@ export async function fetchFundingRate(asset: string): Promise<FundingRateData> 
     const rate7d = rates.slice(0, 8).reduce((sum: number, r: number) => sum + r, 0) / Math.max(1, Math.min(8, rates.length))
 
     // Calculate trend (3h, 8h, 24h momentum)
-    const rate3h = rates.length > 0 ? rates[0] : currentFundingRate
+    // const rate3h = rates.length > 0 ? rates[0] : currentFundingRate
     const rate8h = rates.length > 2 ? rates[2] : currentFundingRate
     const rate24hHist = rates.length > 7 ? rates[7] : currentFundingRate
 
@@ -241,7 +241,7 @@ export async function fetchOpenInterest(asset: string): Promise<OpenInterestData
       MAX_RETRIES
     )
 
-    const currentOI = parseFloat(currentData.openInterest || '0')
+    // const currentOI = parseFloat(currentData.openInterest || '0')
     const openInterestValueUsd = parseFloat(currentData.openInterestValue || '0')
 
     // Get 24h OI history for change calculation

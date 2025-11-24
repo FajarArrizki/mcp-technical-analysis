@@ -4,7 +4,7 @@
  */
 
 import * as https from 'https'
-import * as http from 'http'
+// import * as http from 'http'
 
 export interface BlockchainData {
   largeTransactions: Array<{
@@ -117,7 +117,7 @@ export async function fetchPublicBlockchainData(
           // Get latest block number to estimate recent activity
           const blockNumberUrl = `https://api.etherscan.io/api?module=proxy&action=eth_blockNumber${etherscanApiKey ? `&apikey=${etherscanApiKey}` : ''}`
           
-          const blockNumberResponse = await new Promise<number>((resolve, reject) => {
+          await new Promise<number>((resolve, reject) => {
             const req = https.get(blockNumberUrl, { timeout: 10000 }, (res) => {
               let data = ''
               res.on('data', (chunk) => { data += chunk })

@@ -3,9 +3,7 @@
  * Builds system and user prompts for a single asset
  */
 
-import { Signal } from '../types'
 import { formatPrice, formatLargeNumber } from '../formatting/price'
-import { getActivePositions } from '../position-management/positions'
 import { countBullishBearishIndicators } from '../analysis/count-indicators'
 
 /**
@@ -708,7 +706,7 @@ const SYSTEM_PROMPT_STATIC_PARTS = {
 export function buildSystemPromptForAsset(
   asset: string,
   marketData: Map<string, any> | Record<string, any>,
-  accountState: any,
+  _accountState: any,
   positions: Map<string, any>,
   allowedAssets: string[]
 ): string {
@@ -818,7 +816,7 @@ export function buildUserPromptForAsset(
 
     // CRITICAL FIX: Use shared utility for 100% consistent indicator counting
     // This ensures the Summary shown to AI matches validation logic exactly
-    const price = ind.price || currentPrice
+    // const price = ind.price || currentPrice
     const indicatorCount = countBullishBearishIndicators(ind, currentPrice)
     const bullishCount = indicatorCount.bullishCount
     const bearishCount = indicatorCount.bearishCount

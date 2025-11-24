@@ -138,7 +138,7 @@ function calculateSLFromNoiseZones(
  * Calculate trailing stop distance
  */
 function calculateTrailingStopDistance(
-  side: 'LONG' | 'SHORT',
+  _side: 'LONG' | 'SHORT',
   atr: number,
   volatility: number // Volatility %
 ): number {

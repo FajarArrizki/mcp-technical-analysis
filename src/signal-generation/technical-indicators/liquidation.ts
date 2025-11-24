@@ -209,7 +209,7 @@ function identifySafeEntryZones(
   const safeZones = liquidationData.safeEntryZones || []
 
   // Calculate confidence: distance from nearest liquidation cluster
-  const clusters = liquidationData.clusters || []
+  // const clusters = liquidationData.clusters || []
   const nearestDistance = liquidationData.liquidationDistance || 10
 
   // Confidence increases with distance from liquidation clusters

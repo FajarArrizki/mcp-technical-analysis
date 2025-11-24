@@ -11,7 +11,7 @@ import { calculateDynamicLeverage } from '../risk-management/leverage'
 import { calculateDynamicMarginPercentage } from '../risk-management/margin'
 import { getRealTimePrice } from '../data-fetchers/hyperliquid'
 import { getTradingConfig, getThresholds } from '../config'
-import { Signal, MarketData } from '../types'
+import { Signal } from '../types'
 
 export async function formatSignal(
   signal: Signal & {
@@ -529,7 +529,7 @@ export async function formatSignal(
         tableRow('  Top Liquidity:', `${topZones.length} zones`, 'cyan')
         topZones.forEach((zone: { priceRange: [number, number]; type: string; strength: string }, idx: number) => {
           const zoneTypeColor = zone.type === 'support' ? 'green' : zone.type === 'resistance' ? 'red' : 'cyan'
-          const zoneStrengthColor = zone.strength === 'high' ? 'green' : zone.strength === 'medium' ? 'yellow' : 'yellow'
+          // const zoneStrengthColor = zone.strength === 'high' ? 'green' : zone.strength === 'medium' ? 'yellow' : 'yellow'
           tableRow(`    Zone ${idx + 1}:`, `$${formatPrice(zone.priceRange[0], signal.coin)}-$${formatPrice(zone.priceRange[1], signal.coin)} (${zone.type}, ${zone.strength})`, zoneTypeColor)
         })
       }
@@ -1017,7 +1017,7 @@ export async function formatSignal(
           const rejectEVFinal = tradingMode === 'AUTONOMOUS' 
             ? FUTURES_EV_REJECT_THRESHOLD  // Use futures threshold for AUTONOMOUS mode
             : rejectEV  // Use standard threshold for other modes (already cached)
-          let evStatus = ''
+          // let evStatus = ''
           let evColor = 'green'
           let evStatusText = 'Auto-Tradeable'
 
@@ -1025,29 +1025,29 @@ export async function formatSignal(
           if (tradingMode === 'AUTONOMOUS' && signal.auto_tradeable) {
             // Signal is auto-tradeable - determine status based on execution level
             if (signal.executionLevel === 'HIGH_CONFIDENCE') {
-              evStatus = ''
+              // evStatus = ''
               evColor = 'green'
               evStatusText = `High Confidence - Auto-Tradeable (≥$${autoTradeEV.toFixed(2)})`
             } else if (signal.executionLevel === 'MEDIUM_CONFIDENCE') {
-              evStatus = ''
+              // evStatus = ''
               evColor = 'yellow'
               evStatusText = `Medium Confidence - Auto-Tradeable (≥$${displayEV.toFixed(2)})`
             } else if (signal.executionLevel === 'LOW_CONFIDENCE_EXTREME') {
-              evStatus = ''
+              // evStatus = ''
               evColor = 'red'
               evStatusText = `Low Confidence - Extreme Condition - Auto-Tradeable (≥$${rejectEV.toFixed(2)})`
             } else {
               // Fallback to standard logic
               if (signal.expected_value >= autoTradeEV) {
-                evStatus = ''
+                // evStatus = ''
                 evColor = 'green'
                 evStatusText = `Auto-Tradeable (≥$${autoTradeEV.toFixed(2)})`
               } else if (signal.expected_value >= displayEV) {
-                evStatus = ''
+                // evStatus = ''
                 evColor = 'yellow'
                 evStatusText = `Auto-Tradeable (≥$${displayEV.toFixed(2)})`
               } else {
-                evStatus = ''
+                // evStatus = ''
                 evColor = 'red'
                 evStatusText = `Auto-Tradeable (≥$${rejectEVFinal.toFixed(2)})`
               }
@@ -1055,19 +1055,19 @@ export async function formatSignal(
           } else {
             // SIGNAL_ONLY or MANUAL_REVIEW mode, or rejected signal
             if (signal.expected_value >= autoTradeEV) {
-              evStatus = ''
+              // evStatus = ''
               evColor = 'green'
               evStatusText = `High EV (≥$${autoTradeEV.toFixed(2)})`
             } else if (signal.expected_value >= displayEV) {
-              evStatus = ''
+              // evStatus = ''
               evColor = 'yellow'
               evStatusText = `Medium EV (≥$${displayEV.toFixed(2)}) - Manual Review`
             } else if (signal.expected_value >= rejectEVFinal) {
-              evStatus = ''
+              // evStatus = ''
               evColor = 'red'
               evStatusText = `Marginal EV (≥$${rejectEVFinal.toFixed(2)}) - High Risk`
             } else {
-              evStatus = ''
+              // evStatus = ''
               evColor = 'red'
               evStatusText = `Rejected (<$${rejectEVFinal.toFixed(2)})`
             }
@@ -1208,8 +1208,8 @@ export async function formatSignal(
         const isAllIndicatorsHeader = cleanSection === 'ALL INDICATORS:' || cleanSection.startsWith('ALL INDICATORS:')
         const isWarning = cleanSection.includes('WARNING') || cleanSection.includes('CONTRADICTION')
         const isHighRisk = cleanSection.includes('HIGH RISK') || cleanSection.includes('CONTRADICTION')
-        const isListItem = cleanSection.startsWith('- ') || cleanSection.startsWith('  - ')
-        const isSubSection = cleanSection.startsWith('Supporting') || cleanSection.startsWith('Contradicting')
+        // const isListItem = cleanSection.startsWith('- ') || cleanSection.startsWith('  - ')
+        // const isSubSection = cleanSection.startsWith('Supporting') || cleanSection.startsWith('Contradicting')
 
         // If this is a section header, display it with header format
         if (isRedFlagsHeader) {

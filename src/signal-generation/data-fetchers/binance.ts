@@ -128,7 +128,7 @@ export async function getHistoricalDataFromBinance(
   asset: string,
   interval: string = '1h',
   limit: number = 200,
-  retries: number = 0 // NO RETRY for maximum speed - fail fast
+  _retries: number = 0 // NO RETRY for maximum speed - fail fast
 ): Promise<HistoricalDataPoint[]> {
   // Try mapping first, then fallback to auto-format ASSETUSDT
   let symbol = BINANCE_BINANCE_PAIRS[asset]

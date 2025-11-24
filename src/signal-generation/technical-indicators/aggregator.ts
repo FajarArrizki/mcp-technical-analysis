@@ -4,7 +4,7 @@
  */
 
 import { HistoricalDataPoint } from '../types'
-import { calculateSMA, calculateEMA } from './moving-averages'
+import { calculateEMA } from './moving-averages'
 import { calculateRSI, calculateMACD, calculateStochastic, calculateCCI, calculateWilliamsR } from './momentum'
 import { calculateBollingerBands, calculateATR } from './volatility'
 import { calculateOBV, calculateVWAP } from './volume'

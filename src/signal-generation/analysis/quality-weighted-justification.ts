@@ -7,10 +7,7 @@ import { TechnicalIndicators } from '../technical-indicators/aggregator'
 import { Signal } from '../types'
 import { 
   INDICATOR_WEIGHTS, 
-  INDICATOR_GROUPS, 
   detectContradictions,
-  getIndicatorWeight,
-  areIndicatorsRedundant,
   ConflictSeverity,
   calculateConflictSeverity
 } from './indicator-weights'
@@ -51,7 +48,7 @@ export interface QualityWeightedResult {
 export function calculateQualityWeightedJustification(
   signal: Signal,
   indicators: TechnicalIndicators | null | undefined,
-  trendAlignment: any,
+  _trendAlignment: any,
   externalData: any
 ): QualityWeightedResult {
   const bullishIndicators: WeightedIndicatorScore[] = []
@@ -72,7 +69,7 @@ export function calculateQualityWeightedJustification(
   
   // Track redundant groups
   const redundantGroups: Set<string> = new Set()
-  const usedGroups: Map<string, string[]> = new Map()
+  // const usedGroups: Map<string, string[]> = new Map()
   
   if (!indicators) {
     return {

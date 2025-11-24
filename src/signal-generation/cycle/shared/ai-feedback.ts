@@ -3,7 +3,7 @@
  * Compare AI predictions vs actual outcomes for model retraining
  */
 
-import { AIFeedbackData, AIFeedbackFeatures, AIFeedbackPrediction, AIFeedbackOutcome, Signal, TradeRecord, MarketData, ExitReason } from '../../types'
+import { AIFeedbackData, AIFeedbackFeatures, AIFeedbackPrediction, AIFeedbackOutcome, Signal, TradeRecord, MarketData } from '../../types'
 import * as fs from 'fs'
 import * as path from 'path'
 
@@ -19,7 +19,7 @@ export function generateAIFeedback(
   signal: Signal,
   trade: TradeRecord,
   entryMarketData: MarketData | null,
-  exitMarketData: MarketData | null,
+  _exitMarketData: MarketData | null,
   cycleId: string
 ): AIFeedbackData {
   // Extract features from entry market data
@@ -64,11 +64,11 @@ export function generateAIFeedback(
  * Extract features from market data and signal
  */
 function extractFeatures(
-  signal: Signal,
+  _signal: Signal,
   marketData: MarketData | null
 ): AIFeedbackFeatures {
   const indicators = marketData?.indicators || {}
-  const externalData = marketData?.externalData || {}
+  // const externalData = marketData?.externalData || {}
   const trendAlignment = marketData?.trendAlignment
   const marketRegime = marketData?.indicators?.marketRegime || marketData?.indicators?.regime
 
@@ -115,7 +115,7 @@ function extractFeatures(
     const price = marketData.price
     const upper = bb.upper || bb.upperBand || 0
     const lower = bb.lower || bb.lowerBand || 0
-    const middle = bb.middle || bb.middleBand || (upper + lower) / 2
+    // const middle = bb.middle || bb.middleBand || (upper + lower) / 2
     if (price >= upper) {
       entryIndicators.bbPosition = 'upper'
     } else if (price <= lower) {

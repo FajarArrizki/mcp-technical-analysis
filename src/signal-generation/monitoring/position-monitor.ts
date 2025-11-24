@@ -7,7 +7,7 @@ import { PositionState } from '../types'
 import { FuturesMarketData, BTCCorrelationData } from '../types/futures-types'
 import { calculateLiquidationPrice } from '../risk-management/anti-liquidation'
 import { checkEmergencyExitConditions, shouldTriggerEmergencyExit } from '../risk-management/emergency-exit'
-import { predictAltImpactFromBTCMove, getBTCCurrentPrice } from '../analysis/btc-correlation'
+import { predictAltImpactFromBTCMove } from '../analysis/btc-correlation'
 
 export interface PositionMonitoringResult {
   liquidationDistance: number // Distance to liquidation (%)
@@ -83,7 +83,7 @@ export async function monitorPosition(
   if (correlationData) {
     try {
       // Get recent BTC move (last 5 minutes)
-      const currentBTC = await getBTCCurrentPrice()
+      // const currentBTC = await getBTCCurrentPrice()
       
       // This is simplified - would need BTC history for accurate calculation
       // Placeholder: estimate 0.5% BTC move impact

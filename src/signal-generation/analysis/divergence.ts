@@ -31,10 +31,10 @@ export function detectDivergence(
   const priceHighIndex = recentPrices.indexOf(priceHigh)
   const priceLowIndex = recentPrices.indexOf(priceLow)
   
-  const indicatorHigh = Math.max(...recentIndicators)
-  const indicatorLow = Math.min(...recentIndicators)
-  const indicatorHighIndex = recentIndicators.indexOf(indicatorHigh)
-  const indicatorLowIndex = recentIndicators.indexOf(indicatorLow)
+  // const indicatorHigh = Math.max(...recentIndicators)
+  // const indicatorLow = Math.min(...recentIndicators)
+  // const indicatorHighIndex = recentIndicators.indexOf(indicatorHigh)
+  // const indicatorLowIndex = recentIndicators.indexOf(indicatorLow)
   
   // Bullish divergence: Price makes lower low, but indicator makes higher low
   let bullishDivergence = false

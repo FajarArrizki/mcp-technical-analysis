@@ -10,7 +10,7 @@
  */
 export function formatPrice(
   price: number | string | null | undefined, 
-  asset?: string | null,
+  _asset?: string | null,
   originalPriceString?: string | null
 ): string {
   // CRITICAL FIX: If original price string from Hyperliquid is provided, use it directly (preserves exact format)

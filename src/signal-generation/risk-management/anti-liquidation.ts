@@ -166,7 +166,7 @@ export function calculateSafePositionSize(
       })
 
       // Calculate safe leverage based on cluster distance
-      const clusterDistance = Math.abs(nearest.price - entryPrice) / entryPrice * 100
+      // const clusterDistance = Math.abs(nearest.price - entryPrice) / entryPrice * 100
       const volatility = 2 // Placeholder - would use ATR% from market data
       
       recommendedLeverage = calculateSafeLeverage(

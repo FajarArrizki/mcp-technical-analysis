@@ -692,7 +692,7 @@ export function scoreIndicatorQuality(
     if (scoreValue >= 120) return 'fair'
     return 'poor'
   }
-  const quality = qualityFromCoverageAndScore(coveragePct, score)
+  // const quality = qualityFromCoverageAndScore(coveragePct, score)
 
   // Deduplicate strengths/weaknesses to keep counts consistent across modules
   const unique = (arr: string[]) => Array.from(new Set(arr.filter(Boolean)))

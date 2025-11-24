@@ -5,7 +5,7 @@
  * normalizeConfidence, calculateAdaptiveMinConfidence, calculateRelativeEVThreshold functions
  */
 
-import { Signal, HistoricalDataPoint, MarketRegime } from '../types'
+import { HistoricalDataPoint, MarketRegime } from '../types'
 
 export interface TechnicalIndicators {
   ema20?: number | null
@@ -279,7 +279,7 @@ export function getAdaptiveWeights(
  */
 export function evaluateTieredWeights(
   indicators: TechnicalIndicators | null,
-  direction: string
+  _direction: string
 ): TieredWeightsResult {
   if (!indicators) {
     return {

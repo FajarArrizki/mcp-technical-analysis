@@ -9,7 +9,7 @@ import { Signal } from '../types'
 import { buildSystemPromptForAsset, buildUserPromptForAsset } from './prompt-builder'
 import { callAIForAsset, parseAIResponse } from './ai-processor'
 import { processSignal } from './signal-processor'
-import { TechnicalIndicators } from '../technical-indicators/aggregator'
+// import { TechnicalIndicators } from '../technical-indicators/aggregator'
 import { countBullishBearishIndicators } from '../analysis/count-indicators'
 
 /**
@@ -60,7 +60,7 @@ export async function generateSignalForSingleAsset(
     // OPTIMIZATION: Cache nested property access
     const indicators = assetData?.indicators
     const assetDataData = assetData?.data
-    const externalData = assetData?.externalData
+    // const externalData = assetData?.externalData
     
     // Check if asset has valid data
     const hasPrice = indicators?.price || assetData?.price || assetDataData?.price || assetDataData?.markPx
@@ -171,7 +171,7 @@ export async function generateSignalForSingleAsset(
         }
         
         if (newDirection) {
-          const originalSignal = signal.signal
+          // const originalSignal = signal.signal
           signal.signal = newDirection
           console.log(`\x1b[32m✅ ${asset}: Auto-converted HOLD → ${newDirection.toUpperCase()} (BULL: ${bullishCount} | BEAR: ${bearishCount} | Summary: ${summaryDir})\x1b[0m`)
         } else {

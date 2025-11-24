@@ -4,9 +4,7 @@
  */
 
 import { initializeTestMode, runTestModeCycle } from './signal-generation/cycle/test-mode'
-import { getAIModel, getAIProvider } from './signal-generation/config'
 import { formatSignal } from './signal-generation/formatting/format-signal'
-import { Signal } from './signal-generation/types'
 import { createSection, formatKeyValue } from './signal-generation/cycle/shared/format-box'
 import { formatPositionBox, formatClosedPositionBox } from './signal-generation/cycle/shared/format-position'
 import { formatPortfolioSummary, formatSystemStatus } from './signal-generation/cycle/shared/format-portfolio'
@@ -60,7 +58,7 @@ async function main() {
     enabled: true
   }
 
-  const { state, executor, performanceTracker, cycleConfig } = initializeTestMode(config, model)
+  const { state, performanceTracker, cycleConfig } = initializeTestMode(config, model)
 
   console.log(`✅ Test mode initialized`)
   console.log(`   Paper Capital: $${paperCapital.toFixed(2)}`)

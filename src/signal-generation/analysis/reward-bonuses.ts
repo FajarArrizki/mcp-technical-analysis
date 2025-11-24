@@ -13,7 +13,7 @@ function envNum(key: string, def: number): number {
   return isFinite(v) ? v : def
 }
 
-export function computeRewardBonuses(asset: string, marketData: any): RewardBonusResult {
+export function computeRewardBonuses(_asset: string, marketData: any): RewardBonusResult {
   let reward = 0
   const reasons: string[] = []
   let flags = 0

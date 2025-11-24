@@ -23,16 +23,14 @@ if [ ! -f "dist/mcp-server/index.js" ]; then
     exit 1
 fi
 
-# Check if secrets are set in Cloudflare
-echo "🔍 Checking Cloudflare secrets..."
-echo "⚠️  Note: Secrets must be set via Cloudflare Dashboard or 'wrangler secret put'"
-echo "⚠️  Required secrets:"
-echo "   - HYPERLIQUID_ACCOUNT_ADDRESS"
-echo "   - HYPERLIQUID_WALLET_API_KEY"
-echo ""
-echo "💡 To set secrets, run:"
-echo "   wrangler secret put HYPERLIQUID_ACCOUNT_ADDRESS"
-echo "   wrangler secret put HYPERLIQUID_WALLET_API_KEY"
+# Note about credentials
+echo "📝 Credentials Information:"
+echo "   ℹ️  This MCP server supports multi-user credentials"
+echo "   ℹ️  Users can provide their own credentials via tool parameters:"
+echo "      - accountAddress: Hyperliquid account address"
+echo "      - walletApiKey: Hyperliquid wallet API key / private key"
+echo "   ℹ️  Environment variables are optional (for backward compatibility)"
+echo "   ℹ️  If credentials are not provided, tools will use paper executor (simulation)"
 echo ""
 
 # Deploy to Cloudflare
@@ -48,12 +46,14 @@ fi
 echo "✅ Deployment complete!"
 echo ""
 echo "📋 Next steps:"
-echo "1. ⚠️  Set secrets via Cloudflare Dashboard or:"
-echo "   wrangler secret put HYPERLIQUID_ACCOUNT_ADDRESS"
-echo "   wrangler secret put HYPERLIQUID_WALLET_API_KEY"
-echo ""
-echo "2. Configure non-sensitive environment variables in Cloudflare Dashboard"
+echo "1. ✅ No secrets required! Users can provide their own credentials via tool parameters"
+echo "2. Configure non-sensitive environment variables in Cloudflare Dashboard (optional)"
 echo "3. Test the MCP server connection"
+echo ""
+echo "💡 How users provide credentials:"
+echo "   - Pass accountAddress and walletApiKey as parameters to execution tools"
+echo "   - Or set environment variables (for backward compatibility)"
+echo "   - If not provided, tools default to paper executor (simulation)"
 echo ""
 echo "🔗 MCP Server URL: https://mcp.geartrade.ai"
 echo ""

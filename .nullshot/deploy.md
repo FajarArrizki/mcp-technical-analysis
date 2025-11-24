@@ -35,17 +35,18 @@ npm install
 
 ### 1. Environment Variables
 
-⚠️ **IMPORTANT SECURITY NOTE**: 
-- **Never commit secrets to the repository**
-- **Never hardcode secrets in configuration files**
-- Always use Cloudflare's secret management system
-- Secrets are stored encrypted and never exposed in logs or code
+⚠️ **IMPORTANT**: This MCP server supports **multi-user credentials**!
 
-Set the following environment variables in Cloudflare Dashboard or via Wrangler:
+- **Users can provide their own credentials** via tool parameters (`accountAddress`, `walletApiKey`)
+- **Environment variables are optional** (for backward compatibility only)
+- **If credentials are not provided**, tools default to paper executor (simulation)
+- **Never commit secrets** to the repository
+- **Never hardcode secrets** in configuration files
 
-**Required Secrets:**
+**For backward compatibility** (optional), you can set environment variables in Cloudflare Dashboard or via Wrangler:
+
 ```bash
-# Via Wrangler CLI (you will be prompted to enter the value)
+# Via Wrangler CLI (optional, only if you want default credentials)
 wrangler secret put HYPERLIQUID_ACCOUNT_ADDRESS
 wrangler secret put HYPERLIQUID_WALLET_API_KEY
 ```

@@ -84,32 +84,32 @@ export function formatPositionBox(
   let tp1Price = 0
   let tp2Price = 0
   let tp3Price = 0
-  let tp1Pct = 0
-  let tp2Pct = 0
-  let tp3Pct = 0
+  // let _tp1Pct = 0
+  // let tp2Pct = 0
+  // let tp3Pct = 0
   
   if (takeProfit > entryPrice && side === 'LONG') {
     const distance = takeProfit - entryPrice
     tp1Price = entryPrice + (distance * 0.5)
     tp2Price = entryPrice + (distance * 0.8)
     tp3Price = takeProfit
-    tp1Pct = ((tp1Price - entryPrice) / entryPrice) * 100
-    tp2Pct = ((tp2Price - entryPrice) / entryPrice) * 100
-    tp3Pct = ((tp3Price - entryPrice) / entryPrice) * 100
+    // _tp1Pct = ((tp1Price - entryPrice) / entryPrice) * 100
+    // tp2Pct = ((tp2Price - entryPrice) / entryPrice) * 100
+    // tp3Pct = ((tp3Price - entryPrice) / entryPrice) * 100
   } else if (takeProfit < entryPrice && side === 'SHORT') {
     const distance = entryPrice - takeProfit
     tp1Price = entryPrice - (distance * 0.5)
     tp2Price = entryPrice - (distance * 0.8)
     tp3Price = takeProfit
-    tp1Pct = ((entryPrice - tp1Price) / entryPrice) * 100
-    tp2Pct = ((entryPrice - tp2Price) / entryPrice) * 100
-    tp3Pct = ((entryPrice - tp3Price) / entryPrice) * 100
+    // tp1Pct = ((entryPrice - tp1Price) / entryPrice) * 100
+    // tp2Pct = ((entryPrice - tp2Price) / entryPrice) * 100
+    // tp3Pct = ((entryPrice - tp3Price) / entryPrice) * 100
   } else if (entryPrice > 0) {
     // Default TP levels if not set (2%, 4%, 6% for LONG; -2%, -4%, -6% for SHORT)
     const basePct = side === 'LONG' ? 0.02 : -0.02
-    tp1Pct = Math.abs(basePct * 1) * 100
-    tp2Pct = Math.abs(basePct * 2) * 100
-    tp3Pct = Math.abs(basePct * 3) * 100
+    // tp1Pct = Math.abs(basePct * 1) * 100
+    // tp2Pct = Math.abs(basePct * 2) * 100
+    // tp3Pct = Math.abs(basePct * 3) * 100
     tp1Price = side === 'LONG' ? entryPrice * (1 + basePct * 1) : entryPrice * (1 + basePct * 1)
     tp2Price = side === 'LONG' ? entryPrice * (1 + basePct * 2) : entryPrice * (1 + basePct * 2)
     tp3Price = side === 'LONG' ? entryPrice * (1 + basePct * 3) : entryPrice * (1 + basePct * 3)
@@ -121,7 +121,7 @@ export function formatPositionBox(
     : currentPrice <= tp1Price * 1.005
   
   // Volatility status
-  const atr = assetData?.indicators?.atr || 0
+  // const atr = assetData?.indicators?.atr || 0
   const atrPercent = assetData?.indicators?.atrPercent || 0
   const volatilityStatus = atrPercent > 2 ? '↑' : atrPercent < 1 ? '↓' : '→'
   const volatilityLevel = atrPercent > 2 ? 'Tinggi' : atrPercent < 1 ? 'Rendah' : 'Normal'

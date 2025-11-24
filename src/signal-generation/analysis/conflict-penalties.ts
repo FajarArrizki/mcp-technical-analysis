@@ -13,7 +13,7 @@ function envNum(key: string, def: number): number {
   return isFinite(v) ? v : def
 }
 
-export function computeConflictPenalties(asset: string, marketData: any): ConflictPenaltyResult {
+export function computeConflictPenalties(_asset: string, marketData: any): ConflictPenaltyResult {
   let penalty = 0
   const reasons: string[] = []
   let majorMismatches = 0
@@ -100,11 +100,11 @@ export function computeConflictPenalties(asset: string, marketData: any): Confli
   // 6) BTC impact penalties
   const penBtcMismatch = envNum('PEN_BTC_MISMATCH', 20)
   const penBtcShock = envNum('PEN_BTC_SHOCK', 25)
-  const penDomRev = envNum('PEN_DOM_REV', 15)
+  // const penDomRev = envNum('PEN_DOM_REV', 15)
   if (btc && typeof btc.correlation7d === 'number') {
     // Trend mismatch heuristic: strong corr but asset direction opposite to BTC macd sign (if available)
     const corrAbs = Math.abs(btc.correlation7d)
-    const btcImpact = btc.impactMultiplier ?? 1
+    // const btcImpact = btc.impactMultiplier ?? 1
     const macdHist = indicators?.macd?.histogram
     if (corrAbs >= 0.6 && typeof macdHist === 'number') {
       // if impact positive but macro context contradicts, penalize

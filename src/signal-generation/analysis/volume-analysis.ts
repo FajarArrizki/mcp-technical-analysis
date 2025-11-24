@@ -170,7 +170,7 @@ export function confirmBreakoutWithVolume(
 export function identifyLiquidityZones(
   historicalData: HistoricalDataPoint[],
   openInterestData?: Array<{ price: number; openInterest: number }>,
-  volumeProfile?: SessionVolumeProfile | CompositeVolumeProfile
+  _volumeProfile?: SessionVolumeProfile | CompositeVolumeProfile
 ): LiquidityZone[] {
   if (!historicalData || historicalData.length < 50) {
     return []
@@ -212,7 +212,7 @@ export function identifyLiquidityZones(
   const zoneThreshold = 0.005 // 0.5% price range for zone grouping
   const processedPrices = new Set<number>()
 
-  topPriceLevels.forEach(({ price, volume, count }) => {
+  topPriceLevels.forEach(({ price }) => {
     if (processedPrices.has(price)) return
 
     // Find nearby prices to form a zone
@@ -321,7 +321,7 @@ export function analyzeFootprint(
   let totalBuyVolume = 0
   let totalSellVolume = 0
 
-  recentCandles.forEach((candle, index) => {
+  recentCandles.forEach((candle) => {
     const price = candle.close || 0
     const volume = candle.volume || 0
     const open = candle.open || price
@@ -337,7 +337,7 @@ export function analyzeFootprint(
     // Calculate buy/sell ratio based on where price closed in the range
     const closePosition = priceRange > 0 ? (price - low) / priceRange : 0.5
     const buyRatio = closePosition // Higher close = more buying
-    const sellRatio = 1 - closePosition // Lower close = more selling
+    // const sellRatio = 1 - closePosition // Lower close = more selling
 
     // Adjust based on price change direction
     const directionalBias = priceChange > 0 ? 0.1 : priceChange < 0 ? -0.1 : 0

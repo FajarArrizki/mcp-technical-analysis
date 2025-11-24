@@ -3,7 +3,7 @@
  * Virtual order execution (no real API calls)
  */
 
-import { Signal, Order, OrderStatus, OrderType, PositionState, ExitReason } from '../types'
+import { Signal, Order, PositionState, ExitReason } from '../types'
 import * as fs from 'fs'
 import * as path from 'path'
 

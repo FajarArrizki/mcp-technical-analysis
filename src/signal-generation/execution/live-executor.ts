@@ -9,13 +9,15 @@ import { getHyperliquidWalletApiKey, getHyperliquidAccountAddress } from '../con
 import { getAssetIndex, createOrderMessage, signHyperliquidOrder, createWalletFromPrivateKey } from './hyperliquid-signing'
 import * as fs from 'fs'
 import * as path from 'path'
-import * as crypto from 'crypto'
+// import * as crypto from 'crypto'
 
 export interface LiveExecutorConfig {
   tradesFile: string
   orderFillTimeoutMs: number
   retryOnTimeout: boolean
   maxRetries: number
+  walletApiKey?: string // Optional: if not provided, uses environment variable
+  accountAddress?: string // Optional: if not provided, uses environment variable
 }
 
 export interface HyperliquidOrder {
@@ -38,12 +40,17 @@ export class LiveExecutor {
   private pendingOrders: Map<string, Order>
   private apiErrorCount: number
   private apiRequestCount: number
+  private walletApiKey?: string
+  private accountAddress?: string
 
   constructor(config: LiveExecutorConfig) {
     this.config = config
     this.pendingOrders = new Map()
     this.apiErrorCount = 0
     this.apiRequestCount = 0
+    // Store credentials if provided, otherwise will use env vars when needed
+    this.walletApiKey = config.walletApiKey
+    this.accountAddress = config.accountAddress
   }
 
   /**
@@ -197,16 +204,16 @@ export class LiveExecutor {
     const orderId = `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 
     try {
-      // Get wallet API key
-      const walletApiKey = getHyperliquidWalletApiKey()
+      // Get wallet API key (use provided or fallback to env var)
+      const walletApiKey = this.walletApiKey || getHyperliquidWalletApiKey()
       if (!walletApiKey || walletApiKey.trim() === '') {
-        throw new Error('HYPERLIQUID_WALLET_API_KEY not configured')
+        throw new Error('Wallet API key not provided and HYPERLIQUID_WALLET_API_KEY not configured')
       }
 
-      // Get account address
-      const accountAddress = getHyperliquidAccountAddress()
+      // Get account address (use provided or fallback to env var)
+      const accountAddress = this.accountAddress || getHyperliquidAccountAddress()
       if (!accountAddress) {
-        throw new Error('HYPERLIQUID_ACCOUNT_ADDRESS not configured')
+        throw new Error('Account address not provided and HYPERLIQUID_ACCOUNT_ADDRESS not configured')
       }
 
       // Create wallet from private key
@@ -405,8 +412,8 @@ export class LiveExecutor {
    * Pre-execution checks
    */
   private async preExecutionChecks(
-    signal: Signal,
-    quantity: number
+    _signal: Signal,
+    _quantity: number
   ): Promise<{ passed: boolean; reason?: string }> {
     // Check API connection
     const walletApiKey = getHyperliquidWalletApiKey()

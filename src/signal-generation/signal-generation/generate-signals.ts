@@ -4,61 +4,19 @@
  */
 
 import { Signal } from '../types'
-import { calculateDynamicLeverage } from '../risk-management/leverage'
-import { calculateDynamicMarginPercentage } from '../risk-management/margin'
-import { formatSignal } from '../formatting/format-signal'
-import { getActivePositions, updateActivePositions } from '../position-management/positions'
+import { getActivePositions } from '../position-management/positions'
 import { signalWarnings, collectWarning } from '../position-management/warnings'
 import { calculateCorrelationMatrix } from '../analysis/correlation'
-import { detectContradictions } from '../analysis/contradiction'
-import {
-  checkBounceSetup,
-  checkBouncePersistence,
-  checkEMAReclaim,
-  checkReentryBounce,
-  monitorBounceExit,
-  calculateBounceDecay
-} from '../analysis/bounce'
-import { checkNoTradeZone, checkMomentumContradiction } from '../validation/helpers'
-import { validateSignalJustificationConsistency } from '../validation/consistency'
-import { generateInvalidationCondition } from '../validation/invalidation'
-import { isCatchingFallingKnife } from '../validation/falling-knife'
-import { hasReversalConfirmations, getReversalConfirmationCount } from '../validation/reversal'
-import { log, logSection } from '../utils/logger'
-import { calculateTrendStrengthIndex } from '../utils/trend-strength'
-import { formatPrice, formatLargeNumber } from '../formatting/price'
-import { getRealTimePrice } from '../data-fetchers/hyperliquid'
-import { calculateMAE } from '../risk-management/mae'
-import { calculateBounceTP, calculateDynamicTP } from '../risk-management/take-profit'
-import { calculateBounceTPTrail, calculateBounceSLOffset } from '../risk-management/bounce'
-import { determineTradingStyle } from '../utils/trading-style'
 import { getTradingConfig, getThresholds } from '../config'
-import { callAIAPI } from '../ai/call-api'
-import { generateJustificationFromIndicators } from './justification'
-import { calculateConfidenceScore } from './confidence'
-import { calculateQualityWeightedJustification } from '../analysis/quality-weighted-justification'
-import { calculateExpectedValue } from './expected-value'
-import { shouldAutoExecute, checkRiskLimits } from './filtering'
+import { checkRiskLimits } from './filtering'
 import { generateSignalForSingleAsset } from './generate-single-asset'
-import {
-  calculateRecentMomentum,
-  checkMajorIndicatorsAlignment,
-  calculateAdaptiveFlipThreshold,
-  getAdaptiveWeights,
-  evaluateTieredWeights,
-  calculateWeightedMedian,
-  calculatePartialConfidence,
-  normalizeConfidence,
-  calculateAdaptiveMinConfidence,
-  calculateRelativeEVThreshold
-} from './confidence-helpers'
 
 export async function generateSignals(
-  model: any,
+  _model: any,
   marketData: Map<string, any> | Record<string, any>,
   accountState: any,
   allowedAssets: string[],
-  signalHistory: Map<string, any> = new Map(),
+  _signalHistory: Map<string, any> = new Map(),
   positions?: Map<string, any>, // OPTIMIZATION: Accept pre-computed positions to avoid duplicate call
   rankedScores?: Array<{ asset: string; score: number }> // PHASE 1: Pass ranked scores for confidence calculation
 ): Promise<Signal[]> {
@@ -430,9 +388,9 @@ export async function generateSignals(
         ? parseFloat(process.env.MIN_EV_THRESHOLD || thresholds.limitedPairs.minEV.toString())
         : parseFloat(process.env.MIN_EV_THRESHOLD || thresholds.expectedValue.reject.toString())
 
-      const MIN_TREND_ALIGNMENT_PERCENT = 0.50 // 50% minimum trend alignment (12.5/25 points)
+      // const MIN_TREND_ALIGNMENT_PERCENT = 0.50 // 50% minimum trend alignment (12.5/25 points)
 
-      const MIN_RISK_REWARD_RATIO = 2.0 // 2:1 minimum risk/reward ratio
+      // const MIN_RISK_REWARD_RATIO = 2.0 // 2:1 minimum risk/reward ratio
 
       // Log threshold mode and trading config
       console.log(`📋 Trading Mode: ${tradingMode}`)

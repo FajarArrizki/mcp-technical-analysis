@@ -149,7 +149,7 @@ export function checkIndicatorBasedExit(
   // Support/Resistance break check
   if (config.supportResistanceBreak && marketData.externalData?.marketStructure) {
     const structure = marketData.externalData.marketStructure
-    const price = marketData.price
+    // const price = marketData.price
 
     // Check support break for LONG
     if (position.side === 'LONG' && structure.coc?.coc === 'bearish') {

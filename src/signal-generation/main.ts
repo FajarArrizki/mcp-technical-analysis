@@ -147,7 +147,7 @@ export async function main(): Promise<void> {
 
       // Handle return value - getMarketData returns { marketDataMap, allowedAssets }
       const marketData = result.marketDataMap || result
-      const fetchedAssets = result.allowedAssets || allowedAssets
+      // const fetchedAssets = result.allowedAssets || allowedAssets
 
       if (!marketData) {
         throw new Error('Invalid market data returned from getMarketData')
@@ -216,9 +216,9 @@ export async function main(): Promise<void> {
 
       // Display market data for selected assets only (to avoid clutter)
       log(`\n📊 Market Data for Selected Assets (${allowedAssets.length} assets):`, 'cyan')
-      const marketDataEntries = marketData instanceof Map 
-        ? Array.from(marketData.entries())
-        : Object.entries(marketData || {})
+      // const marketDataEntries = marketData instanceof Map 
+      //   ? Array.from(marketData.entries())
+      //   : Object.entries(marketData || {})
       
       // OPTIMIZATION: formatPrice already imported statically at top of file
       // Only show data for selected (top) assets (using original Hyperliquid price format)

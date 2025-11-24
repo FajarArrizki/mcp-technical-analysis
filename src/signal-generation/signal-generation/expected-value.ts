@@ -3,7 +3,7 @@
  * calculateExpectedValue function
  */
 
-import { Signal } from '../types'
+// import { Signal } from '../types'
 
 export function calculateExpectedValue(
   confidence: number,

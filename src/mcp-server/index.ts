@@ -6717,7 +6717,9 @@ server.registerTool(
       price: z.number().positive().optional().describe('Limit price (optional, if not provided, uses current market price)'),
       orderType: z.enum(['MARKET', 'LIMIT']).default('MARKET').describe('Order type: MARKET or LIMIT'),
       execute: z.boolean().default(false).optional().describe('Whether to actually execute the order via Hyperliquid (default: false, simulation only)'),
-      useLiveExecutor: z.boolean().default(false).optional().describe('Whether to use live executor (requires HYPERLIQUID_WALLET_API_KEY, default: false, uses paper executor)'),
+      useLiveExecutor: z.boolean().default(false).optional().describe('Whether to use live executor (requires walletApiKey and accountAddress, default: false, uses paper executor)'),
+      accountAddress: z.string().optional().describe('Hyperliquid account address (optional, if not provided, uses environment variable HYPERLIQUID_ACCOUNT_ADDRESS)'),
+      walletApiKey: z.string().optional().describe('Hyperliquid wallet API key / private key (optional, if not provided, uses environment variable HYPERLIQUID_WALLET_API_KEY)'),
     },
     outputSchema: z.object({
       execution: z.object({
@@ -6739,7 +6741,7 @@ server.registerTool(
       timestamp: z.string().optional(),
     }),
   },
-  async ({ ticker, side, quantity, price, orderType = 'MARKET', execute = false, useLiveExecutor = false }: { ticker: string; side: 'LONG' | 'SHORT'; quantity: number; price?: number; orderType?: 'MARKET' | 'LIMIT'; execute?: boolean; useLiveExecutor?: boolean }) => {
+  async ({ ticker, side, quantity, price, orderType = 'MARKET', execute = false, useLiveExecutor = false, accountAddress, walletApiKey }: { ticker: string; side: 'LONG' | 'SHORT'; quantity: number; price?: number; orderType?: 'MARKET' | 'LIMIT'; execute?: boolean; useLiveExecutor?: boolean; accountAddress?: string; walletApiKey?: string }) => {
     if (!ticker || typeof ticker !== 'string' || ticker.trim().length === 0) {
       return {
         content: [
@@ -6818,18 +6820,19 @@ server.registerTool(
         
         if (useLiveExecutor) {
           // Use live executor (requires Hyperliquid wallet API key)
-          const walletApiKey = getHyperliquidWalletApiKey()
-          const accountAddress = getHyperliquidAccountAddress()
+          // Use provided credentials or fallback to environment variables
+          const finalWalletApiKey = walletApiKey || getHyperliquidWalletApiKey()
+          const finalAccountAddress = accountAddress || getHyperliquidAccountAddress()
           
-          if (!walletApiKey || !accountAddress) {
+          if (!finalWalletApiKey || !finalAccountAddress) {
             return {
               content: [
                 {
                   type: 'text',
                   text: JSON.stringify(
                     {
-                      error: 'Live executor requires HYPERLIQUID_WALLET_API_KEY and HYPERLIQUID_ACCOUNT_ADDRESS',
-                      message: 'Please configure wallet API key and account address in .env file',
+                      error: 'Live executor requires walletApiKey and accountAddress',
+                      message: 'Please provide walletApiKey and accountAddress as parameters, or configure HYPERLIQUID_WALLET_API_KEY and HYPERLIQUID_ACCOUNT_ADDRESS in environment variables',
                     },
                     null,
                     2
@@ -6848,6 +6851,8 @@ server.registerTool(
             orderFillTimeoutMs: 30000,
             retryOnTimeout: false,
             maxRetries: 3,
+            walletApiKey: finalWalletApiKey,
+            accountAddress: finalAccountAddress,
           })
 
           const order = await liveExecutor.executeEntry(signal, currentPrice)
@@ -7138,7 +7143,9 @@ server.registerTool(
       price: z.number().positive().optional().describe('Limit price (optional, if not provided, uses current market price)'),
       orderType: z.enum(['MARKET', 'LIMIT']).default('MARKET').describe('Order type: MARKET or LIMIT'),
       execute: z.boolean().default(false).optional().describe('Whether to actually execute the order via Hyperliquid (default: false, simulation only)'),
-      useLiveExecutor: z.boolean().default(false).optional().describe('Whether to use live executor (requires HYPERLIQUID_WALLET_API_KEY, default: false, uses paper executor)'),
+      useLiveExecutor: z.boolean().default(false).optional().describe('Whether to use live executor (requires walletApiKey and accountAddress, default: false, uses paper executor)'),
+      accountAddress: z.string().optional().describe('Hyperliquid account address (optional, if not provided, uses environment variable HYPERLIQUID_ACCOUNT_ADDRESS)'),
+      walletApiKey: z.string().optional().describe('Hyperliquid wallet API key / private key (optional, if not provided, uses environment variable HYPERLIQUID_WALLET_API_KEY)'),
     },
     outputSchema: z.object({
       execution: z.object({
@@ -7160,7 +7167,7 @@ server.registerTool(
       timestamp: z.string().optional(),
     }),
   },
-  async ({ ticker, side, quantity, leverage = 10, price, orderType = 'MARKET', execute = false, useLiveExecutor = false }: { ticker: string; side: 'LONG' | 'SHORT'; quantity: number; leverage?: number; price?: number; orderType?: 'MARKET' | 'LIMIT'; execute?: boolean; useLiveExecutor?: boolean }) => {
+  async ({ ticker, side, quantity, leverage = 10, price, orderType = 'MARKET', execute = false, useLiveExecutor = false, accountAddress, walletApiKey }: { ticker: string; side: 'LONG' | 'SHORT'; quantity: number; leverage?: number; price?: number; orderType?: 'MARKET' | 'LIMIT'; execute?: boolean; useLiveExecutor?: boolean; accountAddress?: string; walletApiKey?: string }) => {
     if (!ticker || typeof ticker !== 'string' || ticker.trim().length === 0) {
       return {
         content: [
@@ -7261,18 +7268,19 @@ server.registerTool(
         
         if (useLiveExecutor) {
           // Use live executor (requires Hyperliquid wallet API key)
-          const walletApiKey = getHyperliquidWalletApiKey()
-          const accountAddress = getHyperliquidAccountAddress()
+          // Use provided credentials or fallback to environment variables
+          const finalWalletApiKey = walletApiKey || getHyperliquidWalletApiKey()
+          const finalAccountAddress = accountAddress || getHyperliquidAccountAddress()
           
-          if (!walletApiKey || !accountAddress) {
+          if (!finalWalletApiKey || !finalAccountAddress) {
             return {
               content: [
                 {
                   type: 'text',
                   text: JSON.stringify(
                     {
-                      error: 'Live executor requires HYPERLIQUID_WALLET_API_KEY and HYPERLIQUID_ACCOUNT_ADDRESS',
-                      message: 'Please configure wallet API key and account address in .env file',
+                      error: 'Live executor requires walletApiKey and accountAddress',
+                      message: 'Please provide walletApiKey and accountAddress as parameters, or configure HYPERLIQUID_WALLET_API_KEY and HYPERLIQUID_ACCOUNT_ADDRESS in environment variables',
                     },
                     null,
                     2
@@ -7291,6 +7299,8 @@ server.registerTool(
             orderFillTimeoutMs: 30000,
             retryOnTimeout: false,
             maxRetries: 3,
+            walletApiKey: finalWalletApiKey,
+            accountAddress: finalAccountAddress,
           })
 
           const order = await liveExecutor.executeEntry(signal, currentPrice)

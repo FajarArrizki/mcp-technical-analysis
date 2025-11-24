@@ -7,7 +7,7 @@ import { HistoricalDataPoint } from '../types'
 
 export function parseCandles(
   candles: any[],
-  asset?: string
+  _asset?: string
 ): HistoricalDataPoint[] {
   return candles
     .map((candle) => {
