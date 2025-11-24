@@ -77,10 +77,27 @@ Add this to your Claude Desktop configuration (`~/Library/Application Support/Cl
   "mcpServers": {
     "ai-trading": {
       "type": "http",
-      "url": "https://your-deployed-server.com/mcp"
+      "url": "https://geartrade-mcp-server.fajararrizki15.workers.dev/mcp"
     }
   }
 }
+```
+
+### 🌐 **Live Deployment Test**
+You can test the live deployment directly:
+```bash
+# Check server health
+curl https://geartrade-mcp-server.fajararrizki15.workers.dev/health
+
+# List all available tools
+curl -X POST https://geartrade-mcp-server.fajararrizki15.workers.dev/mcp \
+  -H "Content-Type: application/json" \
+  -d '{"method":"tools/list"}'
+
+# Test trading analysis
+curl -X POST https://geartrade-mcp-server.fajararrizki15.workers.dev/mcp \
+  -H "Content-Type: application/json" \
+  -d '{"method":"tools/call","params":{"name":"get_price","arguments":{"ticker":"BTC"}}}'
 ```
 
 ## ⚙️ **Multi-User Support (Open-Source Ready)**
