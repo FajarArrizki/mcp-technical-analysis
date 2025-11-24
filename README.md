@@ -212,18 +212,124 @@ pnpm run validate
 - **Market Research** - Deep analysis across multiple assets and timeframes
 - **Educational Platforms** - Teaching technical analysis and trading strategies
 
-## 📊 **Architecture**
+## 🏗️ **Architecture**
 
+### System Overview
 ```
-AI Trading MCP Server
-├── 🤖 MCP Server Implementation
-│   ├── 📊 36 Trading Tools
-│   ├── 📚 25 Resources
-│   └── 🤖 23 AI Prompts
-├── 🔧 @nullshot/mcp Framework
-├── 💰 Hyperliquid API Support
-├── 🧠 AI-Powered Analysis
-└── 🔒 Multi-User Security
+┌─────────────────────────────────────────────────────────────┐
+│                    AI Trading MCP Server                    │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  ┌─────────────────┐    ┌─────────────────────────────┐    │
+│  │   AI Clients    │◄──►│      MCP Protocol           │◄──►│
+│  │  - Claude       │    │  - Tool Execution           │    │
+│  │  - Cursor IDE   │    │  - Resource Access          │    │
+│  │  - Cline IDE    │    │  - Prompt Management        │    │
+│  └─────────────────┘    └─────────────────────────────┘    │
+│                                  │                        │
+│                                  ▼                        │
+│  ┌─────────────────────────────────────────────────────────┐
+│  │              Core MCP Server                            │
+│  │  ┌─────────────────┐  ┌─────────────────────────────┐  │
+│  │  │   Trading Tools │  │      Resources              │  │
+│  │  │  - Price (2)    │  │  - Trading State            │  │
+│  │  │  - Analysis (2) │  │  - Performance Metrics      │  │
+│  │  │  - Volume (2)   │  │  - Configuration            │  │
+│  │  │  - Advanced (10)│  │  - Documentation            │  │
+│  │  │  - Risk (2)     │  └─────────────────────────────┘  │
+│  │  │  - Exec (4)     │                                   │
+│  │  └─────────────────┘                                   │
+│  │                                                         │
+│  │  ┌─────────────────┐  ┌─────────────────────────────┐  │
+│  │  │   AI Prompts    │  │    Security Layer           │  │
+│  │  │  - Core Trading │  │  - Multi-User Credentials   │  │
+│  │  │  - Technical    │  │  - Input Validation         │  │
+│  │  │  - Risk Mgmt    │  │  - Paper Trading Safety     │  │
+│  │  └─────────────────┘  └─────────────────────────────┘  │
+│  └─────────────────────────────────────────────────────────┘
+│                                  │
+│                                  ▼
+│  ┌─────────────────────────────────────────────────────────┐
+│  │              External APIs                               │
+│  │  ┌─────────────────┐  ┌─────────────────────────────┐  │
+│  │  │  Hyperliquid    │  │     AI Providers            │  │
+│  │  │  - Market Data  │  │  - OpenRouter               │  │
+│  │  │  - Execution    │  │  - OpenAI                   │  │
+│  │  │  - Account Info │  │  - Custom Models            │  │
+│  │  └─────────────────┘  └─────────────────────────────┘  │
+│  └─────────────────────────────────────────────────────────┘
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Component Breakdown
+
+#### **🤖 MCP Protocol Layer**
+- **Tool Execution**: 36 specialized trading tools for market analysis and execution
+- **Resource Management**: 25 data resources for state and configuration
+- **Prompt System**: 23 AI-optimized prompts for trading strategies
+
+#### **⚙️ Core Server Components**
+- **@nullshot/mcp Framework**: Modern MCP server implementation
+- **TypeScript Runtime**: Type-safe execution and development
+- **Security Middleware**: Input validation and credential management
+
+#### **📊 Trading Tools Categories**
+```
+Trading Tools (36 Total)
+├── Price Analysis (2 tools)
+│   ├── Real-time price fetching
+│   └── Multi-asset price comparison
+├── Technical Analysis (2 tools)
+│   ├── 20+ technical indicators
+│   └── Multi-timeframe analysis
+├── Volume Analysis (2 tools)
+│   ├── Buy/sell pressure analysis
+│   └── Volume profile calculations
+├── Advanced Analysis (10 tools)
+│   ├── Fibonacci retracements
+│   ├── Order book analysis
+│   ├── Market structure analysis
+│   ├── Candlestick pattern recognition
+│   ├── Divergence detection
+│   └── Liquidation level analysis
+├── Risk Management (2 tools)
+│   ├── Position sizing calculations
+│   └── Stop loss/take profit optimization
+└── Execution Tools (4 tools)
+    ├── Paper trading simulation
+    ├── Live market execution
+    └── Portfolio management
+```
+
+#### **🔒 Security Architecture**
+```
+Security Layer
+├── Multi-User Credentials
+│   ├── User-provided API keys
+│   ├── Per-session authentication
+│   └── No hardcoded secrets
+├── Input Validation
+│   ├── Zod schema validation
+│   ├── Type safety enforcement
+│   └── Parameter sanitization
+└── Safe Trading Defaults
+    ├── Paper trading by default
+    ├── Risk limit enforcement
+    └── Execution confirmations
+```
+
+#### **🌐 Integration Points**
+```
+External Integrations
+├── Market Data Providers
+│   └── Hyperliquid API
+├── AI Provider Services
+│   ├── OpenRouter
+│   ├── OpenAI
+│   └── Custom model endpoints
+└── Execution Platforms
+    ├── Hyperliquid Derivatives
+    └── Future exchange integrations
 ```
 
 ## 🛠️ **Project Structure**
