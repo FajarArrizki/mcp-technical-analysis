@@ -389,18 +389,73 @@ Example exported config:
 
 The server provides the following resources (documentation that AI can read):
 
+### Static Documentation Resources
+
+The server provides **25 comprehensive documentation resources** covering all aspects of trading:
+
+#### Core Guides
 - **`geartrade://docs/trading-strategies`** - Comprehensive guide on trading strategies, technical analysis, and best practices
 - **`geartrade://docs/risk-management`** - Guide on risk management, position sizing, stop loss, and take profit strategies
 - **`geartrade://docs/tools-overview`** - Complete overview of all 38+ MCP tools available in GearTrade
 - **`geartrade://docs/execution-workflow`** - Step-by-step guide for analysis to execution workflow with safety best practices
 
+#### Technical Analysis Resources
+- **`geartrade://docs/technical-indicators`** - Complete guide on technical indicators: RSI, EMA, MACD, Bollinger Bands, ATR, ADX, and more
+- **`geartrade://docs/market-patterns`** - Common market analysis patterns: chart patterns, candlestick patterns, and market structure analysis
+- **`geartrade://docs/market-structure`** - Complete guide on market structure: trend identification, Change of Character (COC), swing patterns, and structure breaks
+- **`geartrade://docs/candlestick-patterns`** - Complete guide on candlestick patterns: reversal patterns, continuation patterns, and trading strategies
+- **`geartrade://docs/fibonacci-trading`** - Complete guide on Fibonacci retracement: key levels, entry/exit strategies, and risk management
+
+#### Volume & Order Book Resources
+- **`geartrade://docs/volume-analysis`** - Complete guide on volume analysis: CVD, buy/sell pressure, liquidity zones, and volume profile
+- **`geartrade://docs/orderbook-trading`** - Complete guide on order book trading: reading order book depth, identifying support/resistance walls, and market sentiment
+
+#### Advanced Analysis Resources
+- **`geartrade://docs/divergence-trading`** - Complete guide on divergence trading: RSI divergence, price-action divergence, and trading strategies
+- **`geartrade://docs/liquidation-levels`** - Complete guide on liquidation levels: liquidity grabs, stop hunts, cascade risks, and trading strategies
+- **`geartrade://docs/external-data`** - Complete guide on external market data: funding rate, open interest, volatility, and market sentiment indicators
+
+#### Risk Management & Execution Resources
+- **`geartrade://docs/position-sizing`** - Complete guide on position sizing, leverage calculation, and margin management for optimal risk control
+- **`geartrade://docs/execution-practices`** - Best practices for order execution: market vs limit orders, slippage management, and execution timing
+- **`geartrade://docs/multi-timeframe`** - Complete guide on multi-timeframe analysis: how to use Daily, 4H, and 1H timeframes for better trading decisions
+
+#### Platform & API Resources
+- **`geartrade://docs/hyperliquid-api`** - Hyperliquid API reference guide: endpoints, authentication, order types, and integration details
+
+#### Learning Resources
+- **`geartrade://docs/common-mistakes`** - Common trading mistakes to avoid: emotional trading, over-leveraging, ignoring risk management, and more
+
 AI agents can read these resources to understand how to use the tools effectively and follow best practices.
+
+### Resource Templates (Documentation)
+
+While MCP SDK doesn't support dynamic resource templates directly, the following resource URI patterns are conceptually available through the tools:
+
+- **`geartrade://position/{ticker}`** - Access position data for a specific ticker
+  - Use `get_position` tool with `ticker` parameter to get equivalent data
+  - Example: `geartrade://position/BTC` → Use `get_position` with `ticker: "BTC"`
+
+- **`geartrade://analysis/{ticker}`** - Access comprehensive analysis for a specific ticker
+  - Use `analisis_crypto` tool with `ticker` parameter to get equivalent data
+  - Example: `geartrade://analysis/ETH` → Use `analisis_crypto` with `ticker: "ETH"`
+
+- **`geartrade://market/{ticker}`** - Access market data for a specific ticker
+  - Use `get_price` and related tools with `ticker` parameter to get equivalent data
+  - Example: `geartrade://market/SOL` → Use `get_price` with `ticker: "SOL"`
+
+**Note:** These are conceptual resource templates. In practice, use the corresponding MCP tools instead:
+- For positions: `get_position` or `get_multiple_positions`
+- For analysis: `analisis_crypto` or `analisis_multiple_crypto`
+- For market data: `get_price`, `get_indicator`, `get_volume_analysis`, etc.
 
 ## MCP Prompts
 
-The server provides the following prompt templates to help AI agents use tools more effectively:
+The server provides **23 prompt templates** to help AI agents use tools more effectively:
 
-### `analyze_and_execute`
+### Core Trading Prompts
+
+#### `analyze_and_execute`
 Analyze a crypto asset and prepare execution plan with risk management.
 
 **Arguments:**
@@ -411,7 +466,7 @@ Analyze a crypto asset and prepare execution plan with risk management.
 **Usage:**
 AI agents can use this prompt to get a structured workflow for analyzing an asset and preparing for execution, including risk management calculations and user confirmation steps.
 
-### `multi_asset_scan`
+#### `multi_asset_scan`
 Scan multiple assets for trading opportunities and rank by confidence.
 
 **Arguments:**
@@ -421,28 +476,7 @@ Scan multiple assets for trading opportunities and rank by confidence.
 **Usage:**
 AI agents can use this prompt to scan multiple assets, rank them by signal confidence and risk/reward ratio, and present the top opportunities to the user.
 
-### `risk_analysis`
-Perform comprehensive risk analysis for a trading position.
-
-**Arguments:**
-- `ticker` (required) - Asset ticker to analyze
-- `entry` (required) - Entry price
-- `side` (required) - Trade side ("LONG" or "SHORT")
-- `capital` (required) - Trading capital in USD
-
-**Usage:**
-AI agents can use this prompt to calculate position sizing, stop loss, take profit, and risk/reward ratios for a specific trading setup.
-
-### `position_monitoring`
-Monitor open positions and provide status update.
-
-**Arguments:**
-- `tickers` (optional) - Array of tickers to monitor (monitors all positions if not provided)
-
-**Usage:**
-AI agents can use this prompt to monitor open positions, track PnL, and provide recommendations for position management.
-
-### `comprehensive_analysis`
+#### `comprehensive_analysis`
 Perform comprehensive market analysis for crypto assets without execution.
 
 **Arguments:**
@@ -467,6 +501,198 @@ AI agents can use this prompt to perform deep market analysis without any execut
 - Comprehensive reporting with all available indicators
 - Ranking and comparison for multiple assets
 - Clear risk assessment and recommendations
+
+#### `risk_analysis`
+Perform comprehensive risk analysis for a trading position.
+
+**Arguments:**
+- `ticker` (required) - Asset ticker to analyze
+- `entry` (required) - Entry price
+- `side` (required) - Trade side ("LONG" or "SHORT")
+- `capital` (required) - Trading capital in USD
+
+**Usage:**
+AI agents can use this prompt to calculate position sizing, stop loss, take profit, and risk/reward ratios for a specific trading setup.
+
+#### `position_monitoring`
+Monitor open positions and provide status update.
+
+**Arguments:**
+- `tickers` (optional) - Array of tickers to monitor (monitors all positions if not provided)
+
+**Usage:**
+AI agents can use this prompt to monitor open positions, track PnL, and provide recommendations for position management.
+
+#### `portfolio_review`
+Review entire portfolio and provide comprehensive status update.
+
+**Arguments:**
+- `tickers` (optional) - Array of tickers to review (reviews all positions if not provided)
+
+**Usage:**
+AI agents can use this prompt to review all open positions, assess portfolio health, and provide recommendations.
+
+#### `entry_exit_strategy`
+Calculate optimal entry and exit strategy for a trading setup.
+
+**Arguments:**
+- `ticker` (required) - Asset ticker to analyze
+- `side` (required) - Trade side ("LONG" or "SHORT")
+- `capital` (optional) - Trading capital in USD (default: 10000)
+- `riskPct` (optional) - Risk percentage per trade (default: 1.0)
+
+**Usage:**
+AI agents can use this prompt to calculate optimal entry prices, stop loss levels, take profit targets, and position sizing.
+
+### Analysis-Specific Prompts
+
+#### `technical_indicator_analysis`
+Analyze specific technical indicators for trading decisions.
+
+**Arguments:**
+- `ticker` (required) - Asset ticker to analyze (e.g., "BTC", "ETH", "SOL")
+- `indicators` (optional) - Comma-separated indicators to analyze (e.g., "RSI,EMA,MACD,BB"). If not provided, analyzes all available indicators
+
+**Usage:**
+AI agents can use this prompt to analyze specific technical indicators, interpret signals, and provide trading recommendations based on indicator combinations.
+
+#### `volume_profile_analysis`
+Analyze volume profile to identify key support/resistance levels and trading zones.
+
+**Arguments:**
+- `ticker` (required) - Asset ticker to analyze (e.g., "BTC", "ETH", "SOL")
+
+**Usage:**
+AI agents can use this prompt to analyze volume profile data, identify POC, VAH/VAL, HVN/LVN, and determine optimal entry/exit zones.
+
+#### `orderbook_analysis`
+Analyze order book depth to identify support/resistance and market sentiment.
+
+**Arguments:**
+- `ticker` (required) - Asset ticker to analyze (e.g., "BTC", "ETH", "SOL")
+
+**Usage:**
+AI agents can use this prompt to analyze order book depth, identify bid/ask walls, assess market sentiment, and determine entry/exit strategies.
+
+#### `market_structure_analysis`
+Analyze market structure to identify trend changes and trading opportunities.
+
+**Arguments:**
+- `ticker` (required) - Asset ticker to analyze (e.g., "BTC", "ETH", "SOL")
+
+**Usage:**
+AI agents can use this prompt to analyze market structure, detect Change of Character (COC), identify swing patterns, and determine trading strategies based on structure.
+
+#### `candlestick_pattern_analysis`
+Analyze candlestick patterns to identify reversal and continuation signals.
+
+**Arguments:**
+- `ticker` (required) - Asset ticker to analyze (e.g., "BTC", "ETH", "SOL")
+
+**Usage:**
+AI agents can use this prompt to analyze candlestick patterns, identify reversal/continuation signals, and provide trading recommendations.
+
+#### `external_data_analysis`
+Analyze external market data: funding rate, open interest, volatility for trading decisions.
+
+**Arguments:**
+- `ticker` (required) - Asset ticker to analyze (e.g., "BTC", "ETH", "SOL")
+
+**Usage:**
+AI agents can use this prompt to analyze funding rate, open interest, volatility trends, and assess market sentiment and potential reversals.
+
+#### `spot_futures_arbitrage`
+Analyze spot-futures divergence for arbitrage and trading opportunities.
+
+**Arguments:**
+- `ticker` (required) - Asset ticker to analyze (e.g., "BTC", "ETH", "SOL")
+
+**Usage:**
+AI agents can use this prompt to analyze spot-futures price divergence, identify arbitrage opportunities, and assess convergence signals.
+
+#### `long_short_sentiment`
+Analyze long/short ratio to gauge market sentiment and contrarian opportunities.
+
+**Arguments:**
+- `ticker` (required) - Asset ticker to analyze (e.g., "BTC", "ETH", "SOL")
+
+**Usage:**
+AI agents can use this prompt to analyze long/short ratio, assess market sentiment, identify contrarian signals, and evaluate liquidation risks.
+
+#### `fibonacci_trading_strategy`
+Use Fibonacci retracement levels to identify entry, stop loss, and take profit zones.
+
+**Arguments:**
+- `ticker` (required) - Asset ticker to analyze (e.g., "BTC", "ETH", "SOL")
+
+**Usage:**
+AI agents can use this prompt to analyze Fibonacci retracement levels, identify key support/resistance zones, and determine entry/exit strategies.
+
+### Market Overview Prompts
+
+#### `quick_price_check`
+Quickly check prices for multiple assets.
+
+**Arguments:**
+- `tickers` (required) - Array of tickers to check (e.g., ["BTC", "ETH", "SOL"])
+
+**Usage:**
+AI agents can use this prompt to quickly fetch and display current prices for multiple assets.
+
+#### `trend_analysis`
+Analyze trend across multiple timeframes.
+
+**Arguments:**
+- `ticker` (required) - Asset ticker to analyze (e.g., "BTC", "ETH", "SOL")
+
+**Usage:**
+AI agents can use this prompt to analyze trend alignment across Daily, 4H, and 1H timeframes and determine trading direction.
+
+#### `divergence_scan`
+Scan for RSI divergence signals across multiple assets.
+
+**Arguments:**
+- `tickers` (required) - Array of tickers to scan (e.g., ["BTC", "ETH", "SOL"])
+
+**Usage:**
+AI agents can use this prompt to scan multiple assets for RSI divergence signals and identify potential reversal opportunities.
+
+#### `liquidation_analysis`
+Analyze liquidation levels and identify safe entry zones.
+
+**Arguments:**
+- `ticker` (required) - Asset ticker to analyze (e.g., "BTC", "ETH", "SOL")
+
+**Usage:**
+AI agents can use this prompt to analyze liquidation clusters, identify liquidity grab zones, assess cascade risk, and determine safe entry zones.
+
+#### `volatility_analysis`
+Analyze volatility using ATR and adjust risk management accordingly.
+
+**Arguments:**
+- `ticker` (required) - Asset ticker to analyze (e.g., "BTC", "ETH", "SOL")
+
+**Usage:**
+AI agents can use this prompt to analyze volatility, adjust stop loss distances, recommend leverage, and adapt trading strategy based on market conditions.
+
+#### `market_overview`
+Get comprehensive market overview for multiple assets.
+
+**Arguments:**
+- `tickers` (required) - Array of tickers to analyze (e.g., ["BTC", "ETH", "SOL"])
+
+**Usage:**
+AI agents can use this prompt to get a comprehensive market overview including prices, trends, and key metrics for multiple assets.
+
+#### `multi_asset_comparison`
+Compare multiple assets across various metrics to identify best trading opportunities.
+
+**Arguments:**
+- `tickers` (required) - Comma-separated tickers to compare (e.g., "BTC,ETH,SOL,BNB")
+- `metrics` (optional) - Comma-separated metrics to compare (e.g., "price,volume,rsi,trend"). Default: all metrics
+
+**Usage:**
+AI agents can use this prompt to compare multiple assets across price, volume, technical indicators, and trends to identify the best trading opportunities.
 
 ## MCP Tools
 
