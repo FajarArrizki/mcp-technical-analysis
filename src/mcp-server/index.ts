@@ -233,7 +233,7 @@ function formatTechnicalIndicators(assetData: any, price: number | null) {
           // Divergence calculation failed
         }
       }
-      return null
+      return 'none'
     })(),
     candlestick: (() => {
       // Try candlestick as string first
@@ -255,7 +255,7 @@ function formatTechnicalIndicators(assetData: any, price: number | null) {
             const patterns = indicators.candlestickPatterns.patterns
               .map((p: any) => (typeof p === 'object' ? p.type || p.pattern : String(p)))
               .filter((p: any) => p)
-            return patterns.length > 0 ? patterns.join(', ') : null
+            return patterns.length > 0 ? patterns.join(', ') : 'none'
           }
           // If it's an object with type property
           if (indicators.candlestickPatterns.type) {
@@ -267,7 +267,7 @@ function formatTechnicalIndicators(assetData: any, price: number | null) {
           }
           // If it's an object with latestPattern
           if (indicators.candlestickPatterns.latestPattern && typeof indicators.candlestickPatterns.latestPattern === 'object') {
-            return indicators.candlestickPatterns.latestPattern.type || null
+            return indicators.candlestickPatterns.latestPattern.type || 'none'
           }
         }
       }
@@ -279,18 +279,18 @@ function formatTechnicalIndicators(assetData: any, price: number | null) {
             const patternTypes = patterns.patterns
               .map((p: any) => (typeof p === 'object' ? p.type || p.pattern : String(p)))
               .filter((p: any) => p)
-            return patternTypes.length > 0 ? patternTypes.join(', ') : null
+            return patternTypes.length > 0 ? patternTypes.join(', ') : 'none'
           }
           // Get latest pattern from patterns array
           if (patterns && patterns.patterns && patterns.patterns.length > 0) {
             const latestPattern = patterns.patterns[patterns.patterns.length - 1]
-            return latestPattern?.type || null
+            return latestPattern?.type || 'none'
           }
         } catch (candleError) {
           // Candlestick calculation failed
         }
       }
-      return null
+      return 'none'
     })(),
     marketRegime:
       indicators.marketRegime && typeof indicators.marketRegime === 'object'
@@ -530,6 +530,9 @@ function formatExternalData(assetData: any): {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     })
+  } else {
+    // Default to "N/A" if openInterest is null or invalid
+    openInterestFormatted = 'N/A'
   }
 
   return {
@@ -7839,13 +7842,18 @@ server.registerTool(
               // Get latest pattern from patterns array
               if (patterns && patterns.patterns && patterns.patterns.length > 0) {
                 const latestPattern = patterns.patterns[patterns.patterns.length - 1]
-                technical.candlestick = latestPattern?.type || null
+                technical.candlestick = latestPattern?.type || 'none'
               } else if (formattedPatterns && typeof formattedPatterns === 'string') {
                 technical.candlestick = formattedPatterns
+              } else {
+                technical.candlestick = 'none'
               }
+            } else {
+              technical.candlestick = 'none'
             }
           } catch (candleError) {
             // Candlestick calculation failed
+            technical.candlestick = 'none'
           }
 
           // Calculate Divergence
@@ -7862,11 +7870,18 @@ server.registerTool(
                 const divergence = detectDivergence(prices.slice(-rsiValues.length), rsiValues, 20)
                 if (divergence && divergence.divergence) {
                   technical.rsiDivergence = String(divergence.divergence)
+                } else {
+                  technical.rsiDivergence = 'none'
                 }
+              } else {
+                technical.rsiDivergence = 'none'
               }
+            } else {
+              technical.rsiDivergence = 'none'
             }
           } catch (divError) {
             // Divergence calculation failed
+            technical.rsiDivergence = 'none'
           }
 
           // Calculate Market Structure (already in technical, but keep for consistency)
@@ -8264,13 +8279,18 @@ server.registerTool(
                 // Get latest pattern from patterns array
                 if (patterns && patterns.patterns && patterns.patterns.length > 0) {
                   const latestPattern = patterns.patterns[patterns.patterns.length - 1]
-                  technical.candlestick = latestPattern?.type || null
+                  technical.candlestick = latestPattern?.type || 'none'
                 } else if (formattedPatterns && typeof formattedPatterns === 'string') {
                   technical.candlestick = formattedPatterns
+                } else {
+                  technical.candlestick = 'none'
                 }
+              } else {
+                technical.candlestick = 'none'
               }
             } catch (candleError) {
               // Candlestick calculation failed
+              technical.candlestick = 'none'
             }
 
             // Calculate Divergence
@@ -8287,11 +8307,18 @@ server.registerTool(
                   const divergence = detectDivergence(prices.slice(-rsiValues.length), rsiValues, 20)
                   if (divergence && divergence.divergence) {
                     technical.rsiDivergence = String(divergence.divergence)
+                  } else {
+                    technical.rsiDivergence = 'none'
                   }
+                } else {
+                  technical.rsiDivergence = 'none'
                 }
+              } else {
+                technical.rsiDivergence = 'none'
               }
             } catch (divError) {
               // Divergence calculation failed
+              technical.rsiDivergence = 'none'
             }
           }
 
