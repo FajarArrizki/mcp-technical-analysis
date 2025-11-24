@@ -150,14 +150,48 @@ function formatTechnicalIndicators(assetData: any, price: number | null) {
       : null,
     support: supportResistance.support || indicators.support || assetData?.support || null,
     resistance: supportResistance.resistance || indicators.resistance || assetData?.resistance || null,
-    fibonacci: indicators.fibonacci
-      ? {
+    fibonacci: (() => {
+      // Try to get from indicators first
+      if (indicators.fibonacci) {
+        return {
           level: indicators.fibonacci.level || null,
           direction: indicators.fibonacci.direction || null,
           range: indicators.fibonacci.range || null,
           keyLevels: indicators.fibonacci.keyLevels || null,
         }
-      : null,
+      }
+      // Calculate from historical data if available
+      if (historicalData.length >= 50 && price) {
+        try {
+          const highs = historicalData.map((d: any) => d.high || d.close)
+          const lows = historicalData.map((d: any) => d.low || d.close)
+          const closes = historicalData.map((d: any) => d.close)
+          const fibResult = calculateFibonacciRetracement(highs, lows, closes, 50)
+          if (fibResult) {
+            return {
+              level: fibResult.currentLevel || null,
+              direction: fibResult.direction || null,
+              range: fibResult.range || null,
+              keyLevels: [
+                fibResult.level0,
+                fibResult.level236,
+                fibResult.level382,
+                fibResult.level500,
+                fibResult.level618,
+                fibResult.level786,
+                fibResult.level100,
+                fibResult.level1272,
+                fibResult.level1618,
+                fibResult.level2000,
+              ].filter((v: any) => v != null),
+            }
+          }
+        } catch (fibError) {
+          // Fibonacci calculation failed
+        }
+      }
+      return null
+    })(),
     trend: trendAlignment
       ? {
           direction: trendAlignment.dailyTrend || trendAlignment.trend || trendAlignment.direction || null,
@@ -172,10 +206,32 @@ function formatTechnicalIndicators(assetData: any, price: number | null) {
         }
       : null,
     rsiDivergence: (() => {
-      if (!indicators.rsiDivergence) return null
-      if (typeof indicators.rsiDivergence === 'string') return indicators.rsiDivergence
-      if (typeof indicators.rsiDivergence === 'object' && indicators.rsiDivergence.divergence) {
-        return String(indicators.rsiDivergence.divergence)
+      // Try to get from indicators first
+      if (indicators.rsiDivergence) {
+        if (typeof indicators.rsiDivergence === 'string') return indicators.rsiDivergence
+        if (typeof indicators.rsiDivergence === 'object' && indicators.rsiDivergence.divergence) {
+          return String(indicators.rsiDivergence.divergence)
+        }
+      }
+      // Calculate from historical data if available
+      if (historicalData.length >= 20 && price) {
+        try {
+          const prices = historicalData.map((d: any) => d.close || d.price)
+          const rsiValues = prices.map((_, i: number) => {
+            if (i < 14) return null
+            const slice = prices.slice(i - 14, i + 1)
+            return calculateRSI(slice, 14)
+          }).filter((v: any) => v != null) as number[]
+          
+          if (rsiValues.length >= 20) {
+            const divergence = detectDivergence(prices.slice(-rsiValues.length), rsiValues, 20)
+            if (divergence && divergence.divergence) {
+              return String(divergence.divergence)
+            }
+          }
+        } catch (_divError) {
+          // Divergence calculation failed
+        }
       }
       return null
     })(),
@@ -196,10 +252,10 @@ function formatTechnicalIndicators(assetData: any, price: number | null) {
         if (typeof indicators.candlestickPatterns === 'object') {
           // If it's an object with patterns array
           if (Array.isArray(indicators.candlestickPatterns.patterns)) {
-            return indicators.candlestickPatterns.patterns
+            const patterns = indicators.candlestickPatterns.patterns
               .map((p: any) => (typeof p === 'object' ? p.type || p.pattern : String(p)))
               .filter((p: any) => p)
-              .join(', ') || null
+            return patterns.length > 0 ? patterns.join(', ') : null
           }
           // If it's an object with type property
           if (indicators.candlestickPatterns.type) {
@@ -209,6 +265,29 @@ function formatTechnicalIndicators(assetData: any, price: number | null) {
           if (indicators.candlestickPatterns.pattern) {
             return String(indicators.candlestickPatterns.pattern)
           }
+          // If it's an object with latestPattern
+          if (indicators.candlestickPatterns.latestPattern && typeof indicators.candlestickPatterns.latestPattern === 'object') {
+            return indicators.candlestickPatterns.latestPattern.type || null
+          }
+        }
+      }
+      // Calculate from historical data if available
+      if (historicalData.length >= 5) {
+        try {
+          const patterns = detectCandlestickPatterns(historicalData, 5)
+          if (patterns && patterns.patterns && patterns.patterns.length > 0) {
+            const patternTypes = patterns.patterns
+              .map((p: any) => (typeof p === 'object' ? p.type || p.pattern : String(p)))
+              .filter((p: any) => p)
+            return patternTypes.length > 0 ? patternTypes.join(', ') : null
+          }
+          // Get latest pattern from patterns array
+          if (patterns && patterns.patterns && patterns.patterns.length > 0) {
+            const latestPattern = patterns.patterns[patterns.patterns.length - 1]
+            return latestPattern?.type || null
+          }
+        } catch (candleError) {
+          // Candlestick calculation failed
         }
       }
       return null
@@ -7728,18 +7807,70 @@ server.registerTool(
           try {
             const fibResult = calculateFibonacciRetracement(highs, lows, closes, 50)
             fibonacci = formatFibonacci(fibResult)
+            // Also update technical.fibonacci if calculation succeeded
+            if (fibResult) {
+              technical.fibonacci = {
+                level: fibResult.currentLevel || null,
+                direction: fibResult.direction || null,
+                range: fibResult.range || null,
+                keyLevels: [
+                  fibResult.level0,
+                  fibResult.level236,
+                  fibResult.level382,
+                  fibResult.level500,
+                  fibResult.level618,
+                  fibResult.level786,
+                  fibResult.level100,
+                  fibResult.level1272,
+                  fibResult.level1618,
+                  fibResult.level2000,
+                ].filter((v: any) => v != null),
+              }
+            }
           } catch (fibError) {
             // Fibonacci calculation failed
           }
 
+          // Calculate Candlestick Patterns
+          try {
+            if (historicalData.length >= 5) {
+              const patterns = detectCandlestickPatterns(historicalData, 5)
+              const formattedPatterns = formatCandlestickPatterns(patterns)
+              // Get latest pattern from patterns array
+              if (patterns && patterns.patterns && patterns.patterns.length > 0) {
+                const latestPattern = patterns.patterns[patterns.patterns.length - 1]
+                technical.candlestick = latestPattern?.type || null
+              } else if (formattedPatterns && typeof formattedPatterns === 'string') {
+                technical.candlestick = formattedPatterns
+              }
+            }
+          } catch (candleError) {
+            // Candlestick calculation failed
+          }
+
+          // Calculate Divergence
+          try {
+            if (historicalData.length >= 20) {
+              const prices = historicalData.map((d: any) => d.close || d.price)
+              const rsiValues = prices.map((_p: number, i: number) => {
+                if (i < 14) return null
+                const slice = prices.slice(i - 14, i + 1)
+                return calculateRSI(slice, 14)
+              }).filter((v: any) => v != null) as number[]
+              
+              if (rsiValues.length >= 20) {
+                const divergence = detectDivergence(prices.slice(-rsiValues.length), rsiValues, 20)
+                if (divergence && divergence.divergence) {
+                  technical.rsiDivergence = String(divergence.divergence)
+                }
+              }
+            }
+          } catch (divError) {
+            // Divergence calculation failed
+          }
+
           // Calculate Market Structure (already in technical, but keep for consistency)
           // Market structure is already included in technical.marketStructure
-
-          // Calculate Candlestick Patterns (already in technical, but keep for consistency)
-          // Candlestick patterns are already included in technical.candlestick
-
-          // Calculate Divergence (already in technical, but keep for consistency)
-          // Divergence is already included in technical.rsiDivergence
         }
 
         // Calculate Order Book Depth
@@ -8101,8 +8232,66 @@ server.registerTool(
             try {
               const fibResult = calculateFibonacciRetracement(highs, lows, closes, 50)
               fibonacci = formatFibonacci(fibResult)
+              // Also update technical.fibonacci if calculation succeeded
+              if (fibResult) {
+                technical.fibonacci = {
+                  level: fibResult.currentLevel || null,
+                  direction: fibResult.direction || null,
+                  range: fibResult.range || null,
+                  keyLevels: [
+                    fibResult.level0,
+                    fibResult.level236,
+                    fibResult.level382,
+                    fibResult.level500,
+                    fibResult.level618,
+                    fibResult.level786,
+                    fibResult.level100,
+                    fibResult.level1272,
+                    fibResult.level1618,
+                    fibResult.level2000,
+                  ].filter((v: any) => v != null),
+                }
+              }
             } catch (fibError) {
               // Fibonacci calculation failed
+            }
+
+            // Calculate Candlestick Patterns
+            try {
+              if (historicalData.length >= 5) {
+                const patterns = detectCandlestickPatterns(historicalData, 5)
+                const formattedPatterns = formatCandlestickPatterns(patterns)
+                // Get latest pattern from patterns array
+                if (patterns && patterns.patterns && patterns.patterns.length > 0) {
+                  const latestPattern = patterns.patterns[patterns.patterns.length - 1]
+                  technical.candlestick = latestPattern?.type || null
+                } else if (formattedPatterns && typeof formattedPatterns === 'string') {
+                  technical.candlestick = formattedPatterns
+                }
+              }
+            } catch (candleError) {
+              // Candlestick calculation failed
+            }
+
+            // Calculate Divergence
+            try {
+              if (historicalData.length >= 20) {
+                const prices = historicalData.map((d: any) => d.close || d.price)
+                const rsiValues = prices.map((_p: number, i: number) => {
+                  if (i < 14) return null
+                  const slice = prices.slice(i - 14, i + 1)
+                  return calculateRSI(slice, 14)
+                }).filter((v: any) => v != null) as number[]
+                
+                if (rsiValues.length >= 20) {
+                  const divergence = detectDivergence(prices.slice(-rsiValues.length), rsiValues, 20)
+                  if (divergence && divergence.divergence) {
+                    technical.rsiDivergence = String(divergence.divergence)
+                  }
+                }
+              }
+            } catch (divError) {
+              // Divergence calculation failed
             }
           }
 
