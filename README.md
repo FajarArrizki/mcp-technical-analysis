@@ -1,7 +1,7 @@
-# GearTrade MCP Server - Cloudflare Workers Edition
+# AI Trading MCP Server
 
 🚀 **Complete Trading Analysis & Execution Platform with 36+ Tools**
-🌐 **Deployed on Cloudflare Workers Global Edge Network**
+🤖 **Model Context Protocol (MCP) Server for AI Trading Assistants**
 
 ## 🌟 **What's Included**
 
@@ -27,24 +27,37 @@
 - Advanced: `divergence_scan`, `liquidation_analysis`, `fibonacci_trading_strategy`
 - Risk: `risk_analysis`, `position_monitoring`, `portfolio_review`
 
-## 🌐 **Live Demo**
+## 🚀 **Quick Start**
 
-**🔗 URL:** https://geartrade-mcp-server.fajararrizki15.workers.dev
-
-### Quick API Test:
+### Installation:
 ```bash
-# Check server status
-curl https://geartrade-mcp-server.fajararrizki15.workers.dev/health
+# Clone the repository
+git clone https://github.com/FajarArrizki/ai-trading-mcp-server.git
+cd ai-trading-mcp-server
 
-# List all 36 tools
-curl -X POST https://geartrade-mcp-server.fajararrizki15.workers.dev/mcp \
-  -H "Content-Type: application/json" \
-  -d '{"method":"tools/list"}'
+# Install dependencies
+pnpm install
 
-# Get comprehensive BTC analysis
-curl -X POST https://geartrade-mcp-server.fajararrizki15.workers.dev/mcp \
-  -H "Content-Type: application/json" \
-  -d '{"method":"tools/call","params":{"name":"analisis_crypto","arguments":{"ticker":"BTC","capital":10000}}}'
+# Install the MCP server
+pnpm run install:mcp
+```
+
+### Usage with Claude Desktop:
+Add this to your Claude Desktop configuration (`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS):
+```json
+{
+  "mcpServers": {
+    "ai-trading": {
+      "command": "node",
+      "args": ["/path/to/ai-trading-mcp-server/packages/geartrade-mcp-server/dist/index.js"],
+      "env": {
+        "AI_PROVIDER": "openrouter",
+        "MODEL_ID": "openai/gpt-4-turbo",
+        "AI_PROVIDER_API_KEY": "your-api-key-here"
+      }
+    }
+  }
+}
 ```
 
 ## ⚙️ **Multi-User Support (Open-Source Ready)**
@@ -67,40 +80,41 @@ Each user provides their own credentials via tool parameters - no hardcoded secr
 }
 ```
 
-## 🚀 **Deploy Your Own Version**
+## ⚙️ **Configuration**
 
-### Prerequisites:
-- Cloudflare account (free tier works!)
-- Node.js 18+ and npm
-- Git
-
-### Quick Setup:
+### Environment Variables:
+Create a `.env` file based on `.env.example`:
 ```bash
-# Fork and clone
-git clone https://github.com/YOUR_USERNAME/geartrade-mcp-server.git
-cd geartrade-mcp-server/packages/geartrade-mcp-server
-
-# Install dependencies
-npm install
-
-# Set your environment variables
-wrangler secret put AI_PROVIDER      # e.g., "openrouter"
-wrangler secret put MODEL_ID         # e.g., "openai/gpt-4-turbo"
-wrangler secret put AI_PROVIDER_API_KEY  # Your AI provider key
-
-# Deploy to Cloudflare Workers
-wrangler deploy
+cp .env.example .env
 ```
 
-**🎉 Your server will be live at:** `https://your-worker-name.workers.dev`
+Key environment variables:
+- `AI_PROVIDER` - Your AI provider (openrouter, openai, etc.)
+- `MODEL_ID` - The model to use for analysis
+- `AI_PROVIDER_API_KEY` - Your API key for the AI provider
+
+### Development:
+```bash
+# Install dependencies
+pnpm install
+
+# Build the server
+pnpm run build
+
+# Run in development mode
+pnpm run dev
+
+# Validate MCP configuration
+pnpm run validate
+```
 
 ## 💡 **Key Features**
 
-### 🌍 **Global Performance**
-- **200+ Edge Locations** worldwide via Cloudflare
-- **Sub-second response times**
-- **Auto-scaling** with zero server management
-- **HTTPS security** by default
+### 🚀 **MCP Integration**
+- **Model Context Protocol** compatible
+- **Claude Desktop** integration
+- **AI Assistant** ready
+- **Real-time trading analysis**
 
 ### 🔒 **Security First**
 - **Multi-user credentials** via tool parameters
@@ -192,69 +206,76 @@ wrangler deploy
 ## 📊 **Architecture**
 
 ```
-GearTrade MCP Server
-├── 🌐 Cloudflare Workers (Global Edge)
+AI Trading MCP Server
+├── 🤖 MCP Server Implementation
 │   ├── 📊 36 Trading Tools
 │   ├── 📚 25 Resources
 │   └── 🤖 23 AI Prompts
-├── 🔧 MCP Protocol Integration
+├── 🔧 @nullshot/mcp Framework
 ├── 💰 Hyperliquid API Support
+├── 🧠 AI-Powered Analysis
 └── 🔒 Multi-User Security
 ```
 
-## 💰 **Cost**
+## 🛠️ **Project Structure**
 
-### Cloudflare Workers (Free Tier):
-- **100,000 requests/day** included
-- **Global CDN** included
-- **SSL certificates** included
-- **Pay-as-you-go** after free tier (~$0.50 per million requests)
+```
+ai-trading-mcp-server/
+├── packages/
+│   └── geartrade-mcp-server/     # Main MCP server package
+│       ├── src/
+│       │   ├── index.ts          # Server entry point
+│       │   ├── tools/            # Trading tools implementation
+│       │   ├── resources/        # Data resources
+│       │   └── prompts/          # AI trading prompts
+│       ├── dist/                 # Compiled JavaScript
+│       └── package.json
+├── package.json                  # Workspace configuration
+├── pnpm-workspace.yaml          # PNPM workspace config
+└── README.md
+```
 
-### Tips to Minimize Costs:
-- Use batch tools (`get_multiple_*`) for efficiency
-- Cache responses where appropriate
-- Monitor usage in Cloudflare dashboard
+## 📚 **Documentation & Support**
 
-## 📞 **Documentation**
+### Available Commands:
+```bash
+pnpm run dev          # Start development server
+pnpm run build        # Build for production
+pnpm run install:mcp  # Install MCP server
+pnpm run validate     # Validate MCP configuration
+pnpm run list         # List MCP tools and resources
+```
 
-- **[User Deployment Guide](USER_DEPLOYMENT_GUIDE.md)** - Step-by-step setup instructions
-- **[Migration Summary](MIGRATION_SUMMARY.md)** - Complete migration details
-- **[API Documentation](https://geartrade-mcp-server.fajararrizki15.workers.dev)** - Interactive API docs
-
-## 🔗 **Integration**
-
-### MCP Clients:
-- **Cline IDE** - VS Code extension
-- **Cursor** - AI-powered IDE
+### Integration:
+- **Claude Desktop** - Native MCP support
+- **Cline IDE** - VS Code extension with MCP
+- **Cursor** - AI-powered IDE with MCP
 - **Other MCP-compatible clients**
 
-### Direct API:
-```bash
-# All endpoints work with standard HTTP requests
-GET  /health          - Server status
-GET  /resources       - List all resources
-GET  /prompts         - List all prompts
-POST /mcp            - Main MCP protocol endpoint
-```
+### Environment Setup:
+1. Copy `.env.example` to `.env`
+2. Configure your AI provider and API keys
+3. Build and install the MCP server
+4. Add to your MCP client configuration
 
 ## 🏆 **What Makes This Special**
 
-- ✅ **Complete Migration** - All 36+ tools from original server
-- ✅ **Serverless Architecture** - Zero server maintenance
-- ✅ **Multi-User Ready** - Each user provides own credentials
-- ✅ **Open Source Deployable** - No vendor lock-in
-- ✅ **Global Performance** - 200+ edge locations
-- ✅ **Production Ready** - Full security and monitoring
-- ✅ **Free to Deploy** - Uses Cloudflare free tier
+- ✅ **Complete Trading Toolkit** - 36+ professional trading tools
+- ✅ **MCP Protocol Ready** - Native integration with AI assistants
+- ✅ **Multi-User Support** - Each user provides own credentials
+- ✅ **AI-Powered Analysis** - Intelligent market insights
+- ✅ **Paper Trading Safe** - Practice without real money
+- ✅ **Live Trading Ready** - Real execution via Hyperliquid API
+- ✅ **Open Source** - Full transparency and customization
 
 ---
 
-**🎉 Your Complete Trading Platform is Ready!**
+**🎉 Your AI Trading Assistant is Ready!**
 
-Deploy your own version in minutes and start using professional-grade trading tools today.
+Install the MCP server and start using professional-grade trading tools with Claude Desktop or other AI assistants today.
 
-**🚀 Get Started:** [User Deployment Guide](USER_DEPLOYMENT_GUIDE.md)
+**🚀 Quick Start:** Clone, install dependencies, and configure with your AI provider
 
 ---
 
-*Built with ❤️ for the trading community - empowering AI agents with comprehensive trading capabilities*
+*Built with ❤️ for the AI trading community - empowering AI assistants with comprehensive trading capabilities*
