@@ -233,7 +233,7 @@ function formatTechnicalIndicators(assetData: any, price: number | null) {
           // Divergence calculation failed
         }
       }
-      return 'none'
+      return null
     })(),
     candlestick: (() => {
       // Try candlestick as string first
@@ -255,7 +255,7 @@ function formatTechnicalIndicators(assetData: any, price: number | null) {
             const patterns = indicators.candlestickPatterns.patterns
               .map((p: any) => (typeof p === 'object' ? p.type || p.pattern : String(p)))
               .filter((p: any) => p)
-            return patterns.length > 0 ? patterns.join(', ') : 'none'
+            return patterns.length > 0 ? patterns.join(', ') : null
           }
           // If it's an object with type property
           if (indicators.candlestickPatterns.type) {
@@ -267,7 +267,7 @@ function formatTechnicalIndicators(assetData: any, price: number | null) {
           }
           // If it's an object with latestPattern
           if (indicators.candlestickPatterns.latestPattern && typeof indicators.candlestickPatterns.latestPattern === 'object') {
-            return indicators.candlestickPatterns.latestPattern.type || 'none'
+            return indicators.candlestickPatterns.latestPattern.type || null
           }
         }
       }
@@ -279,18 +279,18 @@ function formatTechnicalIndicators(assetData: any, price: number | null) {
             const patternTypes = patterns.patterns
               .map((p: any) => (typeof p === 'object' ? p.type || p.pattern : String(p)))
               .filter((p: any) => p)
-            return patternTypes.length > 0 ? patternTypes.join(', ') : 'none'
+            return patternTypes.length > 0 ? patternTypes.join(', ') : null
           }
           // Get latest pattern from patterns array
           if (patterns && patterns.patterns && patterns.patterns.length > 0) {
             const latestPattern = patterns.patterns[patterns.patterns.length - 1]
-            return latestPattern?.type || 'none'
+            return latestPattern?.type || null
           }
         } catch (candleError) {
           // Candlestick calculation failed
         }
       }
-      return 'none'
+      return null
     })(),
     marketRegime:
       indicators.marketRegime && typeof indicators.marketRegime === 'object'
@@ -530,9 +530,6 @@ function formatExternalData(assetData: any): {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     })
-  } else {
-    // Default to "N/A" if openInterest is null or invalid
-    openInterestFormatted = 'N/A'
   }
 
   return {
@@ -7842,18 +7839,13 @@ server.registerTool(
               // Get latest pattern from patterns array
               if (patterns && patterns.patterns && patterns.patterns.length > 0) {
                 const latestPattern = patterns.patterns[patterns.patterns.length - 1]
-                technical.candlestick = latestPattern?.type || 'none'
+                technical.candlestick = latestPattern?.type || null
               } else if (formattedPatterns && typeof formattedPatterns === 'string') {
                 technical.candlestick = formattedPatterns
-              } else {
-                technical.candlestick = 'none'
               }
-            } else {
-              technical.candlestick = 'none'
             }
           } catch (candleError) {
             // Candlestick calculation failed
-            technical.candlestick = 'none'
           }
 
           // Calculate Divergence
@@ -7870,18 +7862,11 @@ server.registerTool(
                 const divergence = detectDivergence(prices.slice(-rsiValues.length), rsiValues, 20)
                 if (divergence && divergence.divergence) {
                   technical.rsiDivergence = String(divergence.divergence)
-                } else {
-                  technical.rsiDivergence = 'none'
                 }
-              } else {
-                technical.rsiDivergence = 'none'
               }
-            } else {
-              technical.rsiDivergence = 'none'
             }
           } catch (divError) {
             // Divergence calculation failed
-            technical.rsiDivergence = 'none'
           }
 
           // Calculate Market Structure (already in technical, but keep for consistency)
@@ -8279,18 +8264,13 @@ server.registerTool(
                 // Get latest pattern from patterns array
                 if (patterns && patterns.patterns && patterns.patterns.length > 0) {
                   const latestPattern = patterns.patterns[patterns.patterns.length - 1]
-                  technical.candlestick = latestPattern?.type || 'none'
+                  technical.candlestick = latestPattern?.type || null
                 } else if (formattedPatterns && typeof formattedPatterns === 'string') {
                   technical.candlestick = formattedPatterns
-                } else {
-                  technical.candlestick = 'none'
                 }
-              } else {
-                technical.candlestick = 'none'
               }
             } catch (candleError) {
               // Candlestick calculation failed
-              technical.candlestick = 'none'
             }
 
             // Calculate Divergence
@@ -8307,18 +8287,11 @@ server.registerTool(
                   const divergence = detectDivergence(prices.slice(-rsiValues.length), rsiValues, 20)
                   if (divergence && divergence.divergence) {
                     technical.rsiDivergence = String(divergence.divergence)
-                  } else {
-                    technical.rsiDivergence = 'none'
                   }
-                } else {
-                  technical.rsiDivergence = 'none'
                 }
-              } else {
-                technical.rsiDivergence = 'none'
               }
             } catch (divError) {
               // Divergence calculation failed
-              technical.rsiDivergence = 'none'
             }
           }
 
@@ -9649,6 +9622,2848 @@ For comprehensive analysis, include:
           },
         ],
       }
+    }
+  }
+)
+
+// Register Additional Prompts
+server.registerPrompt(
+  'quick_price_check',
+  {
+    title: 'Quick Price Check',
+    description: 'Quickly check prices for multiple crypto assets',
+    argsSchema: {
+      tickers: z.string().describe('Comma-separated tickers to check (e.g., "BTC,ETH,SOL,BNB")'),
+    } as any,
+  },
+  async (args: any) => {
+    const tickers = args.tickers.split(',').map((t: string) => t.trim().toUpperCase())
+
+    return {
+      messages: [
+        {
+          role: 'user' as const,
+          content: {
+            type: 'text' as const,
+            text: `Please check current prices for the following assets: ${tickers.join(', ')}
+
+Use the get_multiple_prices tool to get prices for all tickers.
+
+Present the results in a clear table format:
+- Ticker
+- Current Price (USD)
+- 24h Change (%)
+- Timestamp
+
+Keep it concise and easy to read.`,
+          },
+        },
+      ],
+    }
+  }
+)
+
+server.registerPrompt(
+  'trend_analysis',
+  {
+    title: 'Trend Analysis',
+    description: 'Analyze trend direction and strength across multiple timeframes',
+    argsSchema: {
+      ticker: z.string().describe('Asset ticker to analyze (e.g., BTC, ETH, SOL)'),
+      timeframes: z.string().optional().describe('Comma-separated timeframes to analyze (e.g., "1D,4H,1H" or "daily,4h,1h"). Default: all timeframes'),
+    } as any,
+  },
+  async (args: any) => {
+    const ticker = args.ticker.toUpperCase()
+    const timeframes = args.timeframes ? args.timeframes.split(',').map((t: string) => t.trim()) : ['1D', '4H', '1H']
+
+    return {
+      messages: [
+        {
+          role: 'user' as const,
+          content: {
+            type: 'text' as const,
+            text: `Please perform trend analysis for ${ticker} across the following timeframes: ${timeframes.join(', ')}
+
+Use the get_multitimeframe tool to get trend data for ${ticker}.
+
+Analyze and present:
+1. **Trend Direction per Timeframe**
+   - Daily trend: UPTREND / DOWNTREND / SIDEWAYS
+   - 4H trend: UPTREND / DOWNTREND / SIDEWAYS
+   - 1H trend: UPTREND / DOWNTREND / SIDEWAYS
+
+2. **Trend Strength**
+   - Strong / Moderate / Weak for each timeframe
+   - Overall trend alignment score
+
+3. **EMA Analysis**
+   - EMA9 vs EMA21 position for each timeframe
+   - Golden Cross / Death Cross signals
+   - Price position relative to EMAs
+
+4. **Trend Consistency**
+   - Are all timeframes aligned? (Yes/No)
+   - If not aligned, which timeframes conflict?
+   - Overall trend recommendation
+
+5. **Trading Implications**
+   - Best timeframe for entry (if aligned)
+   - Risk level based on trend alignment
+   - Recommended action: BUY / SELL / WAIT
+
+Present the analysis clearly with timeframe comparison.`,
+          },
+        },
+      ],
+    }
+  }
+)
+
+server.registerPrompt(
+  'divergence_scan',
+  {
+    title: 'Divergence Scan',
+    description: 'Scan for RSI and price divergences that indicate potential reversals',
+    argsSchema: {
+      tickers: z.string().describe('Comma-separated tickers to scan (e.g., "BTC,ETH,SOL")'),
+    } as any,
+  },
+  async (args: any) => {
+    const tickers = args.tickers.split(',').map((t: string) => t.trim().toUpperCase())
+
+    return {
+      messages: [
+        {
+          role: 'user' as const,
+          content: {
+            type: 'text' as const,
+            text: `Please scan for divergence patterns in the following assets: ${tickers.join(', ')}
+
+For each ticker, use the get_divergence tool to check for:
+1. RSI Divergence (bullish or bearish)
+2. Price-Volume Divergence
+3. MACD Divergence (if available)
+
+Present results in a clear format:
+
+**For each ticker:**
+- Ticker: [TICKER]
+- RSI Divergence: [BULLISH / BEARISH / NONE]
+  - Description: [explanation]
+  - Strength: [STRONG / MODERATE / WEAK]
+- Price-Volume Divergence: [BULLISH / BEARISH / NONE]
+  - Description: [explanation]
+- Overall Divergence Signal: [BULLISH / BEARISH / NEUTRAL]
+- Trading Recommendation: [BUY / SELL / WAIT]
+- Confidence: [HIGH / MEDIUM / LOW]
+
+**Summary:**
+- List tickers with bullish divergence (potential BUY)
+- List tickers with bearish divergence (potential SELL)
+- Rank by divergence strength
+
+Divergences are early reversal signals - use with caution and wait for confirmation.`,
+          },
+        },
+      ],
+    }
+  }
+)
+
+server.registerPrompt(
+  'liquidation_analysis',
+  {
+    title: 'Liquidation Analysis',
+    description: 'Analyze liquidation levels and potential stop hunt zones',
+    argsSchema: {
+      ticker: z.string().describe('Asset ticker to analyze (e.g., BTC, ETH, SOL)'),
+    } as any,
+  },
+  async (args: any) => {
+    const ticker = args.ticker.toUpperCase()
+
+    return {
+      messages: [
+        {
+          role: 'user' as const,
+          content: {
+            type: 'text' as const,
+            text: `Please analyze liquidation levels for ${ticker}.
+
+Use the get_liquidation_levels tool to get liquidation data.
+
+Present the analysis:
+
+1. **Liquidation Clusters**
+   - Long liquidation levels (price zones with high long liquidations)
+   - Short liquidation levels (price zones with high short liquidations)
+   - Liquidation density map
+
+2. **Current Price Position**
+   - Distance to nearest long liquidation cluster
+   - Distance to nearest short liquidation cluster
+   - Risk of stop hunt in each direction
+
+3. **Stop Hunt Potential**
+   - Likelihood of stop hunt to the downside (for longs)
+   - Likelihood of stop hunt to the upside (for shorts)
+   - Estimated price zones for potential stop hunts
+
+4. **Trading Implications**
+   - If holding LONG: Risk of stop hunt below current price
+   - If holding SHORT: Risk of stop hunt above current price
+   - Recommended stop loss placement (away from liquidation clusters)
+   - Entry opportunities after stop hunt (contrarian play)
+
+5. **Risk Assessment**
+   - Overall liquidation risk: [LOW / MEDIUM / HIGH]
+   - Recommendation: [SAFE TO HOLD / REDUCE POSITION / WAIT FOR STOP HUNT]
+
+Use this analysis to avoid placing stops near liquidation clusters and to identify potential reversal zones.`,
+          },
+        },
+      ],
+    }
+  }
+)
+
+server.registerPrompt(
+  'portfolio_review',
+  {
+    title: 'Portfolio Review',
+    description: 'Review all open positions and provide portfolio status',
+    argsSchema: {
+      includeAnalysis: z.string().optional().describe('Include detailed analysis for each position (true/false, default: true)'),
+    } as any,
+  },
+  async (args: any) => {
+    const includeAnalysis = args.includeAnalysis !== 'false'
+
+    return {
+      messages: [
+        {
+          role: 'user' as const,
+          content: {
+            type: 'text' as const,
+            text: `Please review all open positions in the portfolio.
+
+Use the get_position tool for each open position to get current status.
+
+Present a comprehensive portfolio review:
+
+1. **Portfolio Summary**
+   - Total number of open positions
+   - Total invested capital
+   - Total unrealized P&L
+   - Overall portfolio performance (%)
+
+2. **Position Details (for each position)**
+   - Ticker: [TICKER]
+   - Side: [LONG / SHORT]
+   - Entry Price: [PRICE]
+   - Current Price: [PRICE]
+   - Quantity: [QTY]
+   - Unrealized P&L: [P&L USD] ([P&L %])
+   - Leverage: [X]
+   - Margin Used: [USD]
+   - Stop Loss: [PRICE] (Distance: [%])
+   - Take Profit: [PRICE] (Distance: [%])
+   - Risk/Reward: [R:R]
+
+${includeAnalysis ? `3. **Current Analysis (for each position)**
+   - Current signal: [BUY / SELL / HOLD]
+   - Trend alignment: [ALIGNED / NOT ALIGNED]
+   - Risk level: [LOW / MEDIUM / HIGH]
+   - Recommendation: [HOLD / CLOSE / REDUCE / ADD]` : ''}
+
+4. **Portfolio Risk Assessment**
+   - Total risk exposure (% of capital)
+   - Average leverage across positions
+   - Correlation risk (if multiple similar assets)
+   - Overall portfolio risk: [LOW / MEDIUM / HIGH]
+
+5. **Recommendations**
+   - Positions to close (if any)
+   - Positions to reduce (if any)
+   - Positions to add to (if any)
+   - Overall portfolio adjustments needed
+
+Present in a clear, organized format with actionable recommendations.`,
+          },
+        },
+      ],
+    }
+  }
+)
+
+server.registerPrompt(
+  'market_overview',
+  {
+    title: 'Market Overview',
+    description: 'Get comprehensive market overview for major crypto assets',
+    argsSchema: {
+      tickers: z.string().optional().describe('Comma-separated tickers (default: "BTC,ETH,SOL,BNB,XRP,ADA,DOGE,AVAX,MATIC,DOT")'),
+    } as any,
+  },
+  async (args: any) => {
+    const defaultTickers = ['BTC', 'ETH', 'SOL', 'BNB', 'XRP', 'ADA', 'DOGE', 'AVAX', 'MATIC', 'DOT']
+    const tickers = args.tickers ? args.tickers.split(',').map((t: string) => t.trim().toUpperCase()) : defaultTickers
+
+    return {
+      messages: [
+        {
+          role: 'user' as const,
+          content: {
+            type: 'text' as const,
+            text: `Please provide a comprehensive market overview for: ${tickers.join(', ')}
+
+Use get_multiple_prices to get current prices for all tickers.
+
+Present a market overview report:
+
+1. **Market Summary**
+   - Total market cap (if available)
+   - Number of assets analyzed
+   - Overall market sentiment: [BULLISH / BEARISH / NEUTRAL]
+
+2. **Price Performance Table**
+   | Ticker | Price (USD) | 24h Change | Trend | Signal |
+   |--------|-------------|------------|-------|--------|
+   | ...    | ...         | ...        | ...   | ...    |
+
+3. **Top Performers**
+   - Best 24h gainers (top 3)
+   - Worst 24h losers (bottom 3)
+
+4. **Market Leaders**
+   - BTC dominance trend
+   - ETH performance vs BTC
+   - Altcoin performance vs BTC
+
+5. **Trading Opportunities**
+   - Assets with strong BUY signals
+   - Assets with strong SELL signals
+   - Assets to watch (neutral but interesting)
+
+6. **Market Conditions**
+   - Overall volatility: [LOW / MEDIUM / HIGH]
+   - Market structure: [TRENDING / RANGING]
+   - Recommended strategy: [TREND FOLLOWING / MEAN REVERSION / WAIT]
+
+Keep it concise but informative. Focus on actionable insights.`,
+          },
+        },
+      ],
+    }
+  }
+)
+
+server.registerPrompt(
+  'entry_exit_strategy',
+  {
+    title: 'Entry & Exit Strategy',
+    description: 'Get optimal entry and exit strategy for a trading position',
+    argsSchema: {
+      ticker: z.string().describe('Asset ticker to analyze (e.g., BTC, ETH, SOL)'),
+      side: z.string().describe('Trade side: LONG or SHORT'),
+      capital: z.string().optional().describe('Trading capital in USD (default: 10000)'),
+      riskPct: z.string().optional().describe('Risk percentage per trade (default: 1.0)'),
+    } as any,
+  },
+  async (args: any) => {
+    const ticker = args.ticker.toUpperCase()
+    const side = args.side.toUpperCase()
+    const capital = args.capital ? parseFloat(args.capital) : 10000
+    const riskPct = args.riskPct ? parseFloat(args.riskPct) : 1.0
+
+    return {
+      messages: [
+        {
+          role: 'user' as const,
+          content: {
+            type: 'text' as const,
+            text: `Please provide optimal entry and exit strategy for ${ticker} ${side} position.
+
+Use analisis_crypto tool with:
+- ticker: ${ticker}
+- capital: ${capital}
+- riskPct: ${riskPct}
+
+Then use calculate_risk_management and calculate_position_setup tools to get precise levels.
+
+Present a detailed entry/exit strategy:
+
+1. **Entry Strategy**
+   - Optimal Entry Price: [PRICE]
+   - Entry Zone: [PRICE_MIN] - [PRICE_MAX]
+   - Entry Conditions:
+     * [ ] RSI condition
+     * [ ] Trend alignment
+     * [ ] Volume confirmation
+     * [ ] Support/Resistance level
+   - Entry Timing: [IMMEDIATE / WAIT FOR PULLBACK / WAIT FOR BREAKOUT]
+
+2. **Stop Loss Strategy**
+   - Stop Loss Price: [PRICE]
+   - Stop Loss Distance: [%] from entry
+   - Stop Loss Type: [FIXED / ATR-BASED / SUPPORT-RESISTANCE]
+   - Risk Amount: [USD] (${riskPct}% of capital)
+   - Stop Loss Reasoning: [explanation]
+
+3. **Take Profit Strategy**
+   - TP1 (2:1 R:R): [PRICE] - [%] gain
+   - TP2 (3:1 R:R): [PRICE] - [%] gain
+   - TP3 (5:1 R:R): [PRICE] - [%] gain
+   - Take Profit Method: [ALL AT ONCE / SCALING OUT / TRAILING STOP]
+
+4. **Position Sizing**
+   - Position Size: [QUANTITY] ${ticker}
+   - Leverage: [X]
+   - Margin Required: [USD]
+   - Risk/Reward Ratio: [R:R]
+
+5. **Exit Strategy**
+   - When to exit early:
+     * [ ] Stop loss hit
+     * [ ] Trend reversal signal
+     * [ ] Divergence signal
+     * [ ] Support/Resistance break
+   - When to hold:
+     * [ ] Trend still intact
+     * [ ] Volume supports continuation
+     * [ ] Multi-timeframe alignment
+
+6. **Risk Management**
+   - Maximum loss: [USD]
+   - Maximum gain (if all TPs hit): [USD]
+   - Risk level: [LOW / MEDIUM / HIGH]
+   - Position monitoring: [Check every X hours]
+
+Present clear, actionable strategy with specific price levels and conditions.`,
+          },
+        },
+      ],
+    }
+  }
+)
+
+server.registerPrompt(
+  'volatility_analysis',
+  {
+    title: 'Volatility Analysis',
+    description: 'Analyze volatility for risk management and position sizing',
+    argsSchema: {
+      ticker: z.string().describe('Asset ticker to analyze (e.g., BTC, ETH, SOL)'),
+    } as any,
+  },
+  async (args: any) => {
+    const ticker = args.ticker.toUpperCase()
+
+    return {
+      messages: [
+        {
+          role: 'user' as const,
+          content: {
+            type: 'text' as const,
+            text: `Please analyze volatility for ${ticker} to determine appropriate risk management.
+
+Use get_indicator tool to get ATR (Average True Range) values for ${ticker}.
+
+Present volatility analysis:
+
+1. **Volatility Metrics**
+   - ATR (14-period): [VALUE]
+   - ATR %: [%] of current price
+   - Volatility Level: [LOW / MEDIUM / HIGH / EXTREME]
+   - Historical Comparison: [ABOVE / BELOW / AVERAGE] historical average
+
+2. **Volatility Interpretation**
+   - Current Market Regime: [LOW VOLATILITY / NORMAL / HIGH VOLATILITY / EXTREME]
+   - Volatility Trend: [INCREASING / DECREASING / STABLE]
+   - Expected Price Movement: [TIGHT RANGE / NORMAL / WIDE RANGE]
+
+3. **Risk Management Implications**
+   - Recommended Stop Loss Distance:
+     * Conservative: [%] (1.5x ATR)
+     * Moderate: [%] (2x ATR)
+     * Aggressive: [%] (3x ATR)
+   - Stop Loss in USD: [USD] from current price
+   - Position Size Adjustment: [REDUCE / NORMAL / INCREASE] size due to volatility
+
+4. **Leverage Recommendation**
+   - Recommended Leverage: [X] (based on volatility)
+   - Maximum Safe Leverage: [X]
+   - Reasoning: [explanation based on ATR]
+
+5. **Trading Strategy Adjustment**
+   - If HIGH VOLATILITY:
+     * Use wider stops
+     * Reduce position size
+     * Lower leverage
+     * Wait for volatility to decrease
+   - If LOW VOLATILITY:
+     * Tighter stops possible
+     * Normal position size
+     * Normal leverage
+     * Watch for volatility expansion
+
+6. **Volatility-Based Entry/Exit**
+   - Entry: Wait for volatility contraction (squeeze) before breakout
+   - Exit: Consider exiting if volatility expands beyond normal range
+   - Position Monitoring: [MORE FREQUENT / NORMAL] due to volatility
+
+Use this analysis to adjust your risk management and position sizing accordingly.`,
+          },
+        },
+      ],
+    }
+  }
+)
+
+// Register Additional Prompts for Complete Tool Coverage
+server.registerPrompt(
+  'technical_indicator_analysis',
+  {
+    title: 'Technical Indicator Analysis',
+    description: 'Analyze specific technical indicators for trading decisions',
+    argsSchema: {
+      ticker: z.string().describe('Asset ticker to analyze (e.g., BTC, ETH, SOL)'),
+      indicators: z.string().optional().describe('Comma-separated indicators to analyze (e.g., "RSI,EMA,MACD,BB"). If not provided, analyzes all available indicators'),
+    } as any,
+  },
+  async (args: any) => {
+    const ticker = args.ticker.toUpperCase()
+    const indicators = args.indicators ? args.indicators.split(',').map((i: string) => i.trim().toUpperCase()) : ['RSI', 'EMA', 'MACD', 'BB', 'ATR', 'ADX', 'STOCH', 'CCI', 'WILLR', 'AROON', 'SAR', 'OBV']
+
+    return {
+      messages: [
+        {
+          role: 'user' as const,
+          content: {
+            type: 'text' as const,
+            text: `Please analyze technical indicators for ${ticker}. Use the get_indicator tool to get: ${indicators.join(', ')}. Present: 1) Indicator values and signals, 2) Trading signals (BUY/SELL/HOLD), 3) Indicator combination analysis, 4) Entry/exit recommendations.`,
+          },
+        },
+      ],
+    }
+  }
+)
+
+server.registerPrompt(
+  'volume_profile_analysis',
+  {
+    title: 'Volume Profile Analysis',
+    description: 'Analyze volume profile to identify key support/resistance levels',
+    argsSchema: {
+      ticker: z.string().describe('Asset ticker to analyze (e.g., BTC, ETH, SOL)'),
+    } as any,
+  },
+  async (args: any) => {
+    const ticker = args.ticker.toUpperCase()
+    return {
+      messages: [
+        {
+          role: 'user' as const,
+          content: {
+            type: 'text' as const,
+            text: `Analyze volume profile for ${ticker} using get_volume_profile. Present: POC, VAH/VAL, HVN/LVN, current price position, support/resistance levels, and trading strategy with entry/exit zones.`,
+          },
+        },
+      ],
+    }
+  }
+)
+
+server.registerPrompt(
+  'orderbook_analysis',
+  {
+    title: 'Order Book Analysis',
+    description: 'Analyze order book depth to identify support/resistance and market sentiment',
+    argsSchema: {
+      ticker: z.string().describe('Asset ticker to analyze (e.g., BTC, ETH, SOL)'),
+    } as any,
+  },
+  async (args: any) => {
+    const ticker = args.ticker.toUpperCase()
+    return {
+      messages: [
+        {
+          role: 'user' as const,
+          content: {
+            type: 'text' as const,
+            text: `Analyze order book for ${ticker} using get_orderbook_depth. Present: bid/ask volumes, support/resistance walls, market sentiment, trading implications, entry/exit strategy, and liquidity analysis.`,
+          },
+        },
+      ],
+    }
+  }
+)
+
+server.registerPrompt(
+  'market_structure_analysis',
+  {
+    title: 'Market Structure Analysis',
+    description: 'Analyze market structure to identify trend changes and trading opportunities',
+    argsSchema: {
+      ticker: z.string().describe('Asset ticker to analyze (e.g., BTC, ETH, SOL)'),
+    } as any,
+  },
+  async (args: any) => {
+    const ticker = args.ticker.toUpperCase()
+    return {
+      messages: [
+        {
+          role: 'user' as const,
+          content: {
+            type: 'text' as const,
+            text: `Analyze market structure for ${ticker} using get_market_structure. Present: structure type, COC signals, swing patterns, support/resistance, trading implications, and entry strategy.`,
+          },
+        },
+      ],
+    }
+  }
+)
+
+server.registerPrompt(
+  'candlestick_pattern_analysis',
+  {
+    title: 'Candlestick Pattern Analysis',
+    description: 'Analyze candlestick patterns to identify reversal and continuation signals',
+    argsSchema: {
+      ticker: z.string().describe('Asset ticker to analyze (e.g., BTC, ETH, SOL)'),
+    } as any,
+  },
+  async (args: any) => {
+    const ticker = args.ticker.toUpperCase()
+    return {
+      messages: [
+        {
+          role: 'user' as const,
+          content: {
+            type: 'text' as const,
+            text: `Analyze candlestick patterns for ${ticker} using get_candlestick_patterns. Present: detected patterns, pattern interpretation, reversal/continuation signals, trading signals, and entry/exit strategy.`,
+          },
+        },
+      ],
+    }
+  }
+)
+
+server.registerPrompt(
+  'external_data_analysis',
+  {
+    title: 'External Data Analysis',
+    description: 'Analyze external market data: funding rate, open interest, volatility',
+    argsSchema: {
+      ticker: z.string().describe('Asset ticker to analyze (e.g., BTC, ETH, SOL)'),
+    } as any,
+  },
+  async (args: any) => {
+    const ticker = args.ticker.toUpperCase()
+    return {
+      messages: [
+        {
+          role: 'user' as const,
+          content: {
+            type: 'text' as const,
+            text: `Analyze external data for ${ticker} using get_external_data. Present: funding rate analysis, open interest trends, market sentiment, volatility, trading implications, and risk assessment.`,
+          },
+        },
+      ],
+    }
+  }
+)
+
+server.registerPrompt(
+  'spot_futures_arbitrage',
+  {
+    title: 'Spot-Futures Arbitrage Analysis',
+    description: 'Analyze spot-futures divergence for arbitrage opportunities',
+    argsSchema: {
+      ticker: z.string().describe('Asset ticker to analyze (e.g., BTC, ETH, SOL)'),
+    } as any,
+  },
+  async (args: any) => {
+    const ticker = args.ticker.toUpperCase()
+    return {
+      messages: [
+        {
+          role: 'user' as const,
+          content: {
+            type: 'text' as const,
+            text: `Analyze spot-futures divergence for ${ticker} using get_spot_futures_divergence. Present: price comparison, divergence analysis, arbitrage opportunities, trading signals, and recommendations.`,
+          },
+        },
+      ],
+    }
+  }
+)
+
+server.registerPrompt(
+  'long_short_sentiment',
+  {
+    title: 'Long/Short Sentiment Analysis',
+    description: 'Analyze long/short ratio to gauge market sentiment',
+    argsSchema: {
+      ticker: z.string().describe('Asset ticker to analyze (e.g., BTC, ETH, SOL)'),
+    } as any,
+  },
+  async (args: any) => {
+    const ticker = args.ticker.toUpperCase()
+    return {
+      messages: [
+        {
+          role: 'user' as const,
+          content: {
+            type: 'text' as const,
+            text: `Analyze long/short sentiment for ${ticker} using get_long_short_ratio. Present: ratio analysis, market sentiment, historical context, trading implications, risk assessment, and contrarian signals.`,
+          },
+        },
+      ],
+    }
+  }
+)
+
+server.registerPrompt(
+  'fibonacci_trading_strategy',
+  {
+    title: 'Fibonacci Trading Strategy',
+    description: 'Use Fibonacci retracement levels for entry, stop loss, and take profit',
+    argsSchema: {
+      ticker: z.string().describe('Asset ticker to analyze (e.g., BTC, ETH, SOL)'),
+    } as any,
+  },
+  async (args: any) => {
+    const ticker = args.ticker.toUpperCase()
+    return {
+      messages: [
+        {
+          role: 'user' as const,
+          content: {
+            type: 'text' as const,
+            text: `Analyze Fibonacci retracement for ${ticker} using get_fibonacci. Present: Fibonacci levels, current price position, trading signals, support/resistance, entry strategy, stop loss/take profit, and risk/reward.`,
+          },
+        },
+      ],
+    }
+  }
+)
+
+server.registerPrompt(
+  'multi_asset_comparison',
+  {
+    title: 'Multi-Asset Comparison',
+    description: 'Compare multiple assets across various metrics to identify best opportunities',
+    argsSchema: {
+      tickers: z.string().describe('Comma-separated tickers to compare (e.g., "BTC,ETH,SOL,BNB")'),
+      metrics: z.string().optional().describe('Comma-separated metrics (e.g., "price,volume,rsi,trend"). Default: all'),
+    } as any,
+  },
+  async (args: any) => {
+    const tickers = args.tickers.split(',').map((t: string) => t.trim().toUpperCase())
+    return {
+      messages: [
+        {
+          role: 'user' as const,
+          content: {
+            type: 'text' as const,
+            text: `Compare assets: ${tickers.join(', ')}. Use get_multiple_prices, get_multiple_indicators, get_multiple_volume_analysis, get_multiple_multitimeframe, and analisis_multiple_crypto. Present: price comparison, technical comparison, signal comparison, risk/reward comparison, overall ranking, and top 3 recommendations.`,
+          },
+        },
+      ],
+    }
+  }
+)
+
+// Register Additional Resource Templates
+server.registerResource(
+  'technical-indicators-guide',
+  'geartrade://docs/technical-indicators',
+  {
+    description: 'Complete guide on technical indicators available in GearTrade: RSI, EMA, MACD, Bollinger Bands, ATR, ADX, and more',
+    mimeType: 'text/markdown',
+  },
+  async () => {
+    return {
+      contents: [
+        {
+          uri: 'geartrade://docs/technical-indicators',
+          mimeType: 'text/markdown',
+          text: `# Technical Indicators Guide
+
+## Overview
+
+GearTrade MCP Server provides access to 20+ technical indicators for comprehensive market analysis. This guide explains each indicator, its interpretation, and trading applications.
+
+## Momentum Indicators
+
+### RSI (Relative Strength Index)
+- **Range**: 0-100
+- **Oversold**: <30 (potential BUY signal)
+- **Overbought**: >70 (potential SELL signal)
+- **Neutral**: 30-70
+- **Usage**: Identify reversal points, confirm trends
+- **Timeframes**: RSI14 (14-period), RSI7 (7-period), RSI4h (4-hour)
+
+### Stochastic Oscillator
+- **Range**: 0-100
+- **Oversold**: <20
+- **Overbought**: >80
+- **Usage**: Momentum indicator, works well with RSI
+- **Components**: %K (fast), %D (slow)
+
+### CCI (Commodity Channel Index)
+- **Range**: -100 to +100
+- **Oversold**: <-100
+- **Overbought**: >+100
+- **Usage**: Identify cyclical trends, breakouts
+
+### Williams %R
+- **Range**: -100 to 0
+- **Oversold**: <-80
+- **Overbought**: >-20
+- **Usage**: Momentum indicator, similar to Stochastic
+
+## Trend Indicators
+
+### EMA (Exponential Moving Average)
+- **Common Periods**: EMA9, EMA21, EMA50, EMA100, EMA200
+- **Golden Cross**: EMA9 > EMA21 (bullish)
+- **Death Cross**: EMA9 < EMA21 (bearish)
+- **Usage**: Identify trend direction, support/resistance levels
+
+### MACD (Moving Average Convergence Divergence)
+- **Components**: MACD line, Signal line, Histogram
+- **Bullish**: MACD crosses above Signal
+- **Bearish**: MACD crosses below Signal
+- **Usage**: Trend confirmation, momentum shifts
+
+### ADX (Average Directional Index)
+- **Range**: 0-100
+- **Strong Trend**: >25
+- **Weak Trend**: <20
+- **Usage**: Measure trend strength (not direction)
+
+### Parabolic SAR
+- **Above Price**: Bearish trend
+- **Below Price**: Bullish trend
+- **Usage**: Trend following, stop loss placement
+
+### Aroon Indicator
+- **Aroon Up**: Measures uptrend strength (0-100)
+- **Aroon Down**: Measures downtrend strength (0-100)
+- **Usage**: Identify trend changes, consolidation periods
+
+## Volatility Indicators
+
+### Bollinger Bands
+- **Components**: Upper band, Middle band (SMA20), Lower band
+- **Squeeze**: Bands narrow (low volatility, potential breakout)
+- **Expansion**: Bands widen (high volatility)
+- **Usage**: Identify overbought/oversold, volatility changes
+
+### ATR (Average True Range)
+- **Usage**: Measure volatility, set stop loss levels
+- **Stop Loss**: 1.5x-3x ATR from entry
+- **High ATR**: High volatility (wider stops)
+- **Low ATR**: Low volatility (tighter stops)
+
+## Volume Indicators
+
+### OBV (On-Balance Volume)
+- **Rising OBV**: Accumulation (bullish)
+- **Falling OBV**: Distribution (bearish)
+- **Usage**: Confirm price trends, detect divergences
+
+### VWAP (Volume Weighted Average Price)
+- **Above VWAP**: Bullish intraday
+- **Below VWAP**: Bearish intraday
+- **Usage**: Intraday trading, institutional price levels
+
+### CVD (Cumulative Volume Delta)
+- **Positive CVD**: Buying pressure
+- **Negative CVD**: Selling pressure
+- **Usage**: Early trend detection, divergence analysis
+
+## Support & Resistance
+
+### Support/Resistance Levels
+- **Support**: Price level where buying interest is strong
+- **Resistance**: Price level where selling interest is strong
+- **Usage**: Entry/exit points, stop loss placement
+
+### Fibonacci Retracement
+- **Key Levels**: 23.6%, 38.2%, 50%, 61.8%, 78.6%
+- **Usage**: Identify potential reversal zones
+- **Calculation**: Based on swing highs and lows
+
+## Multi-Timeframe Analysis
+
+### Timeframes Available
+- **Daily (1D)**: Long-term trend
+- **4-Hour (4H)**: Medium-term trend
+- **1-Hour (1H)**: Short-term trend
+
+### Trend Alignment
+- **Aligned**: All timeframes trending same direction (high confidence)
+- **Not Aligned**: Mixed signals (lower confidence)
+- **Usage**: Confirm trade setups, filter false signals
+
+## Indicator Combinations
+
+### High-Confidence BUY Setup
+- RSI <30 (oversold)
+- Price at support level
+- EMA9 > EMA21 (uptrend)
+- Positive CVD trend
+- Multi-timeframe alignment (bullish)
+
+### High-Confidence SELL Setup
+- RSI >70 (overbought)
+- Price at resistance level
+- EMA9 < EMA21 (downtrend)
+- Negative CVD trend
+- Multi-timeframe alignment (bearish)
+
+## Best Practices
+
+1. **Never rely on single indicator** - Use multiple confirmations
+2. **Combine different indicator types** - Momentum + Trend + Volume
+3. **Use multi-timeframe analysis** - Confirm on higher timeframes
+4. **Watch for divergences** - Price vs indicator divergence = early signal
+5. **Respect market context** - Indicators work better in trending vs ranging markets
+
+## Common Mistakes
+
+1. ❌ Using too many indicators (analysis paralysis)
+2. ❌ Ignoring volume confirmation
+3. ❌ Trading against the trend
+4. ❌ Not using multi-timeframe confirmation
+5. ❌ Ignoring divergences
+`,
+        },
+      ],
+    }
+  }
+)
+
+server.registerResource(
+  'hyperliquid-api-reference',
+  'geartrade://docs/hyperliquid-api',
+  {
+    description: 'Hyperliquid API reference guide: endpoints, authentication, order types, and integration details',
+    mimeType: 'text/markdown',
+  },
+  async () => {
+    return {
+      contents: [
+        {
+          uri: 'geartrade://docs/hyperliquid-api',
+          mimeType: 'text/markdown',
+          text: `# Hyperliquid API Reference
+
+## Overview
+
+GearTrade MCP Server integrates with Hyperliquid DEX for perpetual futures trading. This guide covers API endpoints, authentication, and order execution.
+
+## Authentication
+
+### EIP-712 Signing
+- **Standard**: EIP-712 typed data signing
+- **Purpose**: Secure order submission without exposing private keys
+- **Implementation**: Automatic in \`get_execution_spot\` and \`get_execution_futures\` tools
+
+### Credentials
+- **Account Address**: Your Hyperliquid wallet address (0x format)
+- **Wallet API Key**: Your private key for signing (keep secure!)
+- **Note**: Credentials can be provided via tool parameters (multi-user support)
+
+## Order Types
+
+### Market Orders
+- **Execution**: Immediate at best available price
+- **Slippage**: May occur during high volatility
+- **Usage**: Fast execution, no price guarantee
+
+### Limit Orders
+- **Execution**: Only at specified price or better
+- **Slippage**: None (price guaranteed)
+- **Usage**: Price control, may not fill immediately
+
+## Order Sides
+
+### LONG (Buy)
+- **Action**: Open long position or close short position
+- **Profit**: When price increases
+- **Usage**: Bullish market outlook
+
+### SHORT (Sell)
+- **Action**: Open short position or close long position
+- **Profit**: When price decreases
+- **Usage**: Bearish market outlook
+
+## Leverage
+
+### Available Leverage
+- **Range**: 1x to 50x
+- **Spot Trading**: 1x (no leverage)
+- **Futures Trading**: 1x-50x
+
+### Leverage Guidelines
+- **Conservative**: 1x-3x
+- **Moderate**: 3x-10x
+- **Aggressive**: 10x-50x (high risk!)
+
+### Dynamic Leverage
+- Use \`calculate_dynamic_leverage\` tool
+- Based on volatility (ATR), market conditions
+- Recommended: Lower leverage in high volatility
+
+## Position Management
+
+### Position Sizing
+- **Risk-Based**: 1-2% of capital per trade
+- **Calculation**: Use \`calculate_position_setup\` tool
+- **Formula**: (Capital × Risk %) / (Entry - Stop Loss)
+
+### Stop Loss
+- **Fixed**: 1-3% from entry
+- **ATR-Based**: 1.5x-3x ATR
+- **Support/Resistance**: Below support (longs) or above resistance (shorts)
+
+### Take Profit
+- **Risk/Reward**: Minimum 2:1, recommended 3:1
+- **Multiple Levels**: TP1 (2:1), TP2 (3:1), TP3 (5:1)
+- **Trailing Stop**: Move stop to breakeven after TP1
+
+## API Endpoints
+
+### Price Data
+- **Real-time Price**: \`get_price\` tool
+- **Multiple Prices**: \`get_multiple_prices\` tool
+- **Source**: Hyperliquid and Binance APIs
+
+### Market Data
+- **Funding Rate**: Real-time funding rate with trend
+- **Open Interest**: Total open positions
+- **Volume**: 24h volume and trends
+
+### Order Execution
+- **Spot Trading**: \`get_execution_spot\` (1x leverage)
+- **Futures Trading**: \`get_execution_futures\` (1-50x leverage)
+- **Paper Trading**: Default mode (safe testing)
+- **Live Trading**: Requires \`execute: true\` and \`useLiveExecutor: true\`
+
+## Safety Features
+
+### Paper Trading (Default)
+- **Purpose**: Test strategies without real money
+- **Slippage Modeling**: Realistic execution simulation
+- **Usage**: Always test before live trading
+
+### Multi-Asset Execution
+- **Default**: Paper trading (safety)
+- **Reason**: Multiple simultaneous executions = higher risk
+- **Override**: Explicit \`execute: true\` required
+
+### User Confirmation
+- **Required**: Always get user confirmation before live execution
+- **Best Practice**: Present analysis, ask "Mau dieksekusi ke Hyperliquid? (YES/NO)"
+
+## Error Handling
+
+### Common Errors
+- **Insufficient Balance**: Not enough funds for order
+- **Invalid Leverage**: Leverage exceeds limits
+- **Market Closed**: Trading not available
+- **Network Error**: API connection issues
+
+### Error Recovery
+- **Retry Logic**: Automatic retry for network errors
+- **User Notification**: Clear error messages
+- **Fallback**: Paper trading if live execution fails
+
+## Best Practices
+
+1. **Always test with paper trading first**
+2. **Start with small position sizes**
+3. **Use appropriate leverage for volatility**
+4. **Set stop loss on every trade**
+5. **Monitor positions actively**
+6. **Respect risk limits (1-2% per trade)**
+7. **Get user confirmation before live execution**
+
+## Rate Limits
+
+- **Price Data**: No strict limits (cached)
+- **Order Execution**: Follow Hyperliquid rate limits
+- **Best Practice**: Avoid rapid-fire orders
+
+## Security
+
+- **Never share private keys**
+- **Use environment variables or tool parameters**
+- **Multi-user support**: Each user provides own credentials
+- **EIP-712 signing**: Secure without exposing keys
+`,
+        },
+      ],
+    }
+  }
+)
+
+server.registerResource(
+  'market-analysis-patterns',
+  'geartrade://docs/market-patterns',
+  {
+    description: 'Common market analysis patterns: chart patterns, candlestick patterns, and market structure analysis',
+    mimeType: 'text/markdown',
+  },
+  async () => {
+    return {
+      contents: [
+        {
+          uri: 'geartrade://docs/market-patterns',
+          mimeType: 'text/markdown',
+          text: `# Market Analysis Patterns Guide
+
+## Overview
+
+This guide covers common market patterns, chart formations, and market structure analysis techniques available in GearTrade MCP Server.
+
+## Candlestick Patterns
+
+### Reversal Patterns
+
+#### Doji
+- **Appearance**: Open and close are nearly equal
+- **Signal**: Indecision, potential reversal
+- **Usage**: Wait for confirmation on next candle
+
+#### Hammer
+- **Appearance**: Small body, long lower wick
+- **Signal**: Bullish reversal (at support)
+- **Usage**: Enter long after confirmation
+
+#### Shooting Star
+- **Appearance**: Small body, long upper wick
+- **Signal**: Bearish reversal (at resistance)
+- **Usage**: Enter short after confirmation
+
+#### Engulfing Patterns
+- **Bullish Engulfing**: Large green candle engulfs previous red
+- **Bearish Engulfing**: Large red candle engulfs previous green
+- **Signal**: Strong reversal signal
+- **Usage**: High-confidence reversal entry
+
+### Continuation Patterns
+
+#### Three White Soldiers
+- **Appearance**: Three consecutive green candles
+- **Signal**: Strong uptrend continuation
+- **Usage**: Add to long positions
+
+#### Three Black Crows
+- **Appearance**: Three consecutive red candles
+- **Signal**: Strong downtrend continuation
+- **Usage**: Add to short positions
+
+## Chart Patterns
+
+### Trend Patterns
+
+#### Ascending Triangle
+- **Formation**: Higher lows, horizontal resistance
+- **Signal**: Bullish breakout expected
+- **Entry**: On breakout above resistance
+
+#### Descending Triangle
+- **Formation**: Lower highs, horizontal support
+- **Signal**: Bearish breakdown expected
+- **Entry**: On breakdown below support
+
+#### Symmetrical Triangle
+- **Formation**: Converging support and resistance
+- **Signal**: Breakout direction uncertain
+- **Entry**: Wait for breakout confirmation
+
+### Reversal Patterns
+
+#### Head and Shoulders
+- **Formation**: Three peaks, middle highest
+- **Signal**: Bearish reversal
+- **Entry**: On neckline breakdown
+
+#### Inverse Head and Shoulders
+- **Formation**: Three troughs, middle lowest
+- **Signal**: Bullish reversal
+- **Entry**: On neckline breakout
+
+#### Double Top
+- **Formation**: Two similar peaks
+- **Signal**: Bearish reversal
+- **Entry**: On breakdown below support
+
+#### Double Bottom
+- **Formation**: Two similar troughs
+- **Signal**: Bullish reversal
+- **Entry**: On breakout above resistance
+
+## Market Structure
+
+### Change of Character (COC)
+- **Definition**: Shift in market structure (uptrend to downtrend or vice versa)
+- **Detection**: Use \`get_market_structure\` tool
+- **Signal**: Potential trend reversal
+- **Usage**: Early warning for trend changes
+
+### Swing Patterns
+- **Swing High**: Local price peak
+- **Swing Low**: Local price trough
+- **Usage**: Identify trend direction, support/resistance
+
+### Structure Strength
+- **Strong Structure**: Clear trend with consistent swings
+- **Weak Structure**: Choppy, ranging market
+- **Usage**: Determine if trend-following or mean-reversion strategy
+
+## Volume Patterns
+
+### Volume Profile Patterns
+
+#### POC (Point of Control)
+- **Definition**: Price level with highest volume
+- **Usage**: Strong support/resistance level
+- **Trading**: Trade from POC to value area boundaries
+
+#### Value Area
+- **VAH (Value Area High)**: Upper boundary
+- **VAL (Value Area Low)**: Lower boundary
+- **Usage**: Identify fair value zone
+- **Trading**: Price tends to return to value area
+
+#### HVN/LVN (High/Low Volume Nodes)
+- **HVN**: High volume price levels (support/resistance)
+- **LVN**: Low volume price levels (quick price movement)
+- **Usage**: Identify liquidity zones
+
+### Volume Analysis Patterns
+
+#### Accumulation
+- **Pattern**: Increasing volume on up moves
+- **Signal**: Bullish, smart money buying
+- **Usage**: Enter long positions
+
+#### Distribution
+- **Pattern**: Increasing volume on down moves
+- **Signal**: Bearish, smart money selling
+- **Usage**: Enter short positions
+
+#### Volume Divergence
+- **Pattern**: Price makes new high/low, volume doesn't confirm
+- **Signal**: Weak move, potential reversal
+- **Usage**: Early reversal signal
+
+## Order Book Patterns
+
+### Bid/Ask Imbalance
+- **Large Bid Wall**: Strong support, potential bounce
+- **Large Ask Wall**: Strong resistance, potential rejection
+- **Usage**: Short-term direction indicator
+
+### Order Flow
+- **Buying Pressure**: More buy orders than sell
+- **Selling Pressure**: More sell orders than buy
+- **Usage**: Immediate market sentiment
+
+### Spread Analysis
+- **Tight Spread**: High liquidity, low slippage
+- **Wide Spread**: Low liquidity, high slippage
+- **Usage**: Execution quality indicator
+
+## Fibonacci Patterns
+
+### Retracement Levels
+- **23.6%**: Shallow retracement
+- **38.2%**: Normal retracement
+- **50%**: Psychological level
+- **61.8%**: Deep retracement (golden ratio)
+- **Usage**: Entry zones, support/resistance
+
+### Extension Levels
+- **127.2%**: First extension
+- **161.8%**: Golden ratio extension
+- **200%**: Double extension
+- **Usage**: Take profit targets
+
+## Divergence Patterns
+
+### RSI Divergence
+- **Bullish Divergence**: Price makes lower low, RSI makes higher low
+- **Bearish Divergence**: Price makes higher high, RSI makes lower high
+- **Signal**: Early reversal indicator
+- **Usage**: Enter before price reversal
+
+### Price-Volume Divergence
+- **Pattern**: Price and volume move in opposite directions
+- **Signal**: Weak trend, potential reversal
+- **Usage**: Confirm with other indicators
+
+## Liquidation Patterns
+
+### Liquidation Clusters
+- **Definition**: Concentration of stop losses
+- **Detection**: Use \`get_liquidation_levels\` tool
+- **Usage**: Identify potential stop hunt zones
+
+### Stop Hunt
+- **Pattern**: Price moves to liquidate positions before reversing
+- **Signal**: Contrarian opportunity
+- **Usage**: Enter opposite direction after liquidation
+
+## Best Practices
+
+1. **Wait for pattern confirmation** - Don't enter on pattern formation alone
+2. **Combine multiple patterns** - Higher confidence with multiple confirmations
+3. **Use volume confirmation** - Patterns work better with volume support
+4. **Respect market structure** - Patterns work better in trending markets
+5. **Set appropriate stop loss** - Patterns can fail, protect capital
+
+## Common Mistakes
+
+1. ❌ Entering before pattern confirmation
+2. ❌ Ignoring volume confirmation
+3. ❌ Trading patterns in ranging markets
+4. ❌ Not setting stop loss
+5. ❌ Over-trading on every pattern
+`,
+        },
+      ],
+    }
+  }
+)
+
+server.registerResource(
+  'common-trading-mistakes',
+  'geartrade://docs/common-mistakes',
+  {
+    description: 'Common trading mistakes to avoid: emotional trading, over-leveraging, ignoring risk management, and more',
+    mimeType: 'text/markdown',
+  },
+  async () => {
+    return {
+      contents: [
+        {
+          uri: 'geartrade://docs/common-mistakes',
+          mimeType: 'text/markdown',
+          text: `# Common Trading Mistakes to Avoid
+
+## Overview
+
+This guide lists common trading mistakes and how to avoid them. Learning from these mistakes can significantly improve your trading performance.
+
+## Risk Management Mistakes
+
+### ❌ Not Setting Stop Loss
+- **Problem**: Unlimited downside risk
+- **Solution**: Always set stop loss (1-3% from entry)
+- **Tool**: Use \`calculate_risk_management\` tool
+
+### ❌ Risking Too Much Per Trade
+- **Problem**: Large losses can wipe out account
+- **Solution**: Never risk more than 1-2% per trade
+- **Tool**: Use \`calculate_position_setup\` tool
+
+### ❌ Moving Stop Loss Against Position
+- **Problem**: Turning small loss into large loss
+- **Solution**: Only move stop loss in profit direction
+- **Exception**: Trailing stop to lock in profits
+
+### ❌ Ignoring Risk/Reward Ratio
+- **Problem**: Taking trades with poor R:R
+- **Solution**: Minimum 2:1, recommended 3:1
+- **Tool**: Use \`calculate_risk_management\` tool
+
+## Leverage Mistakes
+
+### ❌ Over-Leveraging
+- **Problem**: Small price move = large loss
+- **Solution**: Use appropriate leverage (1x-10x for most traders)
+- **Tool**: Use \`calculate_dynamic_leverage\` tool
+
+### ❌ Using Same Leverage for All Markets
+- **Problem**: High volatility markets need lower leverage
+- **Solution**: Adjust leverage based on volatility (ATR)
+- **Tool**: Use \`calculate_dynamic_leverage\` tool
+
+### ❌ Ignoring Margin Requirements
+- **Problem**: Forced liquidation
+- **Solution**: Maintain 150-200% of required margin
+- **Tool**: Use \`calculate_dynamic_margin_percentage\` tool
+
+## Analysis Mistakes
+
+### ❌ Trading Without Analysis
+- **Problem**: Random entries, poor results
+- **Solution**: Always use comprehensive analysis
+- **Tool**: Use \`analisis_crypto\` tool before trading
+
+### ❌ Ignoring Multi-Timeframe Analysis
+- **Problem**: Trading against higher timeframe trend
+- **Solution**: Check Daily, 4H, and 1H alignment
+- **Tool**: Use \`get_multitimeframe\` tool
+
+### ❌ Not Waiting for Confirmation
+- **Problem**: Entering too early, false signals
+- **Solution**: Wait for multiple confirmations
+- **Best Practice**: RSI + Volume + Trend alignment
+
+### ❌ Ignoring Volume Analysis
+- **Problem**: Missing important market signals
+- **Solution**: Always check volume trends
+- **Tool**: Use \`get_volume_analysis\` tool
+
+## Execution Mistakes
+
+### ❌ Executing Without User Confirmation
+- **Problem**: Unauthorized trades, user frustration
+- **Solution**: Always ask "Mau dieksekusi ke Hyperliquid? (YES/NO)"
+- **Best Practice**: Present analysis first, then ask
+
+### ❌ Skipping Paper Trading
+- **Problem**: Testing strategies with real money
+- **Solution**: Always test with paper trading first
+- **Default**: All execution tools default to paper trading
+
+### ❌ Not Monitoring Positions
+- **Problem**: Missing exit signals, large losses
+- **Solution**: Actively monitor open positions
+- **Tool**: Use \`get_position\` tool regularly
+
+### ❌ Trading During High Volatility
+- **Problem**: Increased slippage, wider stops
+- **Solution**: Avoid trading during extreme volatility
+- **Indicator**: High ATR = high volatility
+
+## Emotional Mistakes
+
+### ❌ FOMO (Fear of Missing Out)
+- **Problem**: Entering trades out of fear
+- **Solution**: Stick to your strategy, wait for setups
+- **Reminder**: There's always another opportunity
+
+### ❌ Revenge Trading
+- **Problem**: Trying to recover losses quickly
+- **Solution**: Take a break after losses, review strategy
+- **Best Practice**: Maximum 2-3 trades per day
+
+### ❌ Greed
+- **Problem**: Holding winners too long, not taking profits
+- **Solution**: Use take profit levels, trail stop loss
+- **Tool**: Use \`calculate_risk_management\` for TP levels
+
+### ❌ Fear
+- **Problem**: Exiting winners too early, not taking trades
+- **Solution**: Trust your analysis, follow the plan
+- **Reminder**: Risk is managed with stop loss
+
+## Strategy Mistakes
+
+### ❌ Changing Strategy After Losses
+- **Problem**: No consistent approach
+- **Solution**: Stick to one strategy, improve it
+- **Best Practice**: Backtest before changing
+
+### ❌ Over-Trading
+- **Problem**: Too many trades, overtrading
+- **Solution**: Quality over quantity
+- **Best Practice**: 1-3 high-quality setups per day
+
+### ❌ Trading Against the Trend
+- **Problem**: Fighting the market
+- **Solution**: Trade with the trend
+- **Tool**: Use \`get_multitimeframe\` to identify trend
+
+### ❌ Not Diversifying
+- **Problem**: All capital in one trade
+- **Solution**: Spread risk across multiple positions
+- **Best Practice**: Max 3-5 positions at once
+
+## Technical Mistakes
+
+### ❌ Using Too Many Indicators
+- **Problem**: Analysis paralysis, conflicting signals
+- **Solution**: Use 3-5 key indicators
+- **Recommended**: RSI, EMA, Volume, Multi-timeframe
+
+### ❌ Ignoring Divergences
+- **Problem**: Missing early reversal signals
+- **Solution**: Always check for divergences
+- **Tool**: Use \`get_divergence\` tool
+
+### ❌ Not Using Stop Loss Based on ATR
+- **Problem**: Fixed stops don't account for volatility
+- **Solution**: Use ATR-based stops (1.5x-3x ATR)
+- **Tool**: Use \`get_indicator\` for ATR values
+
+### ❌ Ignoring Market Structure
+- **Problem**: Trading in wrong market regime
+- **Solution**: Adapt strategy to market structure
+- **Tool**: Use \`get_market_structure\` tool
+
+## How to Avoid Mistakes
+
+### Pre-Trade Checklist
+- [ ] Comprehensive analysis completed
+- [ ] Multi-timeframe alignment checked
+- [ ] Volume analysis confirms signal
+- [ ] Risk management calculated (1-2% risk)
+- [ ] Stop loss set (1-3% from entry)
+- [ ] Take profit set (2:1+ R:R)
+- [ ] Leverage appropriate for volatility
+- [ ] User confirmation obtained
+
+### Post-Trade Review
+- [ ] Review what went right
+- [ ] Review what went wrong
+- [ ] Identify mistakes made
+- [ ] Plan improvements
+- [ ] Update strategy if needed
+
+## Recovery from Mistakes
+
+### After a Loss
+1. **Take a break** - Don't revenge trade
+2. **Review the trade** - What went wrong?
+3. **Identify the mistake** - Was it analysis, execution, or risk?
+4. **Learn from it** - How to avoid next time?
+5. **Return with plan** - Don't repeat the mistake
+
+### After Multiple Losses
+1. **Stop trading** - Take a longer break
+2. **Review all trades** - Find common mistakes
+3. **Revise strategy** - Fix identified issues
+4. **Paper trade** - Test revised strategy
+5. **Return gradually** - Start with smaller positions
+
+## Key Takeaways
+
+1. **Risk management is non-negotiable** - Always set stop loss
+2. **Analysis before execution** - Never trade blindly
+3. **Emotions kill profits** - Stick to the plan
+4. **Learn from mistakes** - Every loss is a lesson
+5. **Consistency matters** - Stick to your strategy
+`,
+        },
+      ],
+    }
+  }
+)
+
+server.registerResource(
+  'position-sizing-guide',
+  'geartrade://docs/position-sizing',
+  {
+    description: 'Complete guide on position sizing, leverage calculation, and margin management for optimal risk control',
+    mimeType: 'text/markdown',
+  },
+  async () => {
+    return {
+      contents: [
+        {
+          uri: 'geartrade://docs/position-sizing',
+          mimeType: 'text/markdown',
+          text: `# Position Sizing Guide
+
+## Overview
+
+Proper position sizing is critical for long-term trading success. This guide covers position sizing formulas, leverage management, and margin calculations.
+
+## Risk-Based Position Sizing
+
+### Basic Formula
+\`\`\`
+Position Size = (Capital × Risk %) / (Entry Price - Stop Loss Price)
+\`\`\`
+
+### Example
+- Capital: $10,000
+- Risk: 1% = $100
+- Entry: $50,000
+- Stop Loss: $49,000 (2% below entry)
+- Position Size = $100 / $1,000 = 0.1 BTC
+
+## Leverage Management
+
+### Leverage Guidelines
+- **Conservative**: 1x-3x (low risk, steady growth)
+- **Moderate**: 3x-10x (balanced risk/reward)
+- **Aggressive**: 10x-50x (high risk, high reward)
+
+### Dynamic Leverage
+- Use \`calculate_dynamic_leverage\` tool
+- Based on volatility (ATR)
+- Lower leverage in high volatility
+- Higher leverage in low volatility
+
+## Margin Requirements
+
+### Margin Calculation
+\`\`\`
+Margin = Position Size × Entry Price / Leverage
+\`\`\`
+
+### Margin Safety
+- Maintain 150-200% of required margin
+- Avoid margin calls
+- Use \`calculate_dynamic_margin_percentage\` tool
+
+## Position Sizing Tools
+
+### calculate_position_setup
+- Calculates optimal position size
+- Considers risk percentage
+- Includes leverage and margin
+- Provides quantity and USD value
+
+### calculate_risk_management
+- Calculates stop loss levels
+- Sets take profit targets
+- Determines risk/reward ratio
+- Provides risk amount in USD
+
+## Best Practices
+
+1. **Never risk more than 1-2% per trade**
+2. **Adjust position size based on volatility**
+3. **Use lower leverage in uncertain markets**
+4. **Maintain adequate margin buffer**
+5. **Scale position size with account growth**
+`,
+        },
+      ],
+    }
+  }
+)
+
+server.registerResource(
+  'multi-timeframe-guide',
+  'geartrade://docs/multi-timeframe',
+  {
+    description: 'Complete guide on multi-timeframe analysis: how to use Daily, 4H, and 1H timeframes for better trading decisions',
+    mimeType: 'text/markdown',
+  },
+  async () => {
+    return {
+      contents: [
+        {
+          uri: 'geartrade://docs/multi-timeframe',
+          mimeType: 'text/markdown',
+          text: `# Multi-Timeframe Analysis Guide
+
+## Overview
+
+Multi-timeframe analysis is essential for high-probability trading. This guide explains how to use different timeframes effectively.
+
+## Timeframe Hierarchy
+
+### Daily (1D)
+- **Purpose**: Long-term trend direction
+- **Use**: Identify major trend, support/resistance
+- **Trading**: Swing trades, position trades
+
+### 4-Hour (4H)
+- **Purpose**: Medium-term trend and entries
+- **Use**: Confirm daily trend, find entry zones
+- **Trading**: Day trades, swing trades
+
+### 1-Hour (1H)
+- **Purpose**: Short-term entries and exits
+- **Use**: Precise entry timing, stop placement
+- **Trading**: Day trades, scalping
+
+## Trend Alignment
+
+### Perfect Alignment (Highest Confidence)
+- Daily: UPTREND
+- 4H: UPTREND
+- 1H: UPTREND
+- **Action**: Strong BUY signal
+
+### Partial Alignment (Medium Confidence)
+- Daily: UPTREND
+- 4H: UPTREND
+- 1H: DOWNTREND (pullback)
+- **Action**: Wait for 1H to align, then BUY
+
+### No Alignment (Low Confidence)
+- Daily: UPTREND
+- 4H: DOWNTREND
+- 1H: DOWNTREND
+- **Action**: Avoid trading, wait for alignment
+
+## Trading Strategy
+
+### Top-Down Approach
+1. **Daily**: Identify major trend
+2. **4H**: Confirm trend, find entry zone
+3. **1H**: Execute entry at optimal price
+
+### Bottom-Up Approach
+1. **1H**: Find short-term setup
+2. **4H**: Check if aligns with medium trend
+3. **Daily**: Confirm major trend direction
+
+## Best Practices
+
+1. **Always check higher timeframe first**
+2. **Trade with the trend on higher timeframe**
+3. **Use lower timeframe for entry timing**
+4. **Wait for alignment for high-confidence trades**
+5. **Avoid trading against higher timeframe trend**
+`,
+        },
+      ],
+    }
+  }
+)
+
+server.registerResource(
+  'execution-best-practices',
+  'geartrade://docs/execution-practices',
+  {
+    description: 'Best practices for order execution: market vs limit orders, slippage management, and execution timing',
+    mimeType: 'text/markdown',
+  },
+  async () => {
+    return {
+      contents: [
+        {
+          uri: 'geartrade://docs/execution-practices',
+          mimeType: 'text/markdown',
+          text: `# Execution Best Practices
+
+## Overview
+
+Proper execution is crucial for trading success. This guide covers order types, execution timing, and slippage management.
+
+## Order Types
+
+### Market Orders
+- **Pros**: Immediate execution, guaranteed fill
+- **Cons**: No price control, potential slippage
+- **Use**: When speed is critical, small positions
+
+### Limit Orders
+- **Pros**: Price control, no slippage
+- **Cons**: May not fill, missed opportunities
+- **Use**: When price is important, larger positions
+
+## Execution Timing
+
+### Best Times to Execute
+- **High Liquidity**: During active trading hours
+- **Low Volatility**: Avoid extreme volatility periods
+- **Volume Confirmation**: Wait for volume spike
+
+### Avoid Execution During
+- **Low Liquidity**: Thin order books
+- **High Volatility**: Extreme price swings
+- **News Events**: Major announcements
+
+## Slippage Management
+
+### Understanding Slippage
+- **Definition**: Difference between expected and actual price
+- **Causes**: Low liquidity, high volatility, large orders
+- **Impact**: Reduces profit, increases loss
+
+### Reducing Slippage
+1. Use limit orders when possible
+2. Execute during high liquidity
+3. Split large orders
+4. Check order book depth first
+
+## Paper Trading First
+
+### Why Paper Trade
+- Test strategies without risk
+- Understand execution mechanics
+- Practice order placement
+- Build confidence
+
+### When to Go Live
+- Consistent paper trading profits
+- Understanding of all tools
+- Comfortable with risk management
+- User explicitly confirms
+
+## Safety Checklist
+
+Before executing any trade:
+- [ ] Analysis completed
+- [ ] Risk management calculated
+- [ ] Stop loss set
+- [ ] Position size appropriate
+- [ ] Leverage reasonable
+- [ ] User confirmation obtained
+- [ ] Paper trading tested (if new strategy)
+`,
+        },
+      ],
+    }
+  }
+)
+
+server.registerResource(
+  'volume-analysis-guide',
+  'geartrade://docs/volume-analysis',
+  {
+    description: 'Complete guide on volume analysis: CVD, buy/sell pressure, liquidity zones, and volume profile',
+    mimeType: 'text/markdown',
+  },
+  async () => {
+    return {
+      contents: [
+        {
+          uri: 'geartrade://docs/volume-analysis',
+          mimeType: 'text/markdown',
+          text: `# Volume Analysis Guide
+
+## Overview
+
+Volume analysis is crucial for understanding market dynamics. This guide covers CVD, buy/sell pressure, and volume profile.
+
+## Cumulative Volume Delta (CVD)
+
+### What is CVD?
+- Tracks cumulative buy vs sell volume
+- Positive CVD: More buying pressure
+- Negative CVD: More selling pressure
+- Divergence: Price vs CVD divergence signals reversal
+
+### Using CVD
+- Rising price + Rising CVD: Strong uptrend
+- Falling price + Falling CVD: Strong downtrend
+- Rising price + Falling CVD: Bearish divergence (potential reversal)
+- Falling price + Rising CVD: Bullish divergence (potential reversal)
+
+## Buy/Sell Pressure
+
+### Interpretation
+- **High Buy Pressure**: Strong demand, bullish
+- **High Sell Pressure**: Strong supply, bearish
+- **Balanced**: Indecision, potential reversal
+
+### Trading Signals
+- Extreme buy pressure: Potential exhaustion, watch for reversal
+- Extreme sell pressure: Potential exhaustion, watch for reversal
+- Balanced pressure: Wait for breakout
+
+## Volume Profile
+
+### Key Levels
+- **POC (Point of Control)**: Highest volume price
+- **VAH/VAL**: Value area boundaries
+- **HVN**: High volume nodes (support/resistance)
+- **LVN**: Low volume nodes (quick movement zones)
+
+### Trading Strategy
+- Trade from POC to value area boundaries
+- Use HVN as support/resistance
+- LVN zones for quick entries/exits
+
+## Best Practices
+
+1. **Always confirm with price action**
+2. **Use volume spikes for confirmation**
+3. **Watch for volume divergences**
+4. **Combine with technical indicators**
+5. **Volume precedes price movement**
+`,
+        },
+      ],
+    }
+  }
+)
+
+server.registerResource(
+  'liquidation-levels-guide',
+  'geartrade://docs/liquidation-levels',
+  {
+    description: 'Complete guide on liquidation levels: liquidity grabs, stop hunts, cascade risks, and trading strategies',
+    mimeType: 'text/markdown',
+  },
+  async () => {
+    return {
+      contents: [
+        {
+          uri: 'geartrade://docs/liquidation-levels',
+          mimeType: 'text/markdown',
+          text: `# Liquidation Levels Guide
+
+## Overview
+
+Understanding liquidation levels helps identify high-probability trading zones and avoid dangerous price areas.
+
+## Liquidity Grab
+
+### What is Liquidity Grab?
+- Price moves to liquidate positions
+- Creates temporary price spike/drop
+- Often reverses after liquidation
+
+### Trading Strategy
+- **Before Liquidity**: Avoid entering near liquidation zones
+- **After Liquidity**: Enter opposite direction (contrarian)
+- **Risk**: Liquidity can be grabbed multiple times
+
+## Stop Hunt
+
+### What is Stop Hunt?
+- Price moves to trigger stop losses
+- Creates quick price movement
+- Often reverses after stop hunt
+
+### Trading Strategy
+- **Before Stop Hunt**: Set stops outside obvious levels
+- **After Stop Hunt**: Enter opposite direction
+- **Risk**: Stop hunt can continue if trend is strong
+
+## Cascade Risk
+
+### What is Cascade?
+- Chain reaction of liquidations
+- One liquidation triggers another
+- Can cause extreme price movement
+
+### Risk Assessment
+- **Low Risk**: Isolated liquidations
+- **Medium Risk**: Clustered liquidations
+- **High Risk**: Cascade potential
+
+### Trading Strategy
+- **Low Risk**: Trade normally
+- **Medium Risk**: Reduce position size
+- **High Risk**: Avoid trading, wait for stability
+
+## Best Practices
+
+1. **Check liquidation levels before entry**
+2. **Avoid trading near high liquidation zones**
+3. **Use liquidation zones as support/resistance**
+4. **Watch for cascade risk in volatile markets**
+5. **Enter after liquidity grab/stop hunt completes**
+`,
+        },
+      ],
+    }
+  }
+)
+
+server.registerResource(
+  'divergence-trading-guide',
+  'geartrade://docs/divergence-trading',
+  {
+    description: 'Complete guide on divergence trading: RSI divergence, price-action divergence, and trading strategies',
+    mimeType: 'text/markdown',
+  },
+  async () => {
+    return {
+      contents: [
+        {
+          uri: 'geartrade://docs/divergence-trading',
+          mimeType: 'text/markdown',
+          text: `# Divergence Trading Guide
+
+## Overview
+
+Divergence is a powerful reversal signal. This guide covers RSI divergence, price-action divergence, and trading strategies.
+
+## RSI Divergence
+
+### Bullish Divergence
+- Price makes lower low
+- RSI makes higher low
+- **Signal**: Potential bullish reversal
+
+### Bearish Divergence
+- Price makes higher high
+- RSI makes lower high
+- **Signal**: Potential bearish reversal
+
+### Trading Strategy
+- Wait for divergence confirmation
+- Enter on price reversal
+- Set stop below/above divergence point
+- Target: Previous swing high/low
+
+## Price-Action Divergence
+
+### Types
+- **Momentum Divergence**: Price vs momentum indicator
+- **Volume Divergence**: Price vs volume
+- **Time Divergence**: Price vs time cycles
+
+### Trading Strategy
+- Identify divergence pattern
+- Wait for confirmation
+- Enter on reversal signal
+- Use stop loss to protect
+
+## Best Practices
+
+1. **Wait for confirmation** - Don't enter on divergence alone
+2. **Use multiple timeframes** - Higher timeframe divergences are stronger
+3. **Combine with support/resistance** - Divergence at key levels is more reliable
+4. **Set appropriate stops** - Divergence can fail
+5. **Don't force divergence** - Not all moves have divergence
+`,
+        },
+      ],
+    }
+  }
+)
+
+server.registerResource(
+  'orderbook-trading-guide',
+  'geartrade://docs/orderbook-trading',
+  {
+    description: 'Complete guide on order book trading: reading order book depth, identifying support/resistance walls, and market sentiment',
+    mimeType: 'text/markdown',
+  },
+  async () => {
+    return {
+      contents: [
+        {
+          uri: 'geartrade://docs/orderbook-trading',
+          mimeType: 'text/markdown',
+          text: `# Order Book Trading Guide
+
+## Overview
+
+Order book analysis provides real-time market sentiment and liquidity information. This guide covers reading order books effectively.
+
+## Reading Order Book
+
+### Bid Side (Buy Orders)
+- Shows demand at different price levels
+- Large bid walls = strong support
+- Thin bids = weak support
+
+### Ask Side (Sell Orders)
+- Shows supply at different price levels
+- Large ask walls = strong resistance
+- Thin asks = weak resistance
+
+## Market Sentiment
+
+### Bullish Signals
+- Large bid walls below price
+- Thin ask walls above price
+- Bid/Ask ratio > 1.5
+
+### Bearish Signals
+- Large ask walls above price
+- Thin bid walls below price
+- Bid/Ask ratio < 0.67
+
+### Neutral Signals
+- Balanced bid/ask volumes
+- Bid/Ask ratio ~1.0
+
+## Support/Resistance Levels
+
+### Identifying Walls
+- **Bid Wall**: Large concentration of buy orders
+- **Ask Wall**: Large concentration of sell orders
+- **Wall Strength**: Volume at that level
+
+### Trading Strategy
+- Enter longs below bid walls
+- Enter shorts above ask walls
+- Set stops beyond walls
+- Take profit at opposite walls
+
+## Warning: Wall Removal
+
+### Risk
+- Walls can disappear quickly
+- Market makers can fake walls
+- Don't rely solely on order book
+
+### Best Practices
+1. Use order book as confirmation, not sole signal
+2. Combine with price action
+3. Watch for wall removal
+4. Don't chase walls that are too far
+5. Use order book for entry timing, not direction
+`,
+        },
+      ],
+    }
+  }
+)
+
+server.registerResource(
+  'market-structure-guide',
+  'geartrade://docs/market-structure',
+  {
+    description: 'Complete guide on market structure: trend identification, change of character (COC), swing patterns, and structure breaks',
+    mimeType: 'text/markdown',
+  },
+  async () => {
+    return {
+      contents: [
+        {
+          uri: 'geartrade://docs/market-structure',
+          mimeType: 'text/markdown',
+          text: `# Market Structure Guide
+
+## Overview
+
+Market structure analysis identifies trend direction and potential reversals. This guide covers structure types, COC, and trading strategies.
+
+## Market Structure Types
+
+### Uptrend
+- Higher highs and higher lows
+- Structure: Bullish
+- Trading: Buy on dips
+
+### Downtrend
+- Lower highs and lower lows
+- Structure: Bearish
+- Trading: Sell on rallies
+
+### Sideways/Ranging
+- Equal highs and lows
+- Structure: Neutral
+- Trading: Range trading
+
+## Change of Character (COC)
+
+### Bullish COC
+- Previous downtrend breaks
+- New higher high formed
+- **Signal**: Potential trend reversal to uptrend
+
+### Bearish COC
+- Previous uptrend breaks
+- New lower low formed
+- **Signal**: Potential trend reversal to downtrend
+
+### Trading Strategy
+- Enter on COC confirmation
+- Set stop below/above COC point
+- Target: Previous structure level
+
+## Swing Patterns
+
+### Swing Highs
+- Peaks in price movement
+- Resistance levels
+- Break above = bullish signal
+
+### Swing Lows
+- Troughs in price movement
+- Support levels
+- Break below = bearish signal
+
+## Structure Breaks
+
+### Break of Structure (BOS)
+- Price breaks previous swing high/low
+- Confirms trend continuation
+- **Signal**: Strong trend continuation
+
+### Trading Strategy
+- Enter on BOS confirmation
+- Follow the trend
+- Set stop at previous structure level
+
+## Best Practices
+
+1. **Always identify structure first**
+2. **Trade with the structure**
+3. **Wait for COC confirmation**
+4. **Use structure levels for stops**
+5. **Avoid trading against structure**
+`,
+        },
+      ],
+    }
+  }
+)
+
+server.registerResource(
+  'external-data-guide',
+  'geartrade://docs/external-data',
+  {
+    description: 'Complete guide on external market data: funding rate, open interest, volatility, and market sentiment indicators',
+    mimeType: 'text/markdown',
+  },
+  async () => {
+    return {
+      contents: [
+        {
+          uri: 'geartrade://docs/external-data',
+          mimeType: 'text/markdown',
+          text: `# External Data Guide
+
+## Overview
+
+External market data provides insights into market sentiment and potential reversals. This guide covers funding rate, OI, and volatility.
+
+## Funding Rate
+
+### What is Funding Rate?
+- Fee paid between longs and shorts
+- Positive: Longs pay shorts (more longs)
+- Negative: Shorts pay longs (more shorts)
+
+### Trading Signals
+- **Extreme Positive (>0.1%)**: Potential bearish reversal
+- **Extreme Negative (<-0.1%)**: Potential bullish reversal
+- **Normal Range**: No contrarian signal
+
+### Strategy
+- Use extreme funding for contrarian trades
+- Normal funding confirms trend direction
+
+## Open Interest (OI)
+
+### What is OI?
+- Total number of open futures contracts
+- Increasing OI: New money entering
+- Decreasing OI: Money exiting
+
+### Trading Signals
+- **Rising OI + Rising Price**: Strong uptrend
+- **Falling OI + Falling Price**: Strong downtrend
+- **Rising OI + Falling Price**: Short squeeze potential
+- **Falling OI + Rising Price**: Long squeeze potential
+
+### Strategy
+- OI confirms trend strength
+- Divergence signals potential reversal
+
+## Volatility
+
+### Interpretation
+- **High Volatility**: Wide price swings, higher risk
+- **Low Volatility**: Tight range, lower risk
+- **Expanding Volatility**: Trend acceleration
+- **Contracting Volatility**: Potential breakout
+
+### Strategy
+- Adjust position size based on volatility
+- Use volatility for stop loss placement
+- High volatility = wider stops needed
+
+## Best Practices
+
+1. **Combine external data with technical analysis**
+2. **Watch for extreme values**
+3. **Use funding rate for contrarian signals**
+4. **Monitor OI for trend confirmation**
+5. **Adjust risk based on volatility**
+`,
+        },
+      ],
+    }
+  }
+)
+
+server.registerResource(
+  'volume-analysis-guide',
+  'geartrade://docs/volume-analysis',
+  {
+    description: 'Complete guide on volume analysis: CVD, buy/sell pressure, liquidity zones, and volume profile',
+    mimeType: 'text/markdown',
+  },
+  async () => {
+    return {
+      contents: [
+        {
+          uri: 'geartrade://docs/volume-analysis',
+          mimeType: 'text/markdown',
+          text: `# Volume Analysis Guide
+
+## Overview
+
+Volume analysis is crucial for understanding market dynamics. This guide covers CVD, buy/sell pressure, and volume profile.
+
+## Cumulative Volume Delta (CVD)
+
+### What is CVD?
+- Tracks cumulative buy vs sell volume
+- Positive CVD: More buying pressure
+- Negative CVD: More selling pressure
+- Divergence: Price vs CVD divergence signals reversal
+
+### Using CVD
+- Rising price + Rising CVD: Strong uptrend
+- Falling price + Falling CVD: Strong downtrend
+- Rising price + Falling CVD: Bearish divergence (potential reversal)
+- Falling price + Rising CVD: Bullish divergence (potential reversal)
+
+## Buy/Sell Pressure
+
+### Interpretation
+- **High Buy Pressure**: Strong demand, bullish
+- **High Sell Pressure**: Strong supply, bearish
+- **Balanced**: Indecision, potential reversal
+
+### Trading Signals
+- Extreme buy pressure: Potential exhaustion, watch for reversal
+- Extreme sell pressure: Potential exhaustion, watch for reversal
+- Balanced pressure: Wait for breakout
+
+## Volume Profile
+
+### Key Levels
+- **POC (Point of Control)**: Highest volume price
+- **VAH/VAL**: Value area boundaries
+- **HVN**: High volume nodes (support/resistance)
+- **LVN**: Low volume nodes (quick movement zones)
+
+### Trading Strategy
+- Trade from POC to value area boundaries
+- Use HVN as support/resistance
+- LVN zones for quick entries/exits
+
+## Best Practices
+
+1. **Always confirm with price action**
+2. **Use volume spikes for confirmation**
+3. **Watch for volume divergences**
+4. **Combine with technical indicators**
+5. **Volume precedes price movement**
+`,
+        },
+      ],
+    }
+  }
+)
+
+server.registerResource(
+  'liquidation-levels-guide',
+  'geartrade://docs/liquidation-levels',
+  {
+    description: 'Complete guide on liquidation levels: liquidity grabs, stop hunts, cascade risks, and trading strategies',
+    mimeType: 'text/markdown',
+  },
+  async () => {
+    return {
+      contents: [
+        {
+          uri: 'geartrade://docs/liquidation-levels',
+          mimeType: 'text/markdown',
+          text: `# Liquidation Levels Guide
+
+## Overview
+
+Understanding liquidation levels helps identify high-probability trading zones and avoid dangerous price areas.
+
+## Liquidity Grab
+
+### What is Liquidity Grab?
+- Price moves to liquidate positions
+- Creates temporary price spike/drop
+- Often reverses after liquidation
+
+### Trading Strategy
+- **Before Liquidity**: Avoid entering near liquidation zones
+- **After Liquidity**: Enter opposite direction (contrarian)
+- **Risk**: Liquidity can be grabbed multiple times
+
+## Stop Hunt
+
+### What is Stop Hunt?
+- Price moves to trigger stop losses
+- Creates quick price movement
+- Often reverses after stop hunt
+
+### Trading Strategy
+- **Before Stop Hunt**: Set stops outside obvious levels
+- **After Stop Hunt**: Enter opposite direction
+- **Risk**: Stop hunt can continue if trend is strong
+
+## Cascade Risk
+
+### What is Cascade?
+- Chain reaction of liquidations
+- One liquidation triggers another
+- Can cause extreme price movement
+
+### Risk Assessment
+- **Low Risk**: Isolated liquidations
+- **Medium Risk**: Clustered liquidations
+- **High Risk**: Cascade potential
+
+### Trading Strategy
+- **Low Risk**: Trade normally
+- **Medium Risk**: Reduce position size
+- **High Risk**: Avoid trading, wait for stability
+
+## Best Practices
+
+1. **Check liquidation levels before entry**
+2. **Avoid trading near high liquidation zones**
+3. **Use liquidation zones as support/resistance**
+4. **Watch for cascade risk in volatile markets**
+5. **Enter after liquidity grab/stop hunt completes**
+`,
+        },
+      ],
+    }
+  }
+)
+
+server.registerResource(
+  'divergence-trading-guide',
+  'geartrade://docs/divergence-trading',
+  {
+    description: 'Complete guide on divergence trading: RSI divergence, price-action divergence, and trading strategies',
+    mimeType: 'text/markdown',
+  },
+  async () => {
+    return {
+      contents: [
+        {
+          uri: 'geartrade://docs/divergence-trading',
+          mimeType: 'text/markdown',
+          text: `# Divergence Trading Guide
+
+## Overview
+
+Divergence is a powerful reversal signal. This guide covers RSI divergence, price-action divergence, and trading strategies.
+
+## RSI Divergence
+
+### Bullish Divergence
+- Price makes lower low
+- RSI makes higher low
+- **Signal**: Potential bullish reversal
+
+### Bearish Divergence
+- Price makes higher high
+- RSI makes lower high
+- **Signal**: Potential bearish reversal
+
+### Trading Strategy
+- Wait for divergence confirmation
+- Enter on price reversal
+- Set stop below/above divergence point
+- Target: Previous swing high/low
+
+## Price-Action Divergence
+
+### Types
+- **Momentum Divergence**: Price vs momentum indicator
+- **Volume Divergence**: Price vs volume
+- **Time Divergence**: Price vs time cycles
+
+### Trading Strategy
+- Identify divergence pattern
+- Wait for confirmation
+- Enter on reversal signal
+- Use stop loss to protect
+
+## Best Practices
+
+1. **Wait for confirmation** - Don't enter on divergence alone
+2. **Use multiple timeframes** - Higher timeframe divergences are stronger
+3. **Combine with support/resistance** - Divergence at key levels is more reliable
+4. **Set appropriate stops** - Divergence can fail
+5. **Don't force divergence** - Not all moves have divergence
+`,
+        },
+      ],
+    }
+  }
+)
+
+server.registerResource(
+  'orderbook-trading-guide',
+  'geartrade://docs/orderbook-trading',
+  {
+    description: 'Complete guide on order book trading: reading order book depth, identifying support/resistance walls, and market sentiment',
+    mimeType: 'text/markdown',
+  },
+  async () => {
+    return {
+      contents: [
+        {
+          uri: 'geartrade://docs/orderbook-trading',
+          mimeType: 'text/markdown',
+          text: `# Order Book Trading Guide
+
+## Overview
+
+Order book analysis provides real-time market sentiment and liquidity information. This guide covers reading order books effectively.
+
+## Reading Order Book
+
+### Bid Side (Buy Orders)
+- Shows demand at different price levels
+- Large bid walls = strong support
+- Thin bids = weak support
+
+### Ask Side (Sell Orders)
+- Shows supply at different price levels
+- Large ask walls = strong resistance
+- Thin asks = weak resistance
+
+## Market Sentiment
+
+### Bullish Signals
+- Large bid walls below price
+- Thin ask walls above price
+- Bid/Ask ratio > 1.5
+
+### Bearish Signals
+- Large ask walls above price
+- Thin bid walls below price
+- Bid/Ask ratio < 0.67
+
+### Neutral Signals
+- Balanced bid/ask volumes
+- Bid/Ask ratio ~1.0
+
+## Support/Resistance Levels
+
+### Identifying Walls
+- **Bid Wall**: Large concentration of buy orders
+- **Ask Wall**: Large concentration of sell orders
+- **Wall Strength**: Volume at that level
+
+### Trading Strategy
+- Enter longs below bid walls
+- Enter shorts above ask walls
+- Set stops beyond walls
+- Take profit at opposite walls
+
+## Warning: Wall Removal
+
+### Risk
+- Walls can disappear quickly
+- Market makers can fake walls
+- Don't rely solely on order book
+
+### Best Practices
+1. Use order book as confirmation, not sole signal
+2. Combine with price action
+3. Watch for wall removal
+4. Don't chase walls that are too far
+5. Use order book for entry timing, not direction
+`,
+        },
+      ],
+    }
+  }
+)
+
+server.registerResource(
+  'market-structure-guide',
+  'geartrade://docs/market-structure',
+  {
+    description: 'Complete guide on market structure: trend identification, change of character (COC), swing patterns, and structure breaks',
+    mimeType: 'text/markdown',
+  },
+  async () => {
+    return {
+      contents: [
+        {
+          uri: 'geartrade://docs/market-structure',
+          mimeType: 'text/markdown',
+          text: `# Market Structure Guide
+
+## Overview
+
+Market structure analysis identifies trend direction and potential reversals. This guide covers structure types, COC, and trading strategies.
+
+## Market Structure Types
+
+### Uptrend
+- Higher highs and higher lows
+- Structure: Bullish
+- Trading: Buy on dips
+
+### Downtrend
+- Lower highs and lower lows
+- Structure: Bearish
+- Trading: Sell on rallies
+
+### Sideways/Ranging
+- Equal highs and lows
+- Structure: Neutral
+- Trading: Range trading
+
+## Change of Character (COC)
+
+### Bullish COC
+- Previous downtrend breaks
+- New higher high formed
+- **Signal**: Potential trend reversal to uptrend
+
+### Bearish COC
+- Previous uptrend breaks
+- New lower low formed
+- **Signal**: Potential trend reversal to downtrend
+
+### Trading Strategy
+- Enter on COC confirmation
+- Set stop below/above COC point
+- Target: Previous structure level
+
+## Swing Patterns
+
+### Swing Highs
+- Peaks in price movement
+- Resistance levels
+- Break above = bullish signal
+
+### Swing Lows
+- Troughs in price movement
+- Support levels
+- Break below = bearish signal
+
+## Structure Breaks
+
+### Break of Structure (BOS)
+- Price breaks previous swing high/low
+- Confirms trend continuation
+- **Signal**: Strong trend continuation
+
+### Trading Strategy
+- Enter on BOS confirmation
+- Follow the trend
+- Set stop at previous structure level
+
+## Best Practices
+
+1. **Always identify structure first**
+2. **Trade with the structure**
+3. **Wait for COC confirmation**
+4. **Use structure levels for stops**
+5. **Avoid trading against structure**
+`,
+        },
+      ],
+    }
+  }
+)
+
+server.registerResource(
+  'external-data-guide',
+  'geartrade://docs/external-data',
+  {
+    description: 'Complete guide on external market data: funding rate, open interest, volatility, and market sentiment indicators',
+    mimeType: 'text/markdown',
+  },
+  async () => {
+    return {
+      contents: [
+        {
+          uri: 'geartrade://docs/external-data',
+          mimeType: 'text/markdown',
+          text: `# External Data Guide
+
+## Overview
+
+External market data provides insights into market sentiment and potential reversals. This guide covers funding rate, OI, and volatility.
+
+## Funding Rate
+
+### What is Funding Rate?
+- Fee paid between longs and shorts
+- Positive: Longs pay shorts (more longs)
+- Negative: Shorts pay longs (more shorts)
+
+### Trading Signals
+- **Extreme Positive (>0.1%)**: Potential bearish reversal
+- **Extreme Negative (<-0.1%)**: Potential bullish reversal
+- **Normal Range**: No contrarian signal
+
+### Strategy
+- Use extreme funding for contrarian trades
+- Normal funding confirms trend direction
+
+## Open Interest (OI)
+
+### What is OI?
+- Total number of open futures contracts
+- Increasing OI: New money entering
+- Decreasing OI: Money exiting
+
+### Trading Signals
+- **Rising OI + Rising Price**: Strong uptrend
+- **Falling OI + Falling Price**: Strong downtrend
+- **Rising OI + Falling Price**: Short squeeze potential
+- **Falling OI + Rising Price**: Long squeeze potential
+
+### Strategy
+- OI confirms trend strength
+- Divergence signals potential reversal
+
+## Volatility
+
+### Interpretation
+- **High Volatility**: Wide price swings, higher risk
+- **Low Volatility**: Tight range, lower risk
+- **Expanding Volatility**: Trend acceleration
+- **Contracting Volatility**: Potential breakout
+
+### Strategy
+- Adjust position size based on volatility
+- Use volatility for stop loss placement
+- High volatility = wider stops needed
+
+## Best Practices
+
+1. **Combine external data with technical analysis**
+2. **Watch for extreme values**
+3. **Use funding rate for contrarian signals**
+4. **Monitor OI for trend confirmation**
+5. **Adjust risk based on volatility**
+`,
+        },
+      ],
+    }
+  }
+)
+
+server.registerResource(
+  'candlestick-patterns-guide',
+  'geartrade://docs/candlestick-patterns',
+  {
+    description: 'Complete guide on candlestick patterns: reversal patterns, continuation patterns, and trading strategies',
+    mimeType: 'text/markdown',
+  },
+  async () => {
+    return {
+      contents: [
+        {
+          uri: 'geartrade://docs/candlestick-patterns',
+          mimeType: 'text/markdown',
+          text: `# Candlestick Patterns Guide
+
+## Overview
+
+Candlestick patterns provide visual signals for potential reversals and continuations. This guide covers major patterns and trading strategies.
+
+## Reversal Patterns
+
+### Bullish Reversal
+- **Hammer**: Long lower wick, small body
+- **Engulfing**: Bullish candle engulfs previous bearish
+- **Morning Star**: Three-candle pattern, bullish reversal
+- **Doji**: Indecision, potential reversal
+
+### Bearish Reversal
+- **Shooting Star**: Long upper wick, small body
+- **Engulfing**: Bearish candle engulfs previous bullish
+- **Evening Star**: Three-candle pattern, bearish reversal
+- **Doji**: Indecision, potential reversal
+
+## Continuation Patterns
+
+### Bullish Continuation
+- **Rising Three Methods**: Consolidation in uptrend
+- **Bullish Flag**: Brief pause in uptrend
+- **Bullish Pennant**: Tight consolidation
+
+### Bearish Continuation
+- **Falling Three Methods**: Consolidation in downtrend
+- **Bearish Flag**: Brief pause in downtrend
+- **Bearish Pennant**: Tight consolidation
+
+## Trading Strategy
+
+### Pattern Confirmation
+1. Identify pattern formation
+2. Wait for confirmation candle
+3. Enter on confirmation
+4. Set stop below/above pattern
+
+### Best Practices
+- Combine with support/resistance
+- Use volume confirmation
+- Higher timeframe patterns are stronger
+- Don't trade every pattern
+
+## Common Mistakes
+
+1. ❌ Entering before confirmation
+2. ❌ Ignoring volume
+3. ❌ Trading in ranging markets
+4. ❌ Not setting stop loss
+5. ❌ Over-trading on patterns
+`,
+        },
+      ],
+    }
+  }
+)
+
+server.registerResource(
+  'fibonacci-trading-guide',
+  'geartrade://docs/fibonacci-trading',
+  {
+    description: 'Complete guide on Fibonacci retracement: key levels, entry/exit strategies, and risk management',
+    mimeType: 'text/markdown',
+  },
+  async () => {
+    return {
+      contents: [
+        {
+          uri: 'geartrade://docs/fibonacci-trading',
+          mimeType: 'text/markdown',
+          text: `# Fibonacci Trading Guide
+
+## Overview
+
+Fibonacci retracement levels identify potential support/resistance zones. This guide covers key levels and trading strategies.
+
+## Key Fibonacci Levels
+
+### Retracement Levels
+- **23.6%**: Shallow retracement
+- **38.2%**: Normal retracement
+- **50%**: Psychological level
+- **61.8%**: Golden ratio (most important)
+- **78.6%**: Deep retracement
+
+### Extension Levels
+- **127.2%**: First extension
+- **161.8%**: Golden ratio extension
+- **200%**: Double extension
+
+## Trading Strategy
+
+### In Uptrend
+- **Entry**: Buy at 38.2%, 50%, or 61.8% retracement
+- **Stop Loss**: Below 78.6% retracement
+- **Take Profit**: Above 0% (new highs) or extensions
+
+### In Downtrend
+- **Entry**: Sell at 38.2%, 50%, or 61.8% retracement
+- **Stop Loss**: Above 78.6% retracement
+- **Take Profit**: Below 100% (new lows) or extensions
+
+## Best Practices
+
+1. **Use in trending markets** - Not effective in ranging markets
+2. **Combine with other indicators** - RSI, volume, structure
+3. **61.8% is most important** - Golden ratio level
+4. **Wait for bounce confirmation** - Don't enter blindly
+5. **Set stops beyond 78.6%** - Deep retracement invalidates setup
+`,
+        },
+      ],
     }
   }
 )
