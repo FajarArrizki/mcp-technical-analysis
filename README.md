@@ -14,11 +14,12 @@ Position and risk management tools enable automated position tracking with real-
 
 External market data integration provides real-time funding rate analysis with trend detection, open interest tracking with trend monitoring, and comprehensive volume and volatility trend analysis. These tools help traders understand market sentiment and potential price movements.
 
-Order execution capabilities support both spot trading (1x leverage) and leveraged futures trading (1-50x) with full Hyperliquid integration. The platform includes a sophisticated paper trading simulator with realistic slippage modeling for safe strategy testing, and live trading execution via Hyperliquid API with EIP-712 cryptographic signing for secure order submission. All execution tools support both single and multiple asset batch processing, with safety mechanisms that default to paper trading for multiple simultaneous executions.
+Order execution capabilities support both spot trading (1x leverage) and leveraged futures trading (1-50x) with full Hyperliquid integration. The platform includes a sophisticated paper trading simulator with realistic slippage modeling for safe strategy testing, and live trading execution via Hyperliquid API with EIP-712 cryptographic signing for secure order submission. All execution tools support both single and multiple asset batch processing, with safety mechanisms that default to paper trading for multiple simultaneous executions. **Multi-user credentials support** enables open-source deployment where each user provides their own credentials via tool parameters, eliminating the need for shared environment variables.
 
 ### Key Features
 
 - **36+ MCP Tools**: Comprehensive trading toolkit covering all aspects of market analysis and execution
+- **Multi-User Support**: Each user can provide their own credentials via tool parameters - perfect for open-source deployment
 - **Hyperliquid Integration**: Native support for Hyperliquid perpetual futures with EIP-712 order signing
 - **Real-time Data**: Live market data from Hyperliquid and Binance APIs
 - **Advanced Analytics**: 20+ technical indicators, volume analysis, and market structure detection
@@ -34,6 +35,42 @@ Order execution capabilities support both spot trading (1x leverage) and leverag
 - **Risk Management Systems**: Implement automated risk management and position sizing
 - **Market Research**: Perform deep market analysis across multiple assets and timeframes
 - **Backtesting**: Simulate trading strategies with paper trading executor
+
+## Multi-User Credentials Support
+
+GearTrade MCP Server is designed for open-source deployment with **multi-user credentials support**. Each user can provide their own Hyperliquid credentials via tool parameters, eliminating the need for shared environment variables.
+
+### How It Works
+
+- **Tool Parameters**: Users provide `accountAddress` and `walletApiKey` directly in execution tool calls
+- **Environment Variables**: Optional fallback for backward compatibility (not required for deployment)
+- **Paper Trading Default**: If no credentials are provided, tools default to paper executor (simulation)
+- **Secure**: Credentials are never stored or logged - passed directly to execution tools
+
+### Example Usage
+
+```json
+{
+  "name": "get_execution_futures",
+  "arguments": {
+    "ticker": "BTC",
+    "side": "LONG",
+    "quantity": 0.1,
+    "leverage": 10,
+    "execute": true,
+    "useLiveExecutor": true,
+    "accountAddress": "0xYourAddress",     // User's own address
+    "walletApiKey": "YourPrivateKey"      // User's own private key
+  }
+}
+```
+
+### Benefits
+
+- ✅ **Open-Source Ready**: No need to hardcode credentials in deployment
+- ✅ **User Privacy**: Each user manages their own credentials
+- ✅ **Scalable**: Supports unlimited users without configuration changes
+- ✅ **Secure**: Credentials never stored in environment or logs
 
 ## Workflow: Analysis → Execution
 
@@ -140,13 +177,20 @@ GearTrade MCP Server can be deployed to Nullshot platform with Cloudflare Worker
    wrangler login
    ```
 
-3. **Set Secrets (IMPORTANT: Do this manually, never commit secrets!)**
+3. **Credentials Configuration (Optional)**
    
-   Set secrets via Cloudflare Dashboard or Wrangler CLI:
+   ⚠️ **IMPORTANT**: This MCP server supports **multi-user credentials**!
+   
+   - ✅ **Recommended**: Users provide their own credentials via tool parameters (`accountAddress`, `walletApiKey`)
+   - ✅ **No secrets required** for deployment - perfect for open-source projects
+   - ✅ **Environment variables are optional** (for backward compatibility only)
+   - ✅ **If no credentials provided**: Tools default to paper executor (simulation)
+   
+   **For backward compatibility** (optional), you can set environment variables:
    
    **Via Wrangler CLI:**
    ```bash
-   # You will be prompted to enter the secret value
+   # Optional: Only if you want default credentials (not recommended for open-source)
    wrangler secret put HYPERLIQUID_ACCOUNT_ADDRESS
    wrangler secret put HYPERLIQUID_WALLET_API_KEY
    ```
@@ -156,10 +200,10 @@ GearTrade MCP Server can be deployed to Nullshot platform with Cloudflare Worker
    2. Click "Add variable" → Select "Secret"
    3. Add each secret: `HYPERLIQUID_ACCOUNT_ADDRESS`, `HYPERLIQUID_WALLET_API_KEY`
    
-   ⚠️ **Security Note**: 
+   ⚠️ **Security Best Practices**: 
    - Never commit secrets to the repository
    - Always use Cloudflare's secret management (if using environment variables)
-   - **Recommended**: Users provide credentials via tool parameters for multi-user support
+   - **Best Practice**: Users provide credentials via tool parameters for true multi-user support
 
 4. **Deploy**
    ```bash
