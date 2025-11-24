@@ -217,7 +217,7 @@ function formatTechnicalIndicators(assetData: any, price: number | null) {
       if (historicalData.length >= 20 && price) {
         try {
           const prices = historicalData.map((d: any) => d.close || d.price)
-          const rsiValues = prices.map((_, i: number) => {
+          const rsiValues = prices.map((_p: number, i: number) => {
             if (i < 14) return null
             const slice = prices.slice(i - 14, i + 1)
             return calculateRSI(slice, 14)
