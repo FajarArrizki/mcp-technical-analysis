@@ -5,7 +5,7 @@ compatibility_date = "2024-01-15"
 # Environment variables for Cloudflare Workers
 [vars]
 AI_PROVIDER = "openrouter"  # openrouter, anthropic, openai, etc.
-MODEL_ID = "anthropic/claude-3-5-sonnet"      # e.g., anthropic/claude-3-5-sonnet
+MODEL_ID = "openai/gpt-4-turbo"      # e.g., openai/gpt-4-turbo
 HYPERLIQUID_API_URL = "https://api.hyperliquid.xyz"
 
 # Secrets (use wrangler secret put for these)

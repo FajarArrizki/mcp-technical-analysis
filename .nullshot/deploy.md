@@ -39,7 +39,7 @@ Create `.env` file in root:
 # AI Provider Configuration
 AI_PROVIDER=openrouter
 AI_PROVIDER_API_KEY=your_api_key_here
-MODEL_ID=anthropic/claude-3-5-sonnet
+MODEL_ID=openai/gpt-4-turbo
 
 # Hyperliquid Configuration (optional - users can provide via tool params)
 HYPERLIQUID_API_URL=https://api.hyperliquid.xyz

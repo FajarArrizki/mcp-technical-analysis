@@ -16,7 +16,7 @@ function getAIProviderFromEnv(): string {
 }
 
 function getModelIdFromEnv(): string | undefined {
-  return 'anthropic/claude-3-5-sonnet' // Use default, will be overridden by wrangler.toml vars
+  return 'openai/gpt-4-turbo' // Use default, will be overridden by wrangler.toml vars
 }
 
 function getAIProviderApiKeyFromEnv(): string {

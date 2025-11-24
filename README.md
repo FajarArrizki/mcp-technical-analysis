@@ -85,7 +85,7 @@ npm install
 
 # Set your environment variables
 wrangler secret put AI_PROVIDER      # e.g., "openrouter"
-wrangler secret put MODEL_ID         # e.g., "anthropic/claude-3-5-sonnet"
+wrangler secret put MODEL_ID         # e.g., "openai/gpt-4-turbo"
 wrangler secret put AI_PROVIDER_API_KEY  # Your AI provider key
 
 # Deploy to Cloudflare Workers
@@ -224,10 +224,9 @@ GearTrade MCP Server
 ## 🔗 **Integration**
 
 ### MCP Clients:
-- **Claude Desktop** - Native MCP integration
 - **Cline IDE** - VS Code extension
 - **Cursor** - AI-powered IDE
-- **Any MCP-compatible client**
+- **Other MCP-compatible clients**
 
 ### Direct API:
 ```bash
