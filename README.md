@@ -1,7 +1,16 @@
 # AI Trading MCP Server
 
-🚀 **Complete Trading Analysis & Execution Platform with 36+ Tools**
-🤖 **Model Context Protocol (MCP) Server for AI Trading Assistants**
+🤖 **Advanced MCP Server for AI-Powered Trading Assistants**
+
+A comprehensive Model Context Protocol (MCP) server that provides AI assistants with professional-grade trading capabilities. Features 36+ specialized tools for technical analysis, risk management, and trade execution across cryptocurrency markets.
+
+**🔥 Key Features:**
+- Real-time market analysis and price monitoring
+- Advanced technical indicators (RSI, MACD, Bollinger Bands, etc.)
+- Intelligent risk management and position sizing
+- Paper trading simulation for strategy testing
+- Live trade execution via Hyperliquid API
+- Multi-timeframe analysis and market scanning
 
 ## 🌟 **What's Included**
 
