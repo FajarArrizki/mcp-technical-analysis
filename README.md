@@ -19,6 +19,8 @@ A comprehensive Model Context Protocol (MCP) server that bridges AI assistants w
 🏠 **Local Development:** Run the MCP server locally for full control and privacy  
 🌐 **HTTP Streaming:** Remote MCP connection via `mcp-remote` for Cursor IDE
 
+🌐 **Live Deployment:** [https://geartrade-mcp-server.fajararrizki15.workers.dev/](https://geartrade-mcp-server.fajararrizki15.workers.dev/)
+
 ## 🌟 **What's Included**
 
 ### 📊 **38+ Complete Trading Tools**
