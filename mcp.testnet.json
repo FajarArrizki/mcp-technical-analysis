@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "geartrade-testnet": {
+      "command": "bash",
+      "args": [
+        "/root/GEARTRADE/scripts/mcp-auto-start.sh"
+      ],
+      "env": {
+        "AI_PROVIDER": "openrouter",
+        "MODEL_ID": "openai/gpt-4-turbo",
+        "OPENROUTER_API_KEY": "",
+        "HYPERLIQUID_API_URL": "https://api.hyperliquid-testnet.xyz",
+        "HYPERLIQUID_TESTNET": "true",
+        "HYPERLIQUID_WALLET_API_KEY": "",
+        "HYPERLIQUID_ACCOUNT_ADDRESS": "",
+        "CANDLES_COUNT": "100"
+      }
+    }
+  }
+}
