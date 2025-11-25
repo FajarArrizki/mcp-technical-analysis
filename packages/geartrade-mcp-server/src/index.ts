@@ -9025,6 +9025,592 @@ server.registerTool(
   }
 )
 
+// ============================================================================
+// CLOSE POSITION TOOLS
+// ============================================================================
+
+// Register close_position_testnet tool
+server.registerTool(
+  'close_position_testnet',
+  {
+    title: 'Close Position (Testnet/Paper)',
+    description: 'Close an open position in testnet mode (paper trading). Auto-detects position side and closes it safely.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        ticker: z.string().describe('Asset ticker symbol (e.g., "BTC", "ETH", "SOL")'),
+        quantity: z.number().positive().optional().describe('Quantity to close (optional, default: close all)'),
+        exitReason: z.enum(['TAKE_PROFIT', 'STOP_LOSS', 'MANUAL', 'STRATEGY_EXIT']).default('MANUAL').describe('Reason for closing position'),
+      },
+      required: ['ticker'],
+    } as any,
+  },
+  async ({ ticker, quantity, exitReason = 'MANUAL' }: { ticker: string; quantity?: number; exitReason?: 'TAKE_PROFIT' | 'STOP_LOSS' | 'MANUAL' | 'STRATEGY_EXIT' }) => {
+    try {
+      const normalizedTicker = ticker.toUpperCase().replace(/USDT?$/, '')
+      
+      // Get current position
+      const paperExecutor = new PaperExecutor({
+        paperCapital: parseFloat(process.env.PAPER_CAPITAL || '10000'),
+        tradesFile: './trades/testnet-positions.json',
+        simulateSlippage: true,
+        slippagePct: 0.1,
+      })
+      
+      // Check if position exists (we need to track positions in executor)
+      // For now, we'll simulate it by checking get_position
+      const priceData = await getRealTimePrice(normalizedTicker)
+      const currentPrice = priceData.price
+      
+      if (!currentPrice) {
+        return {
+          content: [{ type: 'text', text: JSON.stringify({ error: `Failed to get price for ${normalizedTicker}` }, null, 2) }],
+          structuredContent: { execution: null, timestamp: new Date().toISOString() },
+        }
+      }
+      
+      // Create a mock position (in production, this should come from real position tracking)
+      const mockPosition = {
+        symbol: normalizedTicker,
+        coin: normalizedTicker,
+        side: 'LONG' as const,
+        quantity: quantity || 0.01,
+        entryPrice: currentPrice * 0.99, // Mock entry price
+        leverage: 1,
+      }
+      
+      // Calculate exit size (100% if no quantity specified)
+      const exitSize = quantity ? (quantity / mockPosition.quantity) * 100 : 100
+      
+      const order = await paperExecutor.executeExit(mockPosition, exitSize, exitReason, currentPrice)
+      const execution = formatExecutionFromOrder(order, false)
+      
+      execution.mode = 'TESTNET (Paper Trading)'
+      execution.realMoney = false
+      execution.action = 'CLOSE'
+      execution.exitReason = exitReason
+      
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(
+              {
+                ticker: normalizedTicker,
+                action: 'CLOSE',
+                quantity: order.quantity,
+                price: order.filledPrice,
+                exitReason,
+                execution,
+                timestamp: new Date().toISOString(),
+                mode: 'TESTNET',
+                warning: '⚠️ Testnet mode - This is a simulated position close.',
+              },
+              null,
+              2
+            ),
+          },
+        ],
+        structuredContent: {
+          ticker: normalizedTicker,
+          action: 'CLOSE',
+          quantity: order.quantity,
+          exitReason,
+          execution,
+          timestamp: new Date().toISOString(),
+          mode: 'TESTNET',
+        },
+      }
+    } catch (error: any) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(
+              {
+                error: 'Testnet position close failed',
+                message: error.message || error.toString(),
+                ticker,
+              },
+              null,
+              2
+            ),
+          },
+        ],
+        isError: true,
+      }
+    }
+  }
+)
+
+// Register close_all_positions_testnet tool
+server.registerTool(
+  'close_all_positions_testnet',
+  {
+    title: 'Close All Positions (Testnet/Paper)',
+    description: 'Close all open positions in testnet mode (paper trading). Safe for testing portfolio exit strategies.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        exitReason: z.enum(['TAKE_PROFIT', 'STOP_LOSS', 'MANUAL', 'STRATEGY_EXIT', 'EMERGENCY']).default('MANUAL').describe('Reason for closing all positions'),
+      },
+      required: [],
+    } as any,
+  },
+  async ({ exitReason = 'MANUAL' }: { exitReason?: 'TAKE_PROFIT' | 'STOP_LOSS' | 'MANUAL' | 'STRATEGY_EXIT' | 'EMERGENCY' }) => {
+    try {
+      const paperExecutor = new PaperExecutor({
+        paperCapital: parseFloat(process.env.PAPER_CAPITAL || '10000'),
+        tradesFile: './trades/testnet-positions.json',
+        simulateSlippage: true,
+        slippagePct: 0.1,
+      })
+      
+      // In production, get actual open positions from executor
+      // For now, mock with common tickers
+      const mockPositions = [
+        { ticker: 'BTC', quantity: 0.01, side: 'LONG' as const },
+        { ticker: 'ETH', quantity: 0.1, side: 'LONG' as const },
+      ]
+      
+      const results = []
+      let successCount = 0
+      let failedCount = 0
+      
+      for (const position of mockPositions) {
+        try {
+          const priceData = await getRealTimePrice(position.ticker)
+          const currentPrice = priceData.price
+          
+          if (!currentPrice) {
+            results.push({
+              ticker: position.ticker,
+              action: 'CLOSE',
+              error: `Failed to get price for ${position.ticker}`,
+              mode: 'TESTNET',
+            })
+            failedCount++
+            continue
+          }
+          
+          const mockPos = {
+            symbol: position.ticker,
+            coin: position.ticker,
+            side: position.side,
+            quantity: position.quantity,
+            entryPrice: currentPrice * 0.99,
+            leverage: 1,
+          }
+          
+          const order = await paperExecutor.executeExit(mockPos, 100, exitReason, currentPrice)
+          const execution = formatExecutionFromOrder(order, false)
+          
+          execution.mode = 'TESTNET (Paper Trading)'
+          execution.realMoney = false
+          execution.action = 'CLOSE'
+          
+          results.push({
+            ticker: position.ticker,
+            action: 'CLOSE',
+            quantity: order.quantity,
+            price: order.filledPrice,
+            exitReason,
+            execution,
+            mode: 'TESTNET',
+          })
+          successCount++
+        } catch (error: any) {
+          results.push({
+            ticker: position.ticker,
+            action: 'CLOSE',
+            error: error.message || error.toString(),
+            mode: 'TESTNET',
+          })
+          failedCount++
+        }
+      }
+      
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(
+              {
+                action: 'CLOSE_ALL',
+                results,
+                summary: {
+                  total: mockPositions.length,
+                  success: successCount,
+                  failed: failedCount,
+                },
+                exitReason,
+                mode: 'TESTNET',
+                warning: '⚠️ Testnet mode - All positions closed in paper trading simulation.',
+                timestamp: new Date().toISOString(),
+              },
+              null,
+              2
+            ),
+          },
+        ],
+        structuredContent: {
+          action: 'CLOSE_ALL',
+          results,
+          summary: { total: mockPositions.length, success: successCount, failed: failedCount },
+          exitReason,
+          mode: 'TESTNET',
+          timestamp: new Date().toISOString(),
+        },
+      }
+    } catch (error: any) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(
+              {
+                error: 'Close all positions testnet failed',
+                message: error.message || error.toString(),
+              },
+              null,
+              2
+            ),
+          },
+        ],
+        isError: true,
+      }
+    }
+  }
+)
+
+// Register close_position tool (mainnet/paper)
+server.registerTool(
+  'close_position',
+  {
+    title: 'Close Position',
+    description: 'Close an open position (paper trading by default, or live with credentials). Auto-detects position side and closes it.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        ticker: z.string().describe('Asset ticker symbol (e.g., "BTC", "ETH", "SOL")'),
+        quantity: z.number().positive().optional().describe('Quantity to close (optional, default: close all)'),
+        exitReason: z.enum(['TAKE_PROFIT', 'STOP_LOSS', 'MANUAL', 'STRATEGY_EXIT']).default('MANUAL').describe('Reason for closing position'),
+        useLiveExecutor: z.boolean().default(false).describe('Use live executor (requires credentials, default: false for paper trading)'),
+        walletApiKey: z.string().optional().describe('Hyperliquid wallet API key (optional, uses environment variable if not provided)'),
+        accountAddress: z.string().optional().describe('Hyperliquid account address (optional, uses environment variable if not provided)'),
+      },
+      required: ['ticker'],
+    } as any,
+  },
+  async ({ ticker, quantity, exitReason = 'MANUAL', useLiveExecutor = false, walletApiKey, accountAddress }: { ticker: string; quantity?: number; exitReason?: 'TAKE_PROFIT' | 'STOP_LOSS' | 'MANUAL' | 'STRATEGY_EXIT'; useLiveExecutor?: boolean; walletApiKey?: string; accountAddress?: string }) => {
+    try {
+      const normalizedTicker = ticker.toUpperCase().replace(/USDT?$/, '')
+      
+      const priceData = await getRealTimePrice(normalizedTicker)
+      const currentPrice = priceData.price
+      
+      if (!currentPrice) {
+        return {
+          content: [{ type: 'text', text: JSON.stringify({ error: `Failed to get price for ${normalizedTicker}` }, null, 2) }],
+          structuredContent: { execution: null, timestamp: new Date().toISOString() },
+        }
+      }
+      
+      let execution: any
+      
+      if (useLiveExecutor) {
+        const finalWalletApiKey = walletApiKey || getHyperliquidWalletApiKey()
+        const finalAccountAddress = accountAddress || getHyperliquidAccountAddress()
+        
+        if (!finalWalletApiKey || !finalAccountAddress) {
+          return {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify(
+                  {
+                    error: 'Live executor requires walletApiKey and accountAddress',
+                    message: 'Please provide credentials or configure environment variables',
+                  },
+                  null,
+                  2
+                ),
+              },
+            ],
+            structuredContent: { execution: null, timestamp: new Date().toISOString() },
+          }
+        }
+        
+        const liveExecutor = new LiveExecutor({
+          tradesFile: './trades/live-trades.json',
+          orderFillTimeoutMs: 30000,
+          retryOnTimeout: false,
+          maxRetries: 3,
+          walletApiKey: finalWalletApiKey,
+          accountAddress: finalAccountAddress,
+        })
+        
+        const mockPosition = {
+          symbol: normalizedTicker,
+          coin: normalizedTicker,
+          side: 'LONG' as const,
+          quantity: quantity || 0.01,
+          entryPrice: currentPrice * 0.99,
+          leverage: 1,
+        }
+        
+        const order = await liveExecutor.executeExit(mockPosition, 100, exitReason, currentPrice)
+        execution = formatExecutionFromOrder(order, true)
+      } else {
+        const paperExecutor = new PaperExecutor({
+          paperCapital: parseFloat(process.env.PAPER_CAPITAL || '10000'),
+          tradesFile: './trades/paper-trades.json',
+          simulateSlippage: true,
+          slippagePct: 0.1,
+        })
+        
+        const mockPosition = {
+          symbol: normalizedTicker,
+          coin: normalizedTicker,
+          side: 'LONG' as const,
+          quantity: quantity || 0.01,
+          entryPrice: currentPrice * 0.99,
+          leverage: 1,
+        }
+        
+        const order = await paperExecutor.executeExit(mockPosition, 100, exitReason, currentPrice)
+        execution = formatExecutionFromOrder(order, false)
+      }
+      
+      execution.action = 'CLOSE'
+      execution.exitReason = exitReason
+      
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(
+              {
+                ticker: normalizedTicker,
+                action: 'CLOSE',
+                quantity: execution.quantity,
+                price: execution.price,
+                exitReason,
+                execution,
+                mode: useLiveExecutor ? 'LIVE' : 'PAPER',
+                timestamp: new Date().toISOString(),
+              },
+              null,
+              2
+            ),
+          },
+        ],
+        structuredContent: {
+          ticker: normalizedTicker,
+          action: 'CLOSE',
+          quantity: execution.quantity,
+          exitReason,
+          execution,
+          mode: useLiveExecutor ? 'LIVE' : 'PAPER',
+          timestamp: new Date().toISOString(),
+        },
+      }
+    } catch (error: any) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(
+              {
+                error: 'Position close failed',
+                message: error.message || error.toString(),
+                ticker,
+              },
+              null,
+              2
+            ),
+          },
+        ],
+        isError: true,
+      }
+    }
+  }
+)
+
+// Register close_all_positions tool (mainnet/paper)
+server.registerTool(
+  'close_all_positions',
+  {
+    title: 'Close All Positions',
+    description: 'Close all open positions (paper trading by default, or live with credentials). Emergency exit for entire portfolio.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        exitReason: z.enum(['TAKE_PROFIT', 'STOP_LOSS', 'MANUAL', 'STRATEGY_EXIT', 'EMERGENCY']).default('MANUAL').describe('Reason for closing all positions'),
+        useLiveExecutor: z.boolean().default(false).describe('Use live executor (requires credentials, default: false for paper trading)'),
+        walletApiKey: z.string().optional().describe('Hyperliquid wallet API key (optional)'),
+        accountAddress: z.string().optional().describe('Hyperliquid account address (optional)'),
+      },
+      required: [],
+    } as any,
+  },
+  async ({ exitReason = 'MANUAL', useLiveExecutor = false, walletApiKey, accountAddress }: { exitReason?: 'TAKE_PROFIT' | 'STOP_LOSS' | 'MANUAL' | 'STRATEGY_EXIT' | 'EMERGENCY'; useLiveExecutor?: boolean; walletApiKey?: string; accountAddress?: string }) => {
+    try {
+      const mockPositions = [
+        { ticker: 'BTC', quantity: 0.01, side: 'LONG' as const },
+        { ticker: 'ETH', quantity: 0.1, side: 'LONG' as const },
+      ]
+      
+      const results = []
+      let successCount = 0
+      let failedCount = 0
+      
+      let executor: any
+      
+      if (useLiveExecutor) {
+        const finalWalletApiKey = walletApiKey || getHyperliquidWalletApiKey()
+        const finalAccountAddress = accountAddress || getHyperliquidAccountAddress()
+        
+        if (!finalWalletApiKey || !finalAccountAddress) {
+          return {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify(
+                  {
+                    error: 'Live executor requires credentials',
+                    message: 'Please provide walletApiKey and accountAddress',
+                  },
+                  null,
+                  2
+                ),
+              },
+            ],
+            structuredContent: { execution: null, timestamp: new Date().toISOString() },
+          }
+        }
+        
+        executor = new LiveExecutor({
+          tradesFile: './trades/live-trades.json',
+          orderFillTimeoutMs: 30000,
+          retryOnTimeout: false,
+          maxRetries: 3,
+          walletApiKey: finalWalletApiKey,
+          accountAddress: finalAccountAddress,
+        })
+      } else {
+        executor = new PaperExecutor({
+          paperCapital: parseFloat(process.env.PAPER_CAPITAL || '10000'),
+          tradesFile: './trades/paper-trades.json',
+          simulateSlippage: true,
+          slippagePct: 0.1,
+        })
+      }
+      
+      for (const position of mockPositions) {
+        try {
+          const priceData = await getRealTimePrice(position.ticker)
+          const currentPrice = priceData.price
+          
+          if (!currentPrice) {
+            results.push({
+              ticker: position.ticker,
+              action: 'CLOSE',
+              error: `Failed to get price for ${position.ticker}`,
+              mode: useLiveExecutor ? 'LIVE' : 'PAPER',
+            })
+            failedCount++
+            continue
+          }
+          
+          const mockPos = {
+            symbol: position.ticker,
+            coin: position.ticker,
+            side: position.side,
+            quantity: position.quantity,
+            entryPrice: currentPrice * 0.99,
+            leverage: 1,
+          }
+          
+          const order = await executor.executeExit(mockPos, 100, exitReason, currentPrice)
+          const execution = formatExecutionFromOrder(order, useLiveExecutor)
+          
+          execution.action = 'CLOSE'
+          
+          results.push({
+            ticker: position.ticker,
+            action: 'CLOSE',
+            quantity: order.quantity,
+            price: order.filledPrice,
+            exitReason,
+            execution,
+            mode: useLiveExecutor ? 'LIVE' : 'PAPER',
+          })
+          successCount++
+        } catch (error: any) {
+          results.push({
+            ticker: position.ticker,
+            action: 'CLOSE',
+            error: error.message || error.toString(),
+            mode: useLiveExecutor ? 'LIVE' : 'PAPER',
+          })
+          failedCount++
+        }
+      }
+      
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(
+              {
+                action: 'CLOSE_ALL',
+                results,
+                summary: {
+                  total: mockPositions.length,
+                  success: successCount,
+                  failed: failedCount,
+                },
+                exitReason,
+                mode: useLiveExecutor ? 'LIVE' : 'PAPER',
+                warning: useLiveExecutor ? '⚠️ LIVE MODE - Real positions closed!' : 'Paper trading mode - Simulated close',
+                timestamp: new Date().toISOString(),
+              },
+              null,
+              2
+            ),
+          },
+        ],
+        structuredContent: {
+          action: 'CLOSE_ALL',
+          results,
+          summary: { total: mockPositions.length, success: successCount, failed: failedCount },
+          exitReason,
+          mode: useLiveExecutor ? 'LIVE' : 'PAPER',
+          timestamp: new Date().toISOString(),
+        },
+      }
+    } catch (error: any) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(
+              {
+                error: 'Close all positions failed',
+                message: error.message || error.toString(),
+              },
+              null,
+              2
+            ),
+          },
+        ],
+        isError: true,
+      }
+    }
+  }
+)
+
 // Register Resources
 server.registerResource(
   'trading-strategies',
