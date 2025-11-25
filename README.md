@@ -1,4 +1,4 @@
-# AI TRADING MCP SERVER
+# GearTrade MCP Server
 
 🤖 **Model Context Protocol Server for AI-Powered Cryptocurrency Trading**
 
@@ -167,17 +167,100 @@ pnpm run build
 ## 📁 Project Structure
 
 ```
-geartrade-mcp-server/
+ai-trading-mcp-server/
 ├── packages/
-│   └── geartrade-mcp-server/
+│   └── geartrade-mcp-server/          # Main MCP server package
 │       ├── src/
-│       │   └── index.ts        # MCP server implementation
-│       ├── dist/               # Compiled output
-│       └── package.json
-├── package.json
-├── pnpm-workspace.yaml
-└── README.md
+│       │   ├── index.ts               # MCP server entry (36 tools, 25 resources, 23 prompts)
+│       │   └── signal-generation/     # Trading engine modules
+│       │       ├── ai/                # AI integration
+│       │       │   ├── call-api.ts    # OpenRouter/OpenAI API calls
+│       │       │   └── index.ts
+│       │       ├── analysis/          # Market analysis modules
+│       │       │   ├── bounce.ts              # Bounce detection
+│       │       │   ├── btc-correlation.ts     # BTC correlation analysis
+│       │       │   ├── candlestick.ts         # Candlestick patterns
+│       │       │   ├── divergence.ts          # Divergence detection
+│       │       │   ├── market-regime.ts       # Market regime detection
+│       │       │   ├── market-structure.ts    # Market structure analysis
+│       │       │   ├── orderbook.ts           # Order book analysis
+│       │       │   ├── volume-analysis.ts     # Volume analysis
+│       │       │   ├── volume-profile.ts      # Volume profile
+│       │       │   ├── whale-detection.ts     # Whale activity detection
+│       │       │   └── ...                    # 20+ analysis modules
+│       │       ├── data-fetchers/     # Market data sources
+│       │       │   ├── binance.ts             # Binance spot data
+│       │       │   ├── binance-futures.ts     # Binance futures data
+│       │       │   ├── blockchain.ts          # On-chain data
+│       │       │   ├── hyperliquid.ts         # Hyperliquid API
+│       │       │   ├── market-data.ts         # Aggregated market data
+│       │       │   └── historical-data.ts     # Historical OHLCV data
+│       │       ├── execution/         # Trade execution
+│       │       │   ├── paper-executor.ts      # Paper trading simulation
+│       │       │   ├── live-executor.ts       # Live trade execution
+│       │       │   ├── hyperliquid-signing.ts # Hyperliquid signing
+│       │       │   └── position-sizer.ts      # Position sizing
+│       │       ├── technical-indicators/      # Technical analysis
+│       │       │   ├── aggregator.ts          # Indicator aggregation
+│       │       │   ├── fibonacci.ts           # Fibonacci levels
+│       │       │   ├── funding-rate.ts        # Funding rate analysis
+│       │       │   ├── liquidation.ts         # Liquidation levels
+│       │       │   ├── long-short-ratio.ts    # Long/short ratio
+│       │       │   ├── momentum.ts            # RSI, MACD, Stochastic
+│       │       │   ├── moving-averages.ts     # EMA, SMA, WMA
+│       │       │   ├── open-interest.ts       # Open interest analysis
+│       │       │   ├── spot-futures-divergence.ts  # Spot-futures spread
+│       │       │   ├── trend.ts               # Trend indicators
+│       │       │   ├── volatility.ts          # ATR, Bollinger Bands
+│       │       │   └── volume.ts              # Volume indicators
+│       │       ├── risk-management/   # Risk management
+│       │       │   ├── anti-liquidation.ts    # Liquidation protection
+│       │       │   ├── emergency-exit.ts      # Emergency exit logic
+│       │       │   ├── leverage.ts            # Leverage calculation
+│       │       │   ├── margin.ts              # Margin management
+│       │       │   ├── take-profit.ts         # Take profit strategies
+│       │       │   └── mae.ts                 # Max adverse excursion
+│       │       ├── types/             # TypeScript types
+│       │       │   ├── futures-types.ts       # Futures trading types
+│       │       │   └── index.ts               # Type exports
+│       │       ├── utils/             # Utilities
+│       │       │   ├── cache.ts               # Data caching
+│       │       │   ├── logger.ts              # Logging utility
+│       │       │   ├── multi-timeframe.ts     # MTF utilities
+│       │       │   └── trend-strength.ts      # Trend strength calc
+│       │       ├── config/            # Configuration
+│       │       │   └── index.ts               # Server config
+│       │       ├── index.ts           # Signal generation exports
+│       │       └── main.ts            # Main signal generation
+│       ├── dist/                      # Compiled JavaScript output
+│       │   ├── index.js               # Main entry point
+│       │   ├── index.d.ts             # TypeScript declarations
+│       │   └── signal-generation/     # Compiled modules
+│       ├── package.json               # Package dependencies
+│       ├── tsconfig.json              # TypeScript config
+│       └── wrangler.toml              # Cloudflare Workers config
+├── scripts/                           # Utility scripts
+│   ├── run-mcp-inspector.sh           # MCP inspector launcher
+│   ├── setup-git-remote.sh            # Git remote setup
+│   └── test-signal-generation.js      # Signal generation tests
+├── package.json                       # Workspace root config
+├── pnpm-workspace.yaml                # PNPM workspace config
+├── pnpm-lock.yaml                     # Dependency lock file
+├── mcp.json                           # MCP configuration
+├── LICENSE                            # MIT License
+└── README.md                          # This file
 ```
+
+### Key Directories
+
+| Directory | Description |
+|-----------|-------------|
+| `src/index.ts` | Main MCP server with 36 tools, 25 resources, 23 prompts |
+| `signal-generation/analysis/` | 20+ market analysis modules |
+| `signal-generation/technical-indicators/` | 13 technical indicator modules |
+| `signal-generation/data-fetchers/` | Multi-source market data fetchers |
+| `signal-generation/execution/` | Paper & live trade execution |
+| `signal-generation/risk-management/` | Risk management & position sizing |
 
 ## 🛠️ Development
 
