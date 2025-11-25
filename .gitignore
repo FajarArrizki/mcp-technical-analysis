@@ -43,6 +43,9 @@ coverage/
 .eslintcache
 .cache/
 
+# Cursor MCP config (contains API keys)
+.cursor/mcp.json
+
 # Wrangler
 .wrangler/
 .dev.vars

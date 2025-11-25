@@ -103,3 +103,4 @@ echo ""
 echo -e "${GREEN}Thanks for using GearTrade Terminal! 👋${NC}"
 
 
+

@@ -12,27 +12,27 @@ import { TradingConfig } from '../types'
 // Read environment variables directly (not cached at module load time)
 // In Cloudflare Workers, these are provided via the worker environment
 function getAIProviderFromEnv(): string {
-  return 'openrouter' // Use default, will be overridden by wrangler.toml vars
+  return process.env.AI_PROVIDER || 'openrouter'
 }
 
 function getModelIdFromEnv(): string | undefined {
-  return 'openai/gpt-4-turbo' // Use default, will be overridden by wrangler.toml vars
+  return process.env.MODEL_ID || 'openai/gpt-4-turbo'
 }
 
 function getAIProviderApiKeyFromEnv(): string {
-  return '' // Should be set via wrangler secret
+  return process.env.OPENROUTER_API_KEY || process.env.AI_PROVIDER_API_KEY || ''
 }
 
 function getHyperliquidApiUrlFromEnv(): string {
-  return 'https://api.hyperliquid.xyz' // Default, can be overridden by wrangler.toml vars
+  return process.env.HYPERLIQUID_API_URL || 'https://api.hyperliquid.xyz'
 }
 
 function getHyperliquidAccountAddressFromEnv(): string {
-  return '' // Should be set via wrangler secret
+  return process.env.HYPERLIQUID_ACCOUNT_ADDRESS || ''
 }
 
 function getHyperliquidWalletApiKeyFromEnv(): string {
-  return '' // Should be set via wrangler secret
+  return process.env.HYPERLIQUID_WALLET_API_KEY || ''
 }
 
 // Cache for trading config to avoid reloading
