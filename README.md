@@ -12,6 +12,8 @@ A comprehensive Model Context Protocol (MCP) server that bridges AI assistants w
 - Live trade execution via Hyperliquid API
 - Multi-timeframe analysis and market scanning
 
+🌐 **Live Deployment:** [https://geartrade-mcp-server.fajararrizki15.workers.dev/](https://geartrade-mcp-server.fajararrizki15.workers.dev/)
+
 ## 🌟 **What's Included**
 
 ### 📊 **36 Complete Trading Tools**
@@ -52,6 +54,42 @@ pnpm run build
 ```
 
 ### Configure MCP Client
+
+#### Option 1: Use Hosted Deployment (Recommended)
+
+No installation required! Use the live Cloudflare Workers deployment:
+
+**Claude Desktop** (`~/Library/Application Support/Claude/claude_desktop_config.json`):
+```json
+{
+  "mcpServers": {
+    "geartrade": {
+      "command": "npx",
+      "args": [
+        "mcp-remote",
+        "https://geartrade-mcp-server.fajararrizki15.workers.dev/mcp"
+      ]
+    }
+  }
+}
+```
+
+**Cursor** (`.cursor/mcp.json`):
+```json
+{
+  "mcpServers": {
+    "geartrade": {
+      "command": "npx",
+      "args": [
+        "mcp-remote",
+        "https://geartrade-mcp-server.fajararrizki15.workers.dev/mcp"
+      ]
+    }
+  }
+}
+```
+
+#### Option 2: Local Installation
 
 **Claude Desktop** (`~/Library/Application Support/Claude/claude_desktop_config.json`):
 ```json
@@ -169,14 +207,14 @@ pnpm run build
 ```
 ai-trading-mcp-server/
 ├── packages/
-│   └── geartrade-mcp-server/                  # Main MCP server package
+│   └── geartrade-mcp-server/          # Main MCP server package
 │       ├── src/
-│       │   ├── index.ts                       # MCP server entry (36 tools, 25 resources, 23 prompts)
-│       │   └── signal-generation/             # Trading engine modules
-│       │       ├── ai/                        # AI integration
-│       │       │   ├── call-api.ts            # OpenRouter/OpenAI API calls
+│       │   ├── index.ts               # MCP server entry (36 tools, 25 resources, 23 prompts)
+│       │   └── signal-generation/     # Trading engine modules
+│       │       ├── ai/                # AI integration
+│       │       │   ├── call-api.ts    # OpenRouter/OpenAI API calls
 │       │       │   └── index.ts
-│       │       ├── analysis/                  # Market analysis modules
+│       │       ├── analysis/          # Market analysis modules
 │       │       │   ├── bounce.ts              # Bounce detection
 │       │       │   ├── btc-correlation.ts     # BTC correlation analysis
 │       │       │   ├── candlestick.ts         # Candlestick patterns
@@ -188,14 +226,14 @@ ai-trading-mcp-server/
 │       │       │   ├── volume-profile.ts      # Volume profile
 │       │       │   ├── whale-detection.ts     # Whale activity detection
 │       │       │   └── ...                    # 20+ analysis modules
-│       │       ├── data-fetchers/             # Market data sources
+│       │       ├── data-fetchers/     # Market data sources
 │       │       │   ├── binance.ts             # Binance spot data
 │       │       │   ├── binance-futures.ts     # Binance futures data
 │       │       │   ├── blockchain.ts          # On-chain data
 │       │       │   ├── hyperliquid.ts         # Hyperliquid API
 │       │       │   ├── market-data.ts         # Aggregated market data
 │       │       │   └── historical-data.ts     # Historical OHLCV data
-│       │       ├── execution/                 # Trade execution
+│       │       ├── execution/         # Trade execution
 │       │       │   ├── paper-executor.ts      # Paper trading simulation
 │       │       │   ├── live-executor.ts       # Live trade execution
 │       │       │   ├── hyperliquid-signing.ts # Hyperliquid signing
@@ -213,42 +251,42 @@ ai-trading-mcp-server/
 │       │       │   ├── trend.ts               # Trend indicators
 │       │       │   ├── volatility.ts          # ATR, Bollinger Bands
 │       │       │   └── volume.ts              # Volume indicators
-│       │       ├── risk-management/           # Risk management
+│       │       ├── risk-management/   # Risk management
 │       │       │   ├── anti-liquidation.ts    # Liquidation protection
 │       │       │   ├── emergency-exit.ts      # Emergency exit logic
 │       │       │   ├── leverage.ts            # Leverage calculation
 │       │       │   ├── margin.ts              # Margin management
 │       │       │   ├── take-profit.ts         # Take profit strategies
 │       │       │   └── mae.ts                 # Max adverse excursion
-│       │       ├── types/                     # TypeScript types
+│       │       ├── types/             # TypeScript types
 │       │       │   ├── futures-types.ts       # Futures trading types
 │       │       │   └── index.ts               # Type exports
-│       │       ├── utils/                     # Utilities
+│       │       ├── utils/             # Utilities
 │       │       │   ├── cache.ts               # Data caching
 │       │       │   ├── logger.ts              # Logging utility
 │       │       │   ├── multi-timeframe.ts     # MTF utilities
 │       │       │   └── trend-strength.ts      # Trend strength calc
-│       │       ├── config/                    # Configuration
+│       │       ├── config/            # Configuration
 │       │       │   └── index.ts               # Server config
-│       │       ├── index.ts                   # Signal generation exports
-│       │       └── main.ts                    # Main signal generation
-│       ├── dist/                              # Compiled JavaScript output
-│       │   ├── index.js                       # Main entry point
-│       │   ├── index.d.ts                     # TypeScript declarations
-│       │   └── signal-generation/             # Compiled modules
-│       ├── package.json                       # Package dependencies
-│       ├── tsconfig.json                      # TypeScript config
-│       └── wrangler.toml                      # Cloudflare Workers config
-├── scripts/                                   # Utility scripts
-│   ├── run-mcp-inspector.sh                   # MCP inspector launcher
-│   ├── setup-git-remote.sh                    # Git remote setup
-│   └── test-signal-generation.js              # Signal generation tests
-├── package.json                               # Workspace root config
-├── pnpm-workspace.yaml                        # PNPM workspace config
-├── pnpm-lock.yaml                             # Dependency lock file
-├── mcp.json                                   # MCP configuration
-├── LICENSE                                    # MIT License
-└── README.md                                  # This file
+│       │       ├── index.ts           # Signal generation exports
+│       │       └── main.ts            # Main signal generation
+│       ├── dist/                      # Compiled JavaScript output
+│       │   ├── index.js               # Main entry point
+│       │   ├── index.d.ts             # TypeScript declarations
+│       │   └── signal-generation/     # Compiled modules
+│       ├── package.json               # Package dependencies
+│       ├── tsconfig.json              # TypeScript config
+│       └── wrangler.toml              # Cloudflare Workers config
+├── scripts/                           # Utility scripts
+│   ├── run-mcp-inspector.sh           # MCP inspector launcher
+│   ├── setup-git-remote.sh            # Git remote setup
+│   └── test-signal-generation.js      # Signal generation tests
+├── package.json                       # Workspace root config
+├── pnpm-workspace.yaml                # PNPM workspace config
+├── pnpm-lock.yaml                     # Dependency lock file
+├── mcp.json                           # MCP configuration
+├── LICENSE                            # MIT License
+└── README.md                          # This file
 ```
 
 ### Key Directories
