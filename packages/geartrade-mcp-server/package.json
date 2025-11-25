@@ -7,17 +7,24 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsx src/index.ts",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "serve": "node start-https-server.js",
+    "serve:http": "node start-https-server.js --http-only",
+    "simple": "node simple-server.js",
+    "stream": "tsx local-server.ts",
+    "stream:prod": "node dist/local-server.js",
+    "test-stream": "curl -N http://localhost:8787/stream",
+    "test-mcp": "curl -X POST http://localhost:8787/mcp -H 'Content-Type: application/json' -d '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/list\",\"params\":{}}'"
   },
   "dependencies": {
-    "@nullshot/mcp": "latest",
     "@modelcontextprotocol/sdk": "^1.22.0",
+    "@nullshot/mcp": "latest",
     "ethers": "^6.15.0",
     "zod": "^3.22.4"
   },
   "devDependencies": {
     "@types/node": "^20.11.20",
-    "tsx": "^4.7.1",
+    "tsx": "^4.20.6",
     "typescript": "^5.0.0"
   }
 }

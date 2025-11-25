@@ -1,7 +1,7 @@
 /**
  * GearTrade MCP Server
  * Exposes trading functionality via Model Context Protocol using Nullshot MCP SDK
- * Compatible with Cloudflare Workers
+ * Local development server only
  */
 
 // Import from Nullshot MCP SDK
@@ -39,14 +39,14 @@ import { PaperExecutor } from './signal-generation/execution/paper-executor'
 import { LiveExecutor } from './signal-generation/execution/live-executor'
 import type { Signal, HistoricalDataPoint } from './signal-generation/types'
 
-// Placeholder functions for Cloudflare Workers compatibility
-// These would normally read from environment variables, but in Workers they use secrets
+// Placeholder functions for local development
+// These read from environment variables
 function getHyperliquidWalletApiKey(): string {
-  return '' // Should be set via wrangler secret
+  return process.env.HYPERLIQUID_WALLET_API_KEY || ''
 }
 
 function getHyperliquidAccountAddress(): string {
-  return '' // Should be set via wrangler secret
+  return process.env.HYPERLIQUID_ACCOUNT_ADDRESS || ''
 }
 
 // Helper function to format technical indicators
@@ -862,8 +862,8 @@ const server = {
   registerTool(name: string, config: any, handler: any) {
     this.tools.set(name, { config, handler })
   },
-  registerResource(name: string, config: any, handler: any) {
-    this.resources.set(name, { config, handler })
+  registerResource(name: string, uri: string, config: any, handler: any) {
+    this.resources.set(name, { uri, config, handler })
   },
   registerPrompt(name: string, config: any) {
     this.prompts.set(name, config)
@@ -12031,29 +12031,373 @@ Fibonacci retracement levels identify potential support/resistance zones. This g
 // Export server for Nullshot MCP SDK
 export { server }
 
-// Default export for Cloudflare Workers compatibility
+// JSON-RPC 2.0 response helper
+function jsonRpcResponse(id: string | number | null, result: any) {
+  return {
+    jsonrpc: '2.0' as const,
+    id,
+    result
+  }
+}
+
+function jsonRpcError(id: string | number | null, code: number, message: string, data?: any) {
+  return {
+    jsonrpc: '2.0' as const,
+    id,
+    error: { code, message, data }
+  }
+}
+
+// MCP method handlers
+async function handleMcpMethod(method: string, params: any, id: string | number | null): Promise<any> {
+  switch (method) {
+    case 'initialize':
+      return jsonRpcResponse(id, {
+        protocolVersion: params?.protocolVersion || '2024-11-05',
+        serverInfo: {
+          name: server.name,
+          version: server.version
+        },
+        capabilities: {
+          tools: { listChanged: false },
+          resources: { listChanged: false, subscribe: false },
+          prompts: { listChanged: false }
+        }
+      })
+
+    case 'initialized':
+      // Notification, no response needed but return empty result for compatibility
+      return jsonRpcResponse(id, {})
+
+    case 'tools/list':
+      const tools = Array.from(server.tools.entries()).map(([name, { config }]: [string, any]) => ({
+        name,
+        description: config.description || '',
+        inputSchema: {
+          type: 'object',
+          properties: Object.fromEntries(
+            Object.entries(config.inputSchema || {}).map(([key, schema]: [string, any]) => [
+              key,
+              {
+                type: schema._def?.typeName === 'ZodNumber' ? 'number' : 
+                      schema._def?.typeName === 'ZodBoolean' ? 'boolean' :
+                      schema._def?.typeName === 'ZodArray' ? 'array' : 'string',
+                description: schema._def?.description || schema.description || ''
+              }
+            ])
+          ),
+          required: Object.keys(config.inputSchema || {})
+        }
+      }))
+      return jsonRpcResponse(id, { tools })
+
+    case 'tools/call':
+      const toolName = params?.name
+      const toolArgs = params?.arguments || {}
+      const tool = server.tools.get(toolName)
+      if (!tool) {
+        return jsonRpcError(id, -32601, `Tool not found: ${toolName}`)
+      }
+      try {
+        const result = await tool.handler(toolArgs)
+        return jsonRpcResponse(id, result)
+      } catch (err: any) {
+        return jsonRpcError(id, -32603, err.message || 'Tool execution failed')
+      }
+
+    case 'resources/list':
+      const resources = Array.from(server.resources.entries()).map(([name, { config }]: [string, any]) => ({
+        uri: `geartrade://${name}`,
+        name: config.title || name,
+        description: config.description || '',
+        mimeType: 'text/plain'
+      }))
+      return jsonRpcResponse(id, { resources })
+
+    case 'resources/read':
+      const resourceUri = params?.uri || ''
+      const resourceName = resourceUri.replace('geartrade://', '')
+      const resource = server.resources.get(resourceName)
+      if (!resource) {
+        return jsonRpcError(id, -32601, `Resource not found: ${resourceUri}`)
+      }
+      try {
+        const content = await resource.handler()
+        return jsonRpcResponse(id, {
+          contents: [{
+            uri: resourceUri,
+            mimeType: 'text/plain',
+            text: typeof content === 'string' ? content : JSON.stringify(content, null, 2)
+          }]
+        })
+      } catch (err: any) {
+        return jsonRpcError(id, -32603, err.message || 'Resource read failed')
+      }
+
+    case 'prompts/list':
+      const prompts = Array.from(server.prompts.entries()).map(([name, config]: [string, any]) => ({
+        name,
+        description: config.description || '',
+        arguments: config.arguments || []
+      }))
+      return jsonRpcResponse(id, { prompts })
+
+    case 'prompts/get':
+      const promptName = params?.name
+      const promptConfig = server.prompts.get(promptName)
+      if (!promptConfig) {
+        return jsonRpcError(id, -32601, `Prompt not found: ${promptName}`)
+      }
+      // Generate prompt messages based on arguments
+      const promptArgs = params?.arguments || {}
+      let promptText = promptConfig.template || promptConfig.description || ''
+      // Simple template substitution
+      for (const [key, value] of Object.entries(promptArgs)) {
+        promptText = promptText.replace(new RegExp(`\\{${key}\\}`, 'g'), String(value))
+      }
+      return jsonRpcResponse(id, {
+        description: promptConfig.description,
+        messages: [{
+          role: 'user',
+          content: { type: 'text', text: promptText }
+        }]
+      })
+
+    case 'ping':
+      return jsonRpcResponse(id, {})
+
+    default:
+      return jsonRpcError(id, -32601, `Method not found: ${method}`)
+  }
+}
+
+// Default export for local HTTP server with streaming support
 export default {
   async fetch(request: Request, env: any, ctx: any) {
+    const url = new URL(request.url)
+
+    // Enhanced CORS headers for streaming support
+    const corsHeaders = {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Cache-Control, Last-Event-ID',
+      'Access-Control-Max-Age': '86400'
+    }
+
+    // Handle CORS preflight
+    if (request.method === 'OPTIONS') {
+      return new Response(null, { headers: corsHeaders })
+    }
+
     // Basic health check endpoint
     if (request.method === 'GET' && request.url.endsWith('/health')) {
       return new Response(JSON.stringify({
         status: 'ok',
         server: server.name,
-        version: server.version
+        version: server.version,
+        streaming: true,
+        endpoints: ['/stream', '/mcp', '/events']
       }), {
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json', ...corsHeaders }
       })
     }
 
-    // For MCP protocol, return the server configuration
+    // SSE (Server-Sent Events) streaming endpoint
+    if (request.method === 'GET' && url.pathname === '/stream') {
+      const streamHeaders = {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Cache-Control, Last-Event-ID'
+      }
+
+      let eventId = 0
+      const stream = new ReadableStream({
+        start(controller) {
+          // Send initial connection event
+          const initEvent = `id: ${eventId++}\nevent: connected\ndata: ${JSON.stringify({
+            type: 'connection',
+            message: 'Connected to MCP streaming server',
+            server: server.name,
+            version: server.version,
+            timestamp: new Date().toISOString()
+          })}\n\n`
+          controller.enqueue(new TextEncoder().encode(initEvent))
+
+          // Send periodic heartbeat
+          const heartbeatInterval = setInterval(() => {
+            const heartbeat = `id: ${eventId++}\nevent: heartbeat\ndata: ${JSON.stringify({
+              type: 'heartbeat',
+              timestamp: new Date().toISOString()
+            })}\n\n`
+            try {
+              controller.enqueue(new TextEncoder().encode(heartbeat))
+            } catch (error) {
+              clearInterval(heartbeatInterval)
+            }
+          }, 30000) // 30 seconds heartbeat
+
+          // Handle client disconnect
+          request.signal.addEventListener('abort', () => {
+            clearInterval(heartbeatInterval)
+            controller.close()
+          })
+        }
+      })
+
+      return new Response(stream, { headers: streamHeaders })
+    }
+
+    // WebSocket-like streaming for MCP commands over HTTP
+    if (request.method === 'POST' && url.pathname === '/stream') {
+      const streamHeaders = {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type, Cache-Control, Last-Event-ID'
+      }
+
+      try {
+        const body = await request.json() as any
+        const { jsonrpc, id, method, params } = body
+
+        const stream = new ReadableStream({
+          async start(controller) {
+            let eventId = 0
+
+            // Send request received event
+            const requestEvent = `id: ${eventId++}\nevent: request_received\ndata: ${JSON.stringify({
+              type: 'request',
+              method,
+              params,
+              id,
+              timestamp: new Date().toISOString()
+            })}\n\n`
+            controller.enqueue(new TextEncoder().encode(requestEvent))
+
+            // Process the MCP method
+            try {
+              // Send processing event
+              const processingEvent = `id: ${eventId++}\nevent: processing\ndata: ${JSON.stringify({
+                type: 'processing',
+                method,
+                message: 'Processing MCP request...',
+                timestamp: new Date().toISOString()
+              })}\n\n`
+              controller.enqueue(new TextEncoder().encode(processingEvent))
+
+              const response = await handleMcpMethod(method, params, id)
+
+              // Send response event
+              const responseEvent = `id: ${eventId++}\nevent: response\ndata: ${JSON.stringify({
+                type: 'response',
+                response,
+                timestamp: new Date().toISOString()
+              })}\n\n`
+              controller.enqueue(new TextEncoder().encode(responseEvent))
+
+              // Send completion event
+              const completionEvent = `id: ${eventId++}\nevent: completed\ndata: ${JSON.stringify({
+                type: 'completed',
+                method,
+                success: true,
+                timestamp: new Date().toISOString()
+              })}\n\n`
+              controller.enqueue(new TextEncoder().encode(completionEvent))
+
+            } catch (error: any) {
+              // Send error event
+              const errorEvent = `id: ${eventId++}\nevent: error\ndata: ${JSON.stringify({
+                type: 'error',
+                error: error.message,
+                method,
+                timestamp: new Date().toISOString()
+              })}\n\n`
+              controller.enqueue(new TextEncoder().encode(errorEvent))
+            } finally {
+              controller.close()
+            }
+          }
+        })
+
+        return new Response(stream, { headers: streamHeaders })
+      } catch (error: any) {
+        const errorStream = new ReadableStream({
+          start(controller) {
+            const errorEvent = `id: 0\nevent: error\ndata: ${JSON.stringify({
+              type: 'error',
+              error: error.message,
+              timestamp: new Date().toISOString()
+            })}\n\n`
+            controller.enqueue(new TextEncoder().encode(errorEvent))
+            controller.close()
+          }
+        })
+        return new Response(errorStream, { headers: streamHeaders })
+      }
+    }
+
+    // Handle MCP JSON-RPC requests (traditional endpoint)
+    if (request.method === 'POST' && url.pathname !== '/stream') {
+      try {
+        const body = await request.json() as any
+        
+        // Handle batch requests
+        if (Array.isArray(body)) {
+          const responses = await Promise.all(
+            body.map((req: any) => handleMcpMethod(req.method, req.params, req.id))
+          )
+          return new Response(JSON.stringify(responses), {
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+          })
+        }
+
+        // Single request
+        const { jsonrpc, id, method, params } = body
+        
+        if (jsonrpc !== '2.0') {
+          return new Response(JSON.stringify(
+            jsonRpcError(id || null, -32600, 'Invalid Request: jsonrpc must be "2.0"')
+          ), {
+            status: 400,
+            headers: { 'Content-Type': 'application/json', ...corsHeaders }
+          })
+        }
+
+        const response = await handleMcpMethod(method, params, id)
+        return new Response(JSON.stringify(response), {
+          headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        })
+      } catch (err: any) {
+        return new Response(JSON.stringify(
+          jsonRpcError(null, -32700, 'Parse error', err.message)
+        ), {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        })
+      }
+    }
+
+    // GET request - return server info (for debugging)
     return new Response(JSON.stringify({
       name: server.name,
       version: server.version,
-      tools: Array.from(server.tools.keys()),
-      resources: Array.from(server.resources.keys()),
-      prompts: Array.from(server.prompts.keys())
+      endpoint: '/mcp',
+      streaming: {
+        enabled: true,
+        endpoints: {
+          sse: '/stream',
+          mcp_stream: '/stream',
+          health: '/health'
+        }
+      },
+      protocol: 'JSON-RPC 2.0',
+      methods: ['initialize', 'tools/list', 'tools/call', 'resources/list', 'resources/read', 'prompts/list', 'prompts/get'],
+      features: ['http-streaming', 'sse-events', 'real-time-responses']
     }), {
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json', ...corsHeaders }
     })
   }
 }

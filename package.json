@@ -11,7 +11,9 @@
     "build": "npm run build --workspaces",
     "install:mcp": "nullshot install",
     "validate": "nullshot validate",
-    "list": "nullshot list"
+    "list": "nullshot list",
+    "terminal": "bash scripts/start-terminal.sh",
+    "terminal:build": "cd packages/terminal-ui && pnpm install && pnpm run build"
   },
   "devDependencies": {
     "@nullshot/cli": "latest",

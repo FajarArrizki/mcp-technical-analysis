@@ -5,38 +5,65 @@
 A comprehensive Model Context Protocol (MCP) server that bridges AI assistants with professional cryptocurrency trading capabilities. This server transforms AI conversations by providing real-time market data, sophisticated technical analysis, and intelligent trade execution tools through standardized MCP protocols. Whether you're building trading bots, automated strategies, or AI financial advisors, this server delivers the complete infrastructure needed for data-driven trading decisions across multiple timeframes and asset classes.
 
 **🔥 Key Features:**
-- Real-time market analysis and price monitoring
-- Advanced technical indicators (RSI, MACD, Bollinger Bands, etc.)
-- Intelligent risk management and position sizing
-- Paper trading simulation for strategy testing
-- Live trade execution via Hyperliquid API
-- Multi-timeframe analysis and market scanning
+- 🔴 **38+ Trading Tools** - Complete analysis & execution toolkit
+- 📊 **Real-time Market Data** - Live prices, indicators, volume analysis
+- 🎯 **Advanced Technical Analysis** - RSI, MACD, Fibonacci, Order Book, etc.
+- 💰 **Risk Management** - Position sizing, stop loss, take profit calculations
+- 📈 **Multi-Timeframe Analysis** - Daily, 4H, 1H trend alignment
+- 🤖 **23 AI Prompts** - Pre-configured trading workflows
+- 📚 **19 Resources** - Comprehensive trading documentation
+- 🔄 **Streaming Support** - HTTP/SSE for real-time updates
+- 🎮 **Paper Trading** - Test strategies without risk
+- ⚡ **Live Execution** - Trade on Hyperliquid (optional)
+
+🏠 **Local Development:** Run the MCP server locally for full control and privacy  
+🌐 **HTTP Streaming:** Remote MCP connection via `mcp-remote` for Cursor IDE
 
 ## 🌟 **What's Included**
 
-### 📊 **36 Complete Trading Tools**
+### 📊 **38+ Complete Trading Tools**
 - **Price Tools** (2): Real-time pricing for single/multiple assets
-- **Technical Analysis** (2): 20+ indicators (RSI, EMA, MACD, Bollinger Bands, etc.)
-- **Volume Analysis** (2): Buy/sell pressure, CVD, liquidity analysis
+- **Technical Analysis** (2): 20+ indicators (RSI, EMA, MACD, Bollinger Bands, ATR, ADX, etc.)
+- **Volume Analysis** (2): Buy/sell pressure, CVD, liquidity zones analysis
 - **Multi-Timeframe** (2): Daily, 4H, 1H trend alignment analysis
-- **Advanced Analysis** (10): Fibonacci, Order Book, Volume Profile, Market Structure, Candlestick Patterns, Divergence, Liquidation Levels, Long/Short Ratio, Spot-Futures Divergence
+- **Advanced Analysis** (3): Fibonacci, Order Book Depth, Liquidation Levels
+- **Market Analysis** (8): Volume Profile, Market Structure, Candlestick Patterns, Divergence, Long/Short Ratio, Spot-Futures Divergence, External Data
 - **Risk Management** (2): Position sizing, stop loss, take profit calculations
 - **Comprehensive Analysis** (2): Complete crypto analysis with position setup
 - **Execution Tools** (4): Spot & Futures trading (paper trading + live execution)
+- **Batch Operations** (11): Multi-asset analysis for all above tools
 
-### 📚 **25 Trading Resources**
-- `geartrade://state` - Current trading state
-- `geartrade://performance` - Performance metrics
-- `geartrade://config` - Configuration
-- `geartrade://docs/*` - Complete trading documentation
+### 📚 **19 Trading Resources**
+- `geartrade://trading-strategies` - Comprehensive trading strategies guide
+- `geartrade://risk-management` - Risk management best practices
+- `geartrade://tools-overview` - Complete tools overview
+- `geartrade://execution-workflow` - Analysis to execution workflow
+- `geartrade://technical-indicators-guide` - Technical indicators guide
+- `geartrade://hyperliquid-api-reference` - Hyperliquid API reference
+- Plus 13 more specialized guides (volume analysis, fibonacci, orderbook, etc.)
 
 ### 🤖 **23 AI Trading Prompts**
-- Core trading: `analyze_and_execute`, `multi_asset_scan`, `comprehensive_analysis`
-- Technical: `technical_indicator_analysis`, `volume_profile_analysis`, `market_structure_analysis`
-- Advanced: `divergence_scan`, `liquidation_analysis`, `fibonacci_trading_strategy`
-- Risk: `risk_analysis`, `position_monitoring`, `portfolio_review`
+- **Core Trading**: `analyze_and_execute`, `multi_asset_scan`, `comprehensive_analysis`
+- **Technical Analysis**: `technical_indicator_analysis`, `volume_profile_analysis`, `market_structure_analysis`
+- **Advanced**: `divergence_scan`, `liquidation_analysis`, `fibonacci_trading_strategy`, `spot_futures_arbitrage`
+- **Risk Management**: `risk_analysis`, `position_monitoring`, `portfolio_review`, `volatility_analysis`
+- Plus 12 more specialized prompts
 
 ## 🚀 **Quick Start**
+
+### ⚡ Fastest Way - Streaming Mode (Recommended)
+
+```bash
+# Terminal 1 - Start Streaming Server
+bash scripts/start-mcp-stream.sh
+
+# Terminal 2 - Connect Terminal UI
+pnpm run terminal
+```
+
+Server runs at `http://localhost:8787` with SSE streaming support!
+
+📖 **Full Guide**: See [QUICKSTART.md](./QUICKSTART.md) and [STREAMING_GUIDE.md](./STREAMING_GUIDE.md)
 
 ### Installation:
 ```bash
@@ -51,27 +78,123 @@ pnpm install
 pnpm run build
 ```
 
-### Configure MCP Client
+### 🖥️ **Terminal UI (New!)**
+
+Interactive terminal interface untuk testing dan development - **NO IMPORT ISSUES!**
+
+```bash
+# Quick start
+pnpm run terminal:build
+pnpm run terminal
+```
+
+**Features:**
+- 🎨 **Beautiful UI** - Claude Code inspired design
+- 🔌 **Zero Import Issues** - Pure Node.js, deployment-ready
+- 🛠️ **Interactive Tools** - Execute all 36 MCP tools
+- 📦 **Resource Access** - Read all 25 resources
+- ✅ **Production Ready** - Works everywhere, no bundling issues
+
+**Documentation:**
+- 📖 [How to Use](HOW_TO_USE_TERMINAL.md) - Quick start guide
+- 📚 [Complete Guide](packages/terminal-ui/GUIDE.md) - Full documentation
+- 💡 [Examples](packages/terminal-ui/EXAMPLES.md) - Usage examples
+- 🚀 [Deployment](packages/terminal-ui/DEPLOYMENT.md) - Deploy anywhere
+- 📊 [Summary](TERMINAL_UI_SUMMARY.md) - Technical overview
+
+**Why Terminal UI?**
+
+Dibuat khusus untuk mengatasi masalah *"pas di deployment ga bisa, karna mengunakan import"*:
+- ✅ No dynamic imports
+- ✅ No ESM/CJS conflicts
+- ✅ Pure static imports
+- ✅ Minimal dependencies
+- ✅ Works in all environments
+
+### 🔧 Configure MCP Client
+
+## 🚀 Quick Start - MCP Integration
+
+### Option 1: HTTP Streaming Mode (Recommended)
+
+**Start the server:**
+```bash
+cd /root/GEARTRADE
+bash scripts/start-mcp-stream.sh
+```
+
+Server runs at `http://localhost:8787` with SSE streaming support!
+
+**Configure Cursor** (`~/.cursor/mcp.json`):
+```json
+{
+  "mcpServers": {
+    "geartrade-local-stream": {
+      "command": "npx",
+      "args": [
+        "mcp-remote",
+        "http://localhost:8787/mcp"
+      ],
+      "env": {
+        "AI_PROVIDER": "openrouter",
+        "MODEL_ID": "openai/gpt-4-turbo",
+        "OPENROUTER_API_KEY": "your_openrouter_api_key_here",
+        "HYPERLIQUID_API_URL": "https://api.hyperliquid.xyz",
+        "HYPERLIQUID_WALLET_API_KEY": "",
+        "HYPERLIQUID_ACCOUNT_ADDRESS": "",
+        "CANDLES_COUNT": "100"
+      }
+    }
+  }
+}
+```
+
+**Required Environment Variables:**
+- `OPENROUTER_API_KEY` - Get from [OpenRouter](https://openrouter.ai/keys) (Required for AI analysis)
+- `HYPERLIQUID_API_URL` - API endpoint for market data (default provided)
+- `HYPERLIQUID_WALLET_API_KEY` - Only for live trading (leave empty for analysis only)
+- `HYPERLIQUID_ACCOUNT_ADDRESS` - Only for live trading (leave empty for analysis only)
+- `CANDLES_COUNT` - Number of candles for analysis (100 recommended)
+
+### Option 2: Direct Execution
 
 **Claude Desktop** (`~/Library/Application Support/Claude/claude_desktop_config.json`):
 ```json
 {
   "mcpServers": {
     "geartrade": {
-      "command": "node",
-      "args": ["/path/to/packages/geartrade-mcp-server/dist/index.js"]
+      "command": "tsx",
+      "args": ["/path/to/GEARTRADE/packages/geartrade-mcp-server/src/index.ts"],
+      "env": {
+        "AI_PROVIDER": "openrouter",
+        "MODEL_ID": "openai/gpt-4-turbo",
+        "OPENROUTER_API_KEY": "your_api_key_here",
+        "HYPERLIQUID_API_URL": "https://api.hyperliquid.xyz"
+      }
     }
   }
 }
 ```
 
-**Cursor** (`.cursor/mcp.json`):
+**Cursor (Alternative)** (`.cursor/mcp.json`):
 ```json
 {
   "mcpServers": {
     "geartrade": {
       "command": "node",
-      "args": ["/path/to/packages/geartrade-mcp-server/dist/index.js"]
+      "args": [
+        "--loader",
+        "tsx",
+        "/path/to/GEARTRADE/packages/geartrade-mcp-server/src/index.ts"
+      ],
+      "env": {
+        "NODE_OPTIONS": "--loader tsx",
+        "AI_PROVIDER": "openrouter",
+        "MODEL_ID": "openai/gpt-4-turbo",
+        "OPENROUTER_API_KEY": "your_api_key_here",
+        "HYPERLIQUID_API_URL": "https://api.hyperliquid.xyz",
+        "CANDLES_COUNT": "100"
+      }
     }
   }
 }
@@ -79,29 +202,49 @@ pnpm run build
 
 ## 📦 MCP Capabilities
 
-### Tools (36)
+### Tools (38+)
 | Category | Count | Description |
 |----------|-------|-------------|
 | Price Analysis | 2 | Real-time pricing for single/multiple assets |
-| Technical Analysis | 2 | 20+ indicators (RSI, EMA, MACD, Bollinger Bands) |
-| Volume Analysis | 2 | Buy/sell pressure, CVD, liquidity analysis |
+| Technical Analysis | 2 | 20+ indicators (RSI, EMA, MACD, Bollinger Bands, ATR, ADX) |
+| Volume Analysis | 2 | Buy/sell pressure, CVD, liquidity zones |
 | Multi-Timeframe | 2 | Daily, 4H, 1H trend alignment |
-| Advanced Analysis | 10 | Fibonacci, Order Book, Market Structure, Patterns |
-| Risk Management | 2 | Position sizing, stop loss, take profit |
+| Advanced Analysis | 3 | Fibonacci, Order Book Depth, Liquidation Levels |
+| Market Analysis | 8 | Volume Profile, Market Structure, Candlestick Patterns, Divergence, Long/Short Ratio, Spot-Futures Divergence, External Data |
+| Risk Management | 2 | Position sizing, stop loss, take profit calculations |
 | Comprehensive | 2 | Complete crypto analysis with position setup |
 | Execution | 4 | Paper trading + live execution via Hyperliquid |
+| Batch Operations | 11+ | Multi-asset versions of all above tools |
 
-### Resources (25)
-- `geartrade://state` - Current trading state
-- `geartrade://performance` - Performance metrics
-- `geartrade://config` - Configuration
-- `geartrade://docs/*` - Trading documentation
+**Example Tools:**
+- `get_price` / `get_multiple_prices` - Real-time crypto prices
+- `get_indicator` / `get_multiple_indicators` - Technical indicators (RSI, MACD, etc.)
+- `get_volume_analysis` - Buy/sell pressure, CVD, liquidity zones
+- `get_fibonacci` - Fibonacci retracement levels
+- `get_orderbook_depth` - Order book support/resistance
+- `analisis_crypto` - Comprehensive single-asset analysis
+- `analisis_multiple_crypto` - Batch multi-asset analysis
+- `calculate_risk_management` - Stop loss, take profit, risk/reward
+- `get_execution_spot` / `get_execution_futures` - Trade execution
+
+### Resources (19)
+- `geartrade://trading-strategies` - Trading strategies guide
+- `geartrade://risk-management` - Risk management guide
+- `geartrade://tools-overview` - Complete tools documentation
+- `geartrade://execution-workflow` - Step-by-step execution guide
+- `geartrade://technical-indicators-guide` - Indicators reference
+- `geartrade://hyperliquid-api-reference` - Hyperliquid API docs
+- `geartrade://volume-analysis-guide` - Volume analysis guide
+- `geartrade://fibonacci-trading-guide` - Fibonacci strategies
+- Plus 11 more specialized guides
 
 ### Prompts (23)
-- **Core**: `analyze_and_execute`, `multi_asset_scan`, `comprehensive_analysis`
-- **Technical**: `technical_indicator_analysis`, `volume_profile_analysis`
-- **Advanced**: `divergence_scan`, `liquidation_analysis`, `fibonacci_trading_strategy`
-- **Risk**: `risk_analysis`, `position_monitoring`, `portfolio_review`
+- **Core Trading**: `analyze_and_execute`, `multi_asset_scan`, `comprehensive_analysis`
+- **Quick Analysis**: `quick_price_check`, `trend_analysis`, `market_overview`
+- **Technical**: `technical_indicator_analysis`, `volume_profile_analysis`, `market_structure_analysis`
+- **Advanced**: `divergence_scan`, `liquidation_analysis`, `fibonacci_trading_strategy`, `spot_futures_arbitrage`
+- **Risk**: `risk_analysis`, `position_monitoring`, `portfolio_review`, `volatility_analysis`, `entry_exit_strategy`
+- Plus 8 more specialized prompts
 
 ## 🏗️ Architecture
 
@@ -154,8 +297,8 @@ pnpm run build
 ### Component Details
 
 **MCP Protocol Layer**
-- Tool Execution: 36 trading tools for analysis and execution
-- Resource Management: 25 data resources
+- Tool Execution: 38+ trading tools for analysis and execution
+- Resource Management: 19 comprehensive documentation resources
 - Prompt System: 23 AI-optimized trading prompts
 
 **Security Layer**
@@ -238,7 +381,7 @@ ai-trading-mcp-server/
 │       │   └── signal-generation/     # Compiled modules
 │       ├── package.json               # Package dependencies
 │       ├── tsconfig.json              # TypeScript config
-│       └── wrangler.toml              # Cloudflare Workers config
+│       └── mcp.local.json             # Local MCP configuration
 ├── scripts/                           # Utility scripts
 │   ├── run-mcp-inspector.sh           # MCP inspector launcher
 │   ├── setup-git-remote.sh            # Git remote setup
@@ -255,7 +398,8 @@ ai-trading-mcp-server/
 
 | Directory | Description |
 |-----------|-------------|
-| `src/index.ts` | Main MCP server with 36 tools, 25 resources, 23 prompts |
+| `src/index.ts` | Main MCP server with 38+ tools, 19 resources, 23 prompts |
+| `local-server.ts` | HTTP/SSE streaming server for remote MCP connections |
 | `signal-generation/analysis/` | 20+ market analysis modules |
 | `signal-generation/technical-indicators/` | 13 technical indicator modules |
 | `signal-generation/data-fetchers/` | Multi-source market data fetchers |
@@ -278,10 +422,28 @@ pnpm run validate
 pnpm run list
 ```
 
-## 🔐 Multi-User Credentials
+## 🔐 Security & Multi-User Support
 
-Users provide their own credentials via tool parameters:
+### Analysis-Only Mode (Recommended for beginners)
+Leave wallet credentials empty - all analysis tools work without trading:
+```json
+{
+  "HYPERLIQUID_WALLET_API_KEY": "",
+  "HYPERLIQUID_ACCOUNT_ADDRESS": ""
+}
+```
 
+**Available without credentials:**
+- ✅ All price & market data tools
+- ✅ All technical analysis tools
+- ✅ All volume & advanced analysis
+- ✅ Risk calculations
+- ✅ Paper trading simulation
+
+### Real Trading Mode (Advanced users)
+Users provide their own credentials via tool parameters OR environment variables:
+
+**Via Tool Parameters:**
 ```json
 {
   "name": "get_execution_futures",
@@ -296,6 +458,51 @@ Users provide their own credentials via tool parameters:
     "walletApiKey": "UserPrivateKey"
   }
 }
+```
+
+**Via Environment Variables:**
+```json
+{
+  "env": {
+    "HYPERLIQUID_WALLET_API_KEY": "your_private_key",
+    "HYPERLIQUID_ACCOUNT_ADDRESS": "0xYourAddress"
+  }
+}
+```
+
+### Security Features
+- ✅ Multi-user credentials support
+- ✅ Zod schema validation
+- ✅ Paper trading by default
+- ✅ No hardcoded secrets
+- ✅ Analysis-only mode available
+- ✅ Credentials per-tool override
+
+## 🌐 API Endpoints (HTTP Streaming Mode)
+
+When running `bash scripts/start-mcp-stream.sh`:
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `http://localhost:8787/` | GET | Server info & documentation |
+| `http://localhost:8787/health` | GET | Health check (JSON) |
+| `http://localhost:8787/mcp` | POST | MCP JSON-RPC endpoint |
+| `http://localhost:8787/stream` | GET/POST | SSE streaming endpoint |
+
+**Test Commands:**
+```bash
+# Health check
+curl http://localhost:8787/health
+
+# List all tools
+curl -X POST http://localhost:8787/mcp \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}'
+
+# Get BTC price
+curl -X POST http://localhost:8787/mcp \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"get_price","arguments":{"ticker":"BTC"}}}'
 ```
 
 ## 📄 License

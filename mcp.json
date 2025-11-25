@@ -1,13 +1,9 @@
 {
   "mcpServers": {
-    "geartrade": {
-      "command": "tsx",
-      "args": ["packages/geartrade-mcp-server/src/index.ts"],
-      "env": {
-        "AI_PROVIDER": "openrouter",
-        "MODEL_ID": "openai/gpt-4-turbo",
-        "HYPERLIQUID_API_URL": "https://api.hyperliquid.xyz"
-      }
+    "geartrade-stream": {
+      "type": "stream",
+      "url": "http://localhost:8787/stream",
+      "description": "GearTrade MCP with SSE Streaming"
     }
   }
 }
