@@ -2,11 +2,43 @@
 
 🤖 **Model Context Protocol Server for AI-Powered Cryptocurrency Trading**
 
-A comprehensive MCP server that provides AI assistants with professional cryptocurrency trading capabilities through standardized protocols. Built for seamless integration with Claude Desktop, Cursor, and other MCP-compatible clients.
+A comprehensive Model Context Protocol (MCP) server that bridges AI assistants with professional cryptocurrency trading capabilities. This server transforms AI conversations by providing real-time market data, sophisticated technical analysis, and intelligent trade execution tools through standardized MCP protocols. Whether you're building trading bots, automated strategies, or AI financial advisors, this server delivers the complete infrastructure needed for data-driven trading decisions across multiple timeframes and asset classes.
 
-## 🚀 Quick Start
+**🔥 Key Features:**
+- Real-time market analysis and price monitoring
+- Advanced technical indicators (RSI, MACD, Bollinger Bands, etc.)
+- Intelligent risk management and position sizing
+- Paper trading simulation for strategy testing
+- Live trade execution via Hyperliquid API
+- Multi-timeframe analysis and market scanning
 
-### Installation
+## 🌟 **What's Included**
+
+### 📊 **36 Complete Trading Tools**
+- **Price Tools** (2): Real-time pricing for single/multiple assets
+- **Technical Analysis** (2): 20+ indicators (RSI, EMA, MACD, Bollinger Bands, etc.)
+- **Volume Analysis** (2): Buy/sell pressure, CVD, liquidity analysis
+- **Multi-Timeframe** (2): Daily, 4H, 1H trend alignment analysis
+- **Advanced Analysis** (10): Fibonacci, Order Book, Volume Profile, Market Structure, Candlestick Patterns, Divergence, Liquidation Levels, Long/Short Ratio, Spot-Futures Divergence
+- **Risk Management** (2): Position sizing, stop loss, take profit calculations
+- **Comprehensive Analysis** (2): Complete crypto analysis with position setup
+- **Execution Tools** (4): Spot & Futures trading (paper trading + live execution)
+
+### 📚 **25 Trading Resources**
+- `geartrade://state` - Current trading state
+- `geartrade://performance` - Performance metrics
+- `geartrade://config` - Configuration
+- `geartrade://docs/*` - Complete trading documentation
+
+### 🤖 **23 AI Trading Prompts**
+- Core trading: `analyze_and_execute`, `multi_asset_scan`, `comprehensive_analysis`
+- Technical: `technical_indicator_analysis`, `volume_profile_analysis`, `market_structure_analysis`
+- Advanced: `divergence_scan`, `liquidation_analysis`, `fibonacci_trading_strategy`
+- Risk: `risk_analysis`, `position_monitoring`, `portfolio_review`
+
+## 🚀 **Quick Start**
+
+### Installation:
 ```bash
 # Clone the repository
 git clone https://github.com/FajarArrizki/ai-trading-mcp-server.git
