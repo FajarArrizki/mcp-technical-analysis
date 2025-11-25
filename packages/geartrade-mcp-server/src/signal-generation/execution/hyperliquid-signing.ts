@@ -108,24 +108,42 @@ export async function signHyperliquidOrder(
   message: any
 ): Promise<{ r: string; s: string; v: number }> {
   try {
+    // Get the first order to check what fields it has
+    const order = message.action.orders[0]
+    
+    // Build Order type dynamically based on present fields
+    const orderFields: any[] = [
+      { name: 'a', type: 'uint64' },
+      { name: 'b', type: 'bool' },
+      { name: 'p', type: 'string' },
+      { name: 's', type: 'string' },
+      { name: 'r', type: 'bool' }
+    ]
+    
+    // Only add 't' field if it exists (for limit orders)
+    if (order.t !== undefined) {
+      orderFields.push({ name: 't', type: 'Limit' })
+    }
+    
+    // Only add 'c' field if it exists (client order ID)
+    if (order.c !== undefined) {
+      orderFields.push({ name: 'c', type: 'string' })
+    }
+    
     // Hyperliquid EIP-712 types - must match Hyperliquid's exact structure
-    const types = {
-      Order: [
-        { name: 'a', type: 'uint64' },
-        { name: 'b', type: 'bool' },
-        { name: 'p', type: 'string' },
-        { name: 's', type: 'string' },
-        { name: 'r', type: 'bool' },
-        { name: 't', type: 'Limit' },
-        { name: 'c', type: 'string' }
-      ],
-      Limit: [
-        { name: 'tif', type: 'string' }
-      ],
+    const types: any = {
+      Order: orderFields,
       Action: [
         { name: 'type', type: 'string' },
         { name: 'orders', type: 'Order[]' },
         { name: 'grouping', type: 'string' }
+      ]
+    }
+    
+    // Only add Limit type if needed
+    if (order.t !== undefined) {
+      types.Limit = [
+        { name: 'tif', type: 'string' }
       ]
     }
 

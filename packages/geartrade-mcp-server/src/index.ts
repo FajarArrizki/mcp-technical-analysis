@@ -8561,10 +8561,10 @@ server.registerTool(
       const normalizedTicker = ticker.toUpperCase().replace(/USDT?$/, '')
       
       // Get current price
-      const fetchedPrice = await getRealTimePrice(normalizedTicker)
-      const currentPrice = price || fetchedPrice
+      const priceData = await getRealTimePrice(normalizedTicker)
+      const currentPrice = price || priceData.price
       
-      if (!currentPrice || currentPrice <= 0) {
+      if (!currentPrice) {
         return {
           content: [{ type: 'text', text: JSON.stringify({ error: `Failed to get price for ${normalizedTicker}` }, null, 2) }],
           structuredContent: { execution: null, timestamp: new Date().toISOString() },
@@ -8682,10 +8682,10 @@ server.registerTool(
       for (const exec of executions) {
         try {
           const normalizedTicker = exec.ticker.toUpperCase().replace(/USDT?$/, '')
-          const fetchedPrice = await getRealTimePrice(normalizedTicker)
-          const currentPrice = exec.price || fetchedPrice
+          const priceData = await getRealTimePrice(normalizedTicker)
+          const currentPrice = exec.price || priceData.price
           
-          if (!currentPrice || currentPrice <= 0) {
+          if (!currentPrice) {
             results.push({
               ticker: normalizedTicker,
               side: exec.side,
@@ -8800,10 +8800,10 @@ server.registerTool(
       const normalizedTicker = ticker.toUpperCase().replace(/USDT?$/, '')
       
       // Get current price
-      const fetchedPrice = await getRealTimePrice(normalizedTicker)
-      const currentPrice = price || fetchedPrice
+      const priceData = await getRealTimePrice(normalizedTicker)
+      const currentPrice = price || priceData.price
       
-      if (!currentPrice || currentPrice <= 0) {
+      if (!currentPrice) {
         return {
           content: [{ type: 'text', text: JSON.stringify({ error: `Failed to get price for ${normalizedTicker}` }, null, 2) }],
           structuredContent: { execution: null, timestamp: new Date().toISOString() },
@@ -8926,11 +8926,11 @@ server.registerTool(
       for (const exec of executions) {
         try {
           const normalizedTicker = exec.ticker.toUpperCase().replace(/USDT?$/, '')
-          const fetchedPrice = await getRealTimePrice(normalizedTicker)
-          const currentPrice = exec.price || fetchedPrice
+          const priceData = await getRealTimePrice(normalizedTicker)
+          const currentPrice = exec.price || priceData.price
           const leverage = exec.leverage || 10
           
-          if (!currentPrice || currentPrice <= 0) {
+          if (!currentPrice) {
             results.push({
               ticker: normalizedTicker,
               side: exec.side,
@@ -9059,9 +9059,10 @@ server.registerTool(
       
       // Check if position exists (we need to track positions in executor)
       // For now, we'll simulate it by checking get_position
-      const currentPrice = await getRealTimePrice(normalizedTicker)
+      const priceData = await getRealTimePrice(normalizedTicker)
+      const currentPrice = priceData.price
       
-      if (!currentPrice || currentPrice <= 0) {
+      if (!currentPrice) {
         return {
           content: [{ type: 'text', text: JSON.stringify({ error: `Failed to get price for ${normalizedTicker}` }, null, 2) }],
           structuredContent: { execution: null, timestamp: new Date().toISOString() },
@@ -9178,9 +9179,10 @@ server.registerTool(
       
       for (const position of mockPositions) {
         try {
-          const currentPrice = await getRealTimePrice(position.ticker)
+          const priceData = await getRealTimePrice(position.ticker)
+          const currentPrice = priceData.price
           
-          if (!currentPrice || currentPrice <= 0) {
+          if (!currentPrice) {
             results.push({
               ticker: position.ticker,
               action: 'CLOSE',
@@ -9304,9 +9306,10 @@ server.registerTool(
     try {
       const normalizedTicker = ticker.toUpperCase().replace(/USDT?$/, '')
       
-      const currentPrice = await getRealTimePrice(normalizedTicker)
+      const priceData = await getRealTimePrice(normalizedTicker)
+      const currentPrice = priceData.price
       
-      if (!currentPrice || currentPrice <= 0) {
+      if (!currentPrice) {
         return {
           content: [{ type: 'text', text: JSON.stringify({ error: `Failed to get price for ${normalizedTicker}` }, null, 2) }],
           structuredContent: { execution: null, timestamp: new Date().toISOString() },
@@ -9506,9 +9509,10 @@ server.registerTool(
       
       for (const position of mockPositions) {
         try {
-          const currentPrice = await getRealTimePrice(position.ticker)
+          const priceData = await getRealTimePrice(position.ticker)
+          const currentPrice = priceData.price
           
-          if (!currentPrice || currentPrice <= 0) {
+          if (!currentPrice) {
             results.push({
               ticker: position.ticker,
               action: 'CLOSE',
@@ -9594,133 +9598,6 @@ server.registerTool(
             text: JSON.stringify(
               {
                 error: 'Close all positions failed',
-                message: error.message || error.toString(),
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        isError: true,
-      }
-    }
-  }
-)
-
-// ============================================================================
-// BALANCE & ACCOUNT TOOLS
-// ============================================================================
-
-// Register get_balance tool
-server.registerTool(
-  'get_balance',
-  {
-    title: 'Get Wallet Balance',
-    description: 'Check wallet balance on Hyperliquid (testnet or mainnet). Shows USDC balance and available margin.',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        useTestnet: z.boolean().default(true).describe('Use testnet (default: true) or mainnet'),
-        accountAddress: z.string().optional().describe('Account address (optional, uses environment variable if not provided)'),
-      },
-      required: [],
-    } as any,
-  },
-  async ({ useTestnet = true, accountAddress }: { useTestnet?: boolean; accountAddress?: string }) => {
-    try {
-      const finalAccountAddress = accountAddress || getHyperliquidAccountAddress()
-      
-      if (!finalAccountAddress) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(
-                {
-                  error: 'Account address required',
-                  message: 'Please provide accountAddress parameter or set HYPERLIQUID_ACCOUNT_ADDRESS environment variable',
-                },
-                null,
-                2
-              ),
-            },
-          ],
-          isError: true,
-        }
-      }
-      
-      // Determine API URL
-      const apiUrl = useTestnet 
-        ? 'https://api.hyperliquid-testnet.xyz'
-        : (process.env.HYPERLIQUID_API_URL || 'https://api.hyperliquid.xyz')
-      
-      // Fetch user state (balance info)
-      const response = await fetch(`${apiUrl}/info`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'clearinghouseState',
-          user: finalAccountAddress,
-        }),
-      })
-      
-      if (!response.ok) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(
-                {
-                  error: 'Failed to fetch balance',
-                  status: response.status,
-                  message: await response.text(),
-                },
-                null,
-                2
-              ),
-            },
-          ],
-          isError: true,
-        }
-      }
-      
-      const data = await response.json()
-      
-      // Extract balance information
-      const marginSummary = data.marginSummary || {}
-      const accountValue = parseFloat(marginSummary.accountValue || '0')
-      const totalMarginUsed = parseFloat(marginSummary.totalMarginUsed || '0')
-      const availableMargin = accountValue - totalMarginUsed
-      
-      const balanceInfo = {
-        accountAddress: finalAccountAddress,
-        mode: useTestnet ? 'TESTNET' : 'MAINNET',
-        accountValue: accountValue,
-        totalMarginUsed: totalMarginUsed,
-        availableMargin: availableMargin,
-        crossMarginSummary: data.crossMarginSummary || null,
-        withdrawable: data.withdrawable || null,
-        assetPositions: data.assetPositions || [],
-        timestamp: new Date().toISOString(),
-      }
-      
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(balanceInfo, null, 2),
-          },
-        ],
-        structuredContent: balanceInfo,
-      }
-    } catch (error: any) {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                error: 'Balance check failed',
                 message: error.message || error.toString(),
               },
               null,
