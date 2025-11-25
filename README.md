@@ -1,4 +1,4 @@
-# GearTrade MCP Server
+# AI TRADING MCP SERVER
 
 🤖 **Model Context Protocol Server for AI-Powered Cryptocurrency Trading**
 
