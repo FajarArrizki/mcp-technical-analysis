@@ -8561,10 +8561,10 @@ server.registerTool(
       const normalizedTicker = ticker.toUpperCase().replace(/USDT?$/, '')
       
       // Get current price
-      const priceData = await getRealTimePrice(normalizedTicker)
-      const currentPrice = price || priceData.price
+      const fetchedPrice = await getRealTimePrice(normalizedTicker)
+      const currentPrice = price || fetchedPrice
       
-      if (!currentPrice) {
+      if (!currentPrice || currentPrice <= 0) {
         return {
           content: [{ type: 'text', text: JSON.stringify({ error: `Failed to get price for ${normalizedTicker}` }, null, 2) }],
           structuredContent: { execution: null, timestamp: new Date().toISOString() },
@@ -8682,10 +8682,10 @@ server.registerTool(
       for (const exec of executions) {
         try {
           const normalizedTicker = exec.ticker.toUpperCase().replace(/USDT?$/, '')
-          const priceData = await getRealTimePrice(normalizedTicker)
-          const currentPrice = exec.price || priceData.price
+          const fetchedPrice = await getRealTimePrice(normalizedTicker)
+          const currentPrice = exec.price || fetchedPrice
           
-          if (!currentPrice) {
+          if (!currentPrice || currentPrice <= 0) {
             results.push({
               ticker: normalizedTicker,
               side: exec.side,
@@ -8800,10 +8800,10 @@ server.registerTool(
       const normalizedTicker = ticker.toUpperCase().replace(/USDT?$/, '')
       
       // Get current price
-      const priceData = await getRealTimePrice(normalizedTicker)
-      const currentPrice = price || priceData.price
+      const fetchedPrice = await getRealTimePrice(normalizedTicker)
+      const currentPrice = price || fetchedPrice
       
-      if (!currentPrice) {
+      if (!currentPrice || currentPrice <= 0) {
         return {
           content: [{ type: 'text', text: JSON.stringify({ error: `Failed to get price for ${normalizedTicker}` }, null, 2) }],
           structuredContent: { execution: null, timestamp: new Date().toISOString() },
@@ -8926,11 +8926,11 @@ server.registerTool(
       for (const exec of executions) {
         try {
           const normalizedTicker = exec.ticker.toUpperCase().replace(/USDT?$/, '')
-          const priceData = await getRealTimePrice(normalizedTicker)
-          const currentPrice = exec.price || priceData.price
+          const fetchedPrice = await getRealTimePrice(normalizedTicker)
+          const currentPrice = exec.price || fetchedPrice
           const leverage = exec.leverage || 10
           
-          if (!currentPrice) {
+          if (!currentPrice || currentPrice <= 0) {
             results.push({
               ticker: normalizedTicker,
               side: exec.side,
@@ -9059,10 +9059,9 @@ server.registerTool(
       
       // Check if position exists (we need to track positions in executor)
       // For now, we'll simulate it by checking get_position
-      const priceData = await getRealTimePrice(normalizedTicker)
-      const currentPrice = priceData.price
+      const currentPrice = await getRealTimePrice(normalizedTicker)
       
-      if (!currentPrice) {
+      if (!currentPrice || currentPrice <= 0) {
         return {
           content: [{ type: 'text', text: JSON.stringify({ error: `Failed to get price for ${normalizedTicker}` }, null, 2) }],
           structuredContent: { execution: null, timestamp: new Date().toISOString() },
@@ -9179,10 +9178,9 @@ server.registerTool(
       
       for (const position of mockPositions) {
         try {
-          const priceData = await getRealTimePrice(position.ticker)
-          const currentPrice = priceData.price
+          const currentPrice = await getRealTimePrice(position.ticker)
           
-          if (!currentPrice) {
+          if (!currentPrice || currentPrice <= 0) {
             results.push({
               ticker: position.ticker,
               action: 'CLOSE',
@@ -9306,10 +9304,9 @@ server.registerTool(
     try {
       const normalizedTicker = ticker.toUpperCase().replace(/USDT?$/, '')
       
-      const priceData = await getRealTimePrice(normalizedTicker)
-      const currentPrice = priceData.price
+      const currentPrice = await getRealTimePrice(normalizedTicker)
       
-      if (!currentPrice) {
+      if (!currentPrice || currentPrice <= 0) {
         return {
           content: [{ type: 'text', text: JSON.stringify({ error: `Failed to get price for ${normalizedTicker}` }, null, 2) }],
           structuredContent: { execution: null, timestamp: new Date().toISOString() },
@@ -9509,10 +9506,9 @@ server.registerTool(
       
       for (const position of mockPositions) {
         try {
-          const priceData = await getRealTimePrice(position.ticker)
-          const currentPrice = priceData.price
+          const currentPrice = await getRealTimePrice(position.ticker)
           
-          if (!currentPrice) {
+          if (!currentPrice || currentPrice <= 0) {
             results.push({
               ticker: position.ticker,
               action: 'CLOSE',
