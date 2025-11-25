@@ -1,116 +1,171 @@
-# AI Trading MCP Server
+# GearTrade MCP Server
 
-🤖 **Model Context Protocol Server for AI-Powered Trading**
+🤖 **Model Context Protocol Server for AI-Powered Cryptocurrency Trading**
 
-A comprehensive MCP server that provides AI assistants with real-time cryptocurrency trading capabilities through standardized protocols. Connect Claude, Cursor, or any MCP-compatible client to access professional-grade trading tools.
+A comprehensive MCP server that provides AI assistants with professional cryptocurrency trading capabilities through standardized protocols. Built for seamless integration with Claude Desktop, Cursor, and other MCP-compatible clients.
 
-## 🎯 **MCP Server Capabilities**
-
-### 📊 **36 Trading Tools**
-| Category | Tools | Description |
-|----------|-------|-------------|
-| Price | 2 | Real-time pricing for single/multiple assets |
-| Technical Analysis | 2 | 20+ indicators (RSI, EMA, MACD, Bollinger Bands) |
-| Volume Analysis | 2 | Buy/sell pressure, CVD, liquidity analysis |
-| Multi-Timeframe | 2 | Daily, 4H, 1H trend alignment |
-| Advanced Analysis | 10 | Fibonacci, Order Book, Volume Profile, Market Structure |
-| Risk Management | 2 | Position sizing, stop loss, take profit |
-| Comprehensive | 2 | Complete crypto analysis with position setup |
-| Execution | 4 | Paper trading + live execution via Hyperliquid |
-
-### 📚 **25 Resources**
-- `geartrade://state` - Current trading state
-- `geartrade://performance` - Performance metrics
-- `geartrade://config` - Server configuration
-- `geartrade://docs/*` - Trading documentation
-
-### 🤖 **23 AI Prompts**
-Pre-built prompts for trading workflows: `analyze_and_execute`, `multi_asset_scan`, `technical_indicator_analysis`, `risk_analysis`, and more.
-
----
-
-## 🚀 **Quick Start**
+## 🚀 Quick Start
 
 ### Installation
 ```bash
+# Clone the repository
 git clone https://github.com/FajarArrizki/ai-trading-mcp-server.git
 cd ai-trading-mcp-server
+
+# Install dependencies
 pnpm install
+
+# Build the server
 pnpm run build
 ```
 
-### MCP Client Configuration
+### Configure MCP Client
 
 **Claude Desktop** (`~/Library/Application Support/Claude/claude_desktop_config.json`):
 ```json
 {
   "mcpServers": {
-    "ai-trading": {
+    "geartrade": {
       "command": "node",
-      "args": ["/path/to/ai-trading-mcp-server/packages/geartrade-mcp-server/dist/index.js"],
-      "env": {
-        "AI_PROVIDER": "openrouter",
-        "MODEL_ID": "openai/gpt-4-turbo",
-        "AI_PROVIDER_API_KEY": "your-api-key"
-      }
+      "args": ["/path/to/packages/geartrade-mcp-server/dist/index.js"]
     }
   }
 }
 ```
 
-**HTTP Mode** (for hosted deployments):
+**Cursor** (`.cursor/mcp.json`):
 ```json
 {
   "mcpServers": {
-    "ai-trading": {
-      "type": "http",
-      "url": "https://geartrade-mcp-server.fajararrizki15.workers.dev/mcp"
+    "geartrade": {
+      "command": "node",
+      "args": ["/path/to/packages/geartrade-mcp-server/dist/index.js"]
     }
   }
 }
 ```
 
----
+## 📦 MCP Capabilities
 
-## 🔧 **MCP Protocol**
+### Tools (36)
+| Category | Count | Description |
+|----------|-------|-------------|
+| Price Analysis | 2 | Real-time pricing for single/multiple assets |
+| Technical Analysis | 2 | 20+ indicators (RSI, EMA, MACD, Bollinger Bands) |
+| Volume Analysis | 2 | Buy/sell pressure, CVD, liquidity analysis |
+| Multi-Timeframe | 2 | Daily, 4H, 1H trend alignment |
+| Advanced Analysis | 10 | Fibonacci, Order Book, Market Structure, Patterns |
+| Risk Management | 2 | Position sizing, stop loss, take profit |
+| Comprehensive | 2 | Complete crypto analysis with position setup |
+| Execution | 4 | Paper trading + live execution via Hyperliquid |
 
-### Tool Call Examples
+### Resources (25)
+- `geartrade://state` - Current trading state
+- `geartrade://performance` - Performance metrics
+- `geartrade://config` - Configuration
+- `geartrade://docs/*` - Trading documentation
 
-**Get Price:**
-```json
-{"method": "tools/call", "params": {"name": "get_price", "arguments": {"ticker": "BTC"}}}
+### Prompts (23)
+- **Core**: `analyze_and_execute`, `multi_asset_scan`, `comprehensive_analysis`
+- **Technical**: `technical_indicator_analysis`, `volume_profile_analysis`
+- **Advanced**: `divergence_scan`, `liquidation_analysis`, `fibonacci_trading_strategy`
+- **Risk**: `risk_analysis`, `position_monitoring`, `portfolio_review`
+
+## 🏗️ Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    GearTrade MCP Server                     │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  ┌─────────────────┐    ┌─────────────────────────────┐    │
+│  │   MCP Clients   │◄──►│      MCP Protocol           │◄──►│
+│  │  - Claude       │    │  - Tool Execution           │    │
+│  │  - Cursor IDE   │    │  - Resource Access          │    │
+│  │  - Cline IDE    │    │  - Prompt Management        │    │
+│  └─────────────────┘    └─────────────────────────────┘    │
+│                                  │                          │
+│                                  ▼                          │
+│  ┌─────────────────────────────────────────────────────────┐│
+│  │              Core MCP Server                            ││
+│  │  ┌─────────────────┐  ┌─────────────────────────────┐  ││
+│  │  │   Trading Tools │  │      Resources              │  ││
+│  │  │  - Price (2)    │  │  - Trading State            │  ││
+│  │  │  - Analysis (2) │  │  - Performance Metrics      │  ││
+│  │  │  - Volume (2)   │  │  - Configuration            │  ││
+│  │  │  - Advanced (10)│  │  - Documentation            │  ││
+│  │  │  - Risk (2)     │  └─────────────────────────────┘  ││
+│  │  │  - Exec (4)     │                                   ││
+│  │  └─────────────────┘                                   ││
+│  │                                                         ││
+│  │  ┌─────────────────┐  ┌─────────────────────────────┐  ││
+│  │  │   AI Prompts    │  │    Security Layer           │  ││
+│  │  │  - Core Trading │  │  - Multi-User Credentials   │  ││
+│  │  │  - Technical    │  │  - Input Validation (Zod)   │  ││
+│  │  │  - Risk Mgmt    │  │  - Paper Trading Default    │  ││
+│  │  └─────────────────┘  └─────────────────────────────┘  ││
+│  └─────────────────────────────────────────────────────────┘│
+│                                  │                          │
+│                                  ▼                          │
+│  ┌─────────────────────────────────────────────────────────┐│
+│  │              External APIs                              ││
+│  │  ┌─────────────────┐  ┌─────────────────────────────┐  ││
+│  │  │  Hyperliquid    │  │     AI Providers            │  ││
+│  │  │  - Market Data  │  │  - OpenRouter               │  ││
+│  │  │  - Execution    │  │  - OpenAI                   │  ││
+│  │  │  - Account Info │  │  - Custom Models            │  ││
+│  │  └─────────────────┘  └─────────────────────────────┘  ││
+│  └─────────────────────────────────────────────────────────┘│
+└─────────────────────────────────────────────────────────────┘
 ```
 
-**Technical Analysis:**
-```json
-{"method": "tools/call", "params": {"name": "get_technical_analysis", "arguments": {"ticker": "ETH", "timeframe": "4h"}}}
+### Component Details
+
+**MCP Protocol Layer**
+- Tool Execution: 36 trading tools for analysis and execution
+- Resource Management: 25 data resources
+- Prompt System: 23 AI-optimized trading prompts
+
+**Security Layer**
+- Multi-user credentials via tool parameters
+- Zod schema validation
+- Paper trading by default
+- No hardcoded secrets
+
+## 📁 Project Structure
+
+```
+geartrade-mcp-server/
+├── packages/
+│   └── geartrade-mcp-server/
+│       ├── src/
+│       │   └── index.ts        # MCP server implementation
+│       ├── dist/               # Compiled output
+│       └── package.json
+├── package.json
+├── pnpm-workspace.yaml
+└── README.md
 ```
 
-**Risk Calculation:**
-```json
-{"method": "tools/call", "params": {"name": "calculate_risk_management", "arguments": {"ticker": "BTC", "entryPrice": 87000, "side": "LONG", "stopLossPct": 2.0, "positionSizeUsd": 1000}}}
+## 🛠️ Development
+
+```bash
+# Development mode
+pnpm run dev
+
+# Build
+pnpm run build
+
+# Validate MCP config
+pnpm run validate
+
+# List tools & resources
+pnpm run list
 ```
 
-**Execute Trade (Paper):**
-```json
-{"method": "tools/call", "params": {"name": "get_execution_futures", "arguments": {"ticker": "BTC", "side": "LONG", "quantity": 0.1, "leverage": 10, "execute": true, "useLiveExecutor": false}}}
-```
+## 🔐 Multi-User Credentials
 
-### Resource Access
-```json
-{"method": "resources/read", "params": {"uri": "geartrade://state"}}
-```
-
-### List Available Tools
-```json
-{"method": "tools/list"}
-```
-
----
-
-## 🔒 **Multi-User Credentials**
-
-Users provide their own credentials via tool parameters - no hardcoded secrets:
+Users provide their own credentials via tool parameters:
 
 ```json
 {
@@ -119,6 +174,7 @@ Users provide their own credentials via tool parameters - no hardcoded secrets:
     "ticker": "BTC",
     "side": "LONG",
     "quantity": 0.1,
+    "leverage": 10,
     "execute": true,
     "useLiveExecutor": true,
     "accountAddress": "0xUserAddress",
@@ -127,88 +183,10 @@ Users provide their own credentials via tool parameters - no hardcoded secrets:
 }
 ```
 
----
+## 📄 License
 
-## 🏗️ **Architecture**
-
-```
-┌─────────────────────────────────────────────────────────┐
-│                  AI Trading MCP Server                  │
-├─────────────────────────────────────────────────────────┤
-│  MCP Protocol Layer                                     │
-│  ├── Tool Execution (36 tools)                         │
-│  ├── Resource Access (25 resources)                    │
-│  └── Prompt Management (23 prompts)                    │
-├─────────────────────────────────────────────────────────┤
-│  Core Services                                          │
-│  ├── Market Data (Hyperliquid API)                     │
-│  ├── Technical Analysis Engine                         │
-│  ├── Risk Management Calculator                        │
-│  └── Trade Executor (Paper + Live)                     │
-├─────────────────────────────────────────────────────────┤
-│  Security                                               │
-│  ├── Input Validation (Zod)                            │
-│  ├── Multi-User Credentials                            │
-│  └── Paper Trading Default                             │
-└─────────────────────────────────────────────────────────┘
-```
+MIT
 
 ---
 
-## 📁 **Project Structure**
-
-```
-ai-trading-mcp-server/
-├── packages/
-│   └── geartrade-mcp-server/
-│       ├── src/index.ts          # MCP server entry
-│       └── dist/                 # Built output
-├── package.json
-└── pnpm-workspace.yaml
-```
-
----
-
-## 🛠️ **Development**
-
-```bash
-pnpm run dev        # Development mode
-pnpm run build      # Build server
-pnpm run validate   # Validate MCP config
-pnpm run list       # List tools & resources
-```
-
-### Environment Variables
-```bash
-AI_PROVIDER=openrouter
-MODEL_ID=openai/gpt-4-turbo
-AI_PROVIDER_API_KEY=your-key
-```
-
----
-
-## 🌐 **Live Server**
-
-Test the hosted MCP server:
-```bash
-# Health check
-curl https://geartrade-mcp-server.fajararrizki15.workers.dev/health
-
-# List tools
-curl -X POST https://geartrade-mcp-server.fajararrizki15.workers.dev/mcp \
-  -H "Content-Type: application/json" \
-  -d '{"method":"tools/list"}'
-```
-
----
-
-## 📖 **Compatible Clients**
-
-- **Claude Desktop** - Native MCP support
-- **Cursor IDE** - AI coding with MCP
-- **Cline** - VS Code MCP extension
-- **Any MCP-compatible client**
-
----
-
-**Built for the AI trading community** | [MCP Protocol Spec](https://modelcontextprotocol.io)
+*Built for the AI trading community - empowering AI assistants with professional trading capabilities*
