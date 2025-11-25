@@ -8531,6 +8531,500 @@ server.registerTool(
   }
 )
 
+// ============================================================================
+// TESTNET EXECUTION TOOLS (Paper Trading Simulation)
+// ============================================================================
+// NOTE: Hyperliquid doesn't have a testnet. These tools use paper trading
+// simulation to provide safe testing environment without real money.
+// ============================================================================
+
+// Register get_execution_spot_testnet tool
+server.registerTool(
+  'get_execution_spot_testnet',
+  {
+    title: 'Get Spot Execution (Testnet/Paper)',
+    description: 'Execute spot trade in testnet mode (paper trading simulation, no real money). Safe for testing strategies.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        ticker: z.string().describe('Asset ticker symbol (e.g., "BTC", "ETH", "SOL")'),
+        side: z.enum(['LONG', 'SHORT']).describe('Trade side: LONG (buy) or SHORT (sell)'),
+        quantity: z.number().positive().describe('Quantity to trade (in base asset units)'),
+        price: z.number().positive().optional().describe('Limit price (optional, if not provided, uses current market price)'),
+        orderType: z.enum(['MARKET', 'LIMIT']).default('MARKET').describe('Order type: MARKET or LIMIT'),
+      },
+      required: ['ticker', 'side', 'quantity'],
+    } as any,
+  },
+  async ({ ticker, side, quantity, price, orderType = 'MARKET' }: { ticker: string; side: 'LONG' | 'SHORT'; quantity: number; price?: number; orderType?: 'MARKET' | 'LIMIT' }) => {
+    try {
+      const normalizedTicker = ticker.toUpperCase().replace(/USDT?$/, '')
+      
+      // Get current price
+      const priceData = await getRealTimePrice(normalizedTicker)
+      const currentPrice = price || priceData.price
+      
+      if (!currentPrice) {
+        return {
+          content: [{ type: 'text', text: JSON.stringify({ error: `Failed to get price for ${normalizedTicker}` }, null, 2) }],
+          structuredContent: { execution: null, timestamp: new Date().toISOString() },
+        }
+      }
+      
+      // Create signal for paper execution
+      const signal = createSignalFromExecution(normalizedTicker, side, quantity, currentPrice, 1) // leverage=1 for spot
+      
+      // Use paper executor (testnet simulation)
+      const paperExecutor = new PaperExecutor({
+        paperCapital: parseFloat(process.env.PAPER_CAPITAL || '10000'),
+        tradesFile: './trades/testnet-spot-trades.json',
+        simulateSlippage: true,
+        slippagePct: 0.05, // 0.05% slippage
+      })
+      
+      const order = await paperExecutor.executeEntry(signal, currentPrice)
+      const execution = formatExecutionFromOrder(order, false)
+      
+      // Add testnet flag
+      execution.mode = 'TESTNET (Paper Trading)'
+      execution.realMoney = false
+      execution.note = 'This is a simulated trade. No real money involved.'
+      
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(
+              {
+                ticker: normalizedTicker,
+                side,
+                quantity,
+                orderType,
+                execution,
+                timestamp: new Date().toISOString(),
+                mode: 'TESTNET',
+                warning: '⚠️ Testnet mode - No real money involved. This is paper trading simulation.',
+              },
+              null,
+              2
+            ),
+          },
+        ],
+        structuredContent: {
+          ticker: normalizedTicker,
+          side,
+          quantity,
+          orderType,
+          execution,
+          timestamp: new Date().toISOString(),
+          mode: 'TESTNET',
+        },
+      }
+    } catch (error: any) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(
+              {
+                error: 'Testnet spot execution failed',
+                message: error.message || error.toString(),
+                ticker,
+                side,
+                quantity,
+              },
+              null,
+              2
+            ),
+          },
+        ],
+        isError: true,
+      }
+    }
+  }
+)
+
+// Register get_multiple_execution_spot_testnet tool
+server.registerTool(
+  'get_multiple_execution_spot_testnet',
+  {
+    title: 'Get Multiple Spot Executions (Testnet/Paper)',
+    description: 'Execute multiple spot trades in testnet mode (paper trading simulation). Safe for testing portfolio strategies.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        executions: z.array(
+          z.object({
+            ticker: z.string().describe('Asset ticker symbol'),
+            side: z.enum(['LONG', 'SHORT']).describe('Trade side'),
+            quantity: z.number().positive().describe('Quantity to trade'),
+            price: z.number().positive().optional().describe('Limit price (optional)'),
+            orderType: z.enum(['MARKET', 'LIMIT']).default('MARKET').describe('Order type'),
+          })
+        ).describe('Array of execution requests'),
+      },
+      required: ['executions'],
+    } as any,
+  },
+  async ({ executions }: { executions: Array<{ ticker: string; side: 'LONG' | 'SHORT'; quantity: number; price?: number; orderType?: 'MARKET' | 'LIMIT' }> }) => {
+    try {
+      const paperExecutor = new PaperExecutor({
+        paperCapital: parseFloat(process.env.PAPER_CAPITAL || '10000'),
+        tradesFile: './trades/testnet-spot-trades.json',
+        simulateSlippage: true,
+        slippagePct: 0.05,
+      })
+      
+      const results = []
+      let successCount = 0
+      let failedCount = 0
+      
+      for (const exec of executions) {
+        try {
+          const normalizedTicker = exec.ticker.toUpperCase().replace(/USDT?$/, '')
+          const priceData = await getRealTimePrice(normalizedTicker)
+          const currentPrice = exec.price || priceData.price
+          
+          if (!currentPrice) {
+            results.push({
+              ticker: normalizedTicker,
+              side: exec.side,
+              quantity: exec.quantity,
+              execution: null,
+              error: `Failed to get price for ${normalizedTicker}`,
+              mode: 'TESTNET',
+            })
+            failedCount++
+            continue
+          }
+          
+          const signal = createSignalFromExecution(normalizedTicker, exec.side, exec.quantity, currentPrice, 1)
+          const order = await paperExecutor.executeEntry(signal, currentPrice)
+          const execution = formatExecutionFromOrder(order, false)
+          
+          execution.mode = 'TESTNET (Paper Trading)'
+          execution.realMoney = false
+          
+          results.push({
+            ticker: normalizedTicker,
+            side: exec.side,
+            quantity: exec.quantity,
+            orderType: exec.orderType || 'MARKET',
+            execution,
+            mode: 'TESTNET',
+          })
+          successCount++
+        } catch (error: any) {
+          results.push({
+            ticker: exec.ticker,
+            side: exec.side,
+            quantity: exec.quantity,
+            execution: null,
+            error: error.message || error.toString(),
+            mode: 'TESTNET',
+          })
+          failedCount++
+        }
+      }
+      
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(
+              {
+                results,
+                summary: {
+                  total: executions.length,
+                  success: successCount,
+                  failed: failedCount,
+                },
+                mode: 'TESTNET',
+                warning: '⚠️ Testnet mode - No real money involved. This is paper trading simulation.',
+                timestamp: new Date().toISOString(),
+              },
+              null,
+              2
+            ),
+          },
+        ],
+        structuredContent: {
+          results,
+          summary: { total: executions.length, success: successCount, failed: failedCount },
+          mode: 'TESTNET',
+          timestamp: new Date().toISOString(),
+        },
+      }
+    } catch (error: any) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(
+              {
+                error: 'Multiple testnet spot executions failed',
+                message: error.message || error.toString(),
+              },
+              null,
+              2
+            ),
+          },
+        ],
+        isError: true,
+      }
+    }
+  }
+)
+
+// Register get_execution_futures_testnet tool
+server.registerTool(
+  'get_execution_futures_testnet',
+  {
+    title: 'Get Futures Execution (Testnet/Paper)',
+    description: 'Execute futures trade with leverage in testnet mode (paper trading simulation, no real money). Safe for testing leveraged strategies.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        ticker: z.string().describe('Asset ticker symbol (e.g., "BTC", "ETH", "SOL")'),
+        side: z.enum(['LONG', 'SHORT']).describe('Trade side: LONG (buy) or SHORT (sell)'),
+        quantity: z.number().positive().describe('Quantity to trade (in base asset units)'),
+        leverage: z.number().min(1).max(50).default(10).describe('Leverage multiplier (1-50x, default: 10x)'),
+        price: z.number().positive().optional().describe('Limit price (optional, if not provided, uses current market price)'),
+        orderType: z.enum(['MARKET', 'LIMIT']).default('MARKET').describe('Order type: MARKET or LIMIT'),
+      },
+      required: ['ticker', 'side', 'quantity'],
+    } as any,
+  },
+  async ({ ticker, side, quantity, leverage = 10, price, orderType = 'MARKET' }: { ticker: string; side: 'LONG' | 'SHORT'; quantity: number; leverage?: number; price?: number; orderType?: 'MARKET' | 'LIMIT' }) => {
+    try {
+      const normalizedTicker = ticker.toUpperCase().replace(/USDT?$/, '')
+      
+      // Get current price
+      const priceData = await getRealTimePrice(normalizedTicker)
+      const currentPrice = price || priceData.price
+      
+      if (!currentPrice) {
+        return {
+          content: [{ type: 'text', text: JSON.stringify({ error: `Failed to get price for ${normalizedTicker}` }, null, 2) }],
+          structuredContent: { execution: null, timestamp: new Date().toISOString() },
+        }
+      }
+      
+      // Create signal for paper execution with leverage
+      const signal = createSignalFromExecution(normalizedTicker, side, quantity, currentPrice, leverage)
+      
+      // Use paper executor (testnet simulation)
+      const paperExecutor = new PaperExecutor({
+        paperCapital: parseFloat(process.env.PAPER_CAPITAL || '10000'),
+        tradesFile: './trades/testnet-futures-trades.json',
+        simulateSlippage: true,
+        slippagePct: 0.1, // 0.1% slippage for futures
+      })
+      
+      const order = await paperExecutor.executeEntry(signal, currentPrice)
+      const execution = formatExecutionFromOrder(order, false)
+      
+      // Add testnet flag
+      execution.mode = 'TESTNET (Paper Trading)'
+      execution.realMoney = false
+      execution.leverage = leverage
+      execution.note = 'This is a simulated leveraged trade. No real money involved.'
+      
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(
+              {
+                ticker: normalizedTicker,
+                side,
+                quantity,
+                leverage,
+                orderType,
+                execution,
+                timestamp: new Date().toISOString(),
+                mode: 'TESTNET',
+                warning: '⚠️ Testnet mode - No real money involved. This is paper trading simulation with leverage.',
+              },
+              null,
+              2
+            ),
+          },
+        ],
+        structuredContent: {
+          ticker: normalizedTicker,
+          side,
+          quantity,
+          leverage,
+          orderType,
+          execution,
+          timestamp: new Date().toISOString(),
+          mode: 'TESTNET',
+        },
+      }
+    } catch (error: any) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(
+              {
+                error: 'Testnet futures execution failed',
+                message: error.message || error.toString(),
+                ticker,
+                side,
+                quantity,
+                leverage,
+              },
+              null,
+              2
+            ),
+          },
+        ],
+        isError: true,
+      }
+    }
+  }
+)
+
+// Register get_multiple_execution_futures_testnet tool
+server.registerTool(
+  'get_multiple_execution_futures_testnet',
+  {
+    title: 'Get Multiple Futures Executions (Testnet/Paper)',
+    description: 'Execute multiple futures trades with leverage in testnet mode (paper trading simulation). Safe for testing complex leveraged portfolio strategies.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        executions: z.array(
+          z.object({
+            ticker: z.string().describe('Asset ticker symbol'),
+            side: z.enum(['LONG', 'SHORT']).describe('Trade side'),
+            quantity: z.number().positive().describe('Quantity to trade'),
+            leverage: z.number().min(1).max(50).default(10).describe('Leverage multiplier (1-50x)'),
+            price: z.number().positive().optional().describe('Limit price (optional)'),
+            orderType: z.enum(['MARKET', 'LIMIT']).default('MARKET').describe('Order type'),
+          })
+        ).describe('Array of execution requests'),
+      },
+      required: ['executions'],
+    } as any,
+  },
+  async ({ executions }: { executions: Array<{ ticker: string; side: 'LONG' | 'SHORT'; quantity: number; leverage?: number; price?: number; orderType?: 'MARKET' | 'LIMIT' }> }) => {
+    try {
+      const paperExecutor = new PaperExecutor({
+        paperCapital: parseFloat(process.env.PAPER_CAPITAL || '10000'),
+        tradesFile: './trades/testnet-futures-trades.json',
+        simulateSlippage: true,
+        slippagePct: 0.1,
+      })
+      
+      const results = []
+      let successCount = 0
+      let failedCount = 0
+      
+      for (const exec of executions) {
+        try {
+          const normalizedTicker = exec.ticker.toUpperCase().replace(/USDT?$/, '')
+          const priceData = await getRealTimePrice(normalizedTicker)
+          const currentPrice = exec.price || priceData.price
+          const leverage = exec.leverage || 10
+          
+          if (!currentPrice) {
+            results.push({
+              ticker: normalizedTicker,
+              side: exec.side,
+              quantity: exec.quantity,
+              leverage,
+              execution: null,
+              error: `Failed to get price for ${normalizedTicker}`,
+              mode: 'TESTNET',
+            })
+            failedCount++
+            continue
+          }
+          
+          const signal = createSignalFromExecution(normalizedTicker, exec.side, exec.quantity, currentPrice, leverage)
+          const order = await paperExecutor.executeEntry(signal, currentPrice)
+          const execution = formatExecutionFromOrder(order, false)
+          
+          execution.mode = 'TESTNET (Paper Trading)'
+          execution.realMoney = false
+          execution.leverage = leverage
+          
+          results.push({
+            ticker: normalizedTicker,
+            side: exec.side,
+            quantity: exec.quantity,
+            leverage,
+            orderType: exec.orderType || 'MARKET',
+            execution,
+            mode: 'TESTNET',
+          })
+          successCount++
+        } catch (error: any) {
+          results.push({
+            ticker: exec.ticker,
+            side: exec.side,
+            quantity: exec.quantity,
+            leverage: exec.leverage || 10,
+            execution: null,
+            error: error.message || error.toString(),
+            mode: 'TESTNET',
+          })
+          failedCount++
+        }
+      }
+      
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(
+              {
+                results,
+                summary: {
+                  total: executions.length,
+                  success: successCount,
+                  failed: failedCount,
+                },
+                mode: 'TESTNET',
+                warning: '⚠️ Testnet mode - No real money involved. This is paper trading simulation with leverage.',
+                timestamp: new Date().toISOString(),
+              },
+              null,
+              2
+            ),
+          },
+        ],
+        structuredContent: {
+          results,
+          summary: { total: executions.length, success: successCount, failed: failedCount },
+          mode: 'TESTNET',
+          timestamp: new Date().toISOString(),
+        },
+      }
+    } catch (error: any) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(
+              {
+                error: 'Multiple testnet futures executions failed',
+                message: error.message || error.toString(),
+              },
+              null,
+              2
+            ),
+          },
+        ],
+        isError: true,
+      }
+    }
+  }
+)
+
 // Register Resources
 server.registerResource(
   'trading-strategies',
