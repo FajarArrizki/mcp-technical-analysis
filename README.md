@@ -136,9 +136,22 @@ claude mcp list
 /mcp
 ```
 
-**For Claude Desktop & Chatbots** (`~/Library/Application Support/Claude/claude_desktop_config.json`):
+**For Claude Desktop** (`.mcp.json` in project root):
 ```json
 {
+  "mcpServers": {
+    "geartrade": {
+      "command": "npx",
+      "args": ["mcp-remote", "http://localhost:8787/mcp"]
+    }
+  }
+}
+```
+
+**Alternative: Inline in plugin.json** (for plugin development):
+```json
+{
+  "name": "my-plugin",
   "mcpServers": {
     "geartrade": {
       "command": "npx",
