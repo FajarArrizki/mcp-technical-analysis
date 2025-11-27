@@ -32,3 +32,622 @@
 
 ⚙  Press Ctrl+C to stop the server
 
+🌐 Hyperliquid API URL: https://api.hyperliquid.xyz (testnet=undefined)
+🌐 Hyperliquid API URL: https://api.hyperliquid.xyz (testnet=undefined)
+🌐 Hyperliquid API URL: https://api.hyperliquid.xyz (testnet=undefined)
+🌐 Hyperliquid API URL: https://api.hyperliquid.xyz (testnet=undefined)
+🌐 Hyperliquid API URL: https://api.hyperliquid.xyz (testnet=undefined)
+[36m   Found 221 assets in universe, 221 asset contexts, 7 margin tables[0m
+[36m   📊 Processing 1 batch(es) in parallel (1 total assets)...[0m
+[36m   📊 Batch 1/1: 1 assets[0m
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Klinger Oscillator calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+[32m   ✅ BTC: $90625.0 | 75 candles | RSI(14): 62.75 | EMA(20): $90539.47 | MACD: 21.9752[0m
+[32m   ✅ Fetched market data for 1 assets[0m
+🌐 Hyperliquid API URL: https://api.hyperliquid.xyz (testnet=undefined)
+[36m   Found 221 assets in universe, 221 asset contexts, 7 margin tables[0m
+[36m   📊 Processing 1 batch(es) in parallel (3 total assets)...[0m
+[36m   📊 Batch 1/1: 3 assets[0m
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Klinger Oscillator calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+[32m   ✅ BTC: $90615.0 | 75 candles | RSI(14): 62.75 | EMA(20): $90539.47 | MACD: 21.9752[0m
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Klinger Oscillator calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+[32m   ✅ ETH: $3030.3 | 75 candles | RSI(14): 52.97 | EMA(20): $3030.76 | MACD: 0.0540[0m
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Klinger Oscillator calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+[32m   ✅ SOL: $142.14 | 75 candles | RSI(14): 41.15 | EMA(20): $142.80 | MACD: -0.0708[0m
+[32m   ✅ Fetched market data for 3 assets[0m
+🌐 Hyperliquid API URL: https://api.hyperliquid.xyz (testnet=undefined)
+[36m   Found 221 assets in universe, 221 asset contexts, 7 margin tables[0m
+[36m   📊 Processing 1 batch(es) in parallel (1 total assets)...[0m
+[36m   📊 Batch 1/1: 1 assets[0m
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Klinger Oscillator calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+[32m   ✅ BTC: $90614.0 | 75 candles | RSI(14): 62.75 | EMA(20): $90539.00 | MACD: 21.6599[0m
+[32m   ✅ Fetched market data for 1 assets[0m
+🌐 Hyperliquid API URL: https://api.hyperliquid.xyz (testnet=undefined)
+[36m   Found 221 assets in universe, 221 asset contexts, 7 margin tables[0m
+[36m   📊 Processing 1 batch(es) in parallel (3 total assets)...[0m
+[36m   📊 Batch 1/1: 3 assets[0m
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Klinger Oscillator calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+[32m   ✅ BTC: $90601.0 | 75 candles | RSI(14): 62.75 | EMA(20): $90536.80 | MACD: 20.1877[0m
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Klinger Oscillator calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+[32m   ✅ SOL: $142.11 | 75 candles | RSI(14): 41.15 | EMA(20): $142.79 | MACD: -0.0733[0m
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Klinger Oscillator calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+[32m   ✅ ETH: $3029.5 | 75 candles | RSI(14): 52.97 | EMA(20): $3030.64 | MACD: -0.0220[0m
+[32m   ✅ Fetched market data for 3 assets[0m
+🌐 Hyperliquid API URL: https://api.hyperliquid.xyz (testnet=undefined)
+[36m   Found 221 assets in universe, 221 asset contexts, 7 margin tables[0m
+[36m   📊 Processing 1 batch(es) in parallel (1 total assets)...[0m
+[36m   📊 Batch 1/1: 1 assets[0m
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Klinger Oscillator calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+[32m   ✅ BTC: $90582.0 | 75 candles | RSI(14): 62.75 | EMA(20): $90536.80 | MACD: 20.1870[0m
+[32m   ✅ Fetched market data for 1 assets[0m
+🌐 Hyperliquid API URL: https://api.hyperliquid.xyz (testnet=undefined)
+[36m   Found 221 assets in universe, 221 asset contexts, 7 margin tables[0m
+[36m   📊 Processing 1 batch(es) in parallel (3 total assets)...[0m
+[36m   📊 Batch 1/1: 3 assets[0m
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Klinger Oscillator calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+[32m   ✅ BTC: $90580.0 | 75 candles | RSI(14): 62.75 | EMA(20): $90536.80 | MACD: 20.1877[0m
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Klinger Oscillator calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+[32m   ✅ ETH: $3029.4 | 75 candles | RSI(14): 52.97 | EMA(20): $3030.66 | MACD: -0.0118[0m
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Klinger Oscillator calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+[32m   ✅ SOL: $142.08 | 75 candles | RSI(14): 41.15 | EMA(20): $142.79 | MACD: -0.0752[0m
+[32m   ✅ Fetched market data for 3 assets[0m
+🌐 Hyperliquid API URL: https://api.hyperliquid.xyz (testnet=undefined)
+[36m   Found 221 assets in universe, 221 asset contexts, 7 margin tables[0m
+[36m   📊 Processing 1 batch(es) in parallel (1 total assets)...[0m
+[36m   📊 Batch 1/1: 1 assets[0m
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Klinger Oscillator calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+[32m   ✅ BTC: $90579.0 | 75 candles | RSI(14): 62.75 | EMA(20): $90536.66 | MACD: 20.0958[0m
+[32m   ✅ Fetched market data for 1 assets[0m
+🌐 Hyperliquid API URL: https://api.hyperliquid.xyz (testnet=undefined)
+[36m   Found 221 assets in universe, 221 asset contexts, 7 margin tables[0m
+[36m   📊 Processing 1 batch(es) in parallel (3 total assets)...[0m
+[36m   📊 Batch 1/1: 3 assets[0m
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Klinger Oscillator calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+[32m   ✅ BTC: $90579.0 | 75 candles | RSI(14): 62.75 | EMA(20): $90536.66 | MACD: 20.0958[0m
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Klinger Oscillator calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+[32m   ✅ SOL: $142.07 | 75 candles | RSI(14): 41.15 | EMA(20): $142.79 | MACD: -0.0752[0m
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Klinger Oscillator calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+[32m   ✅ ETH: $3029.7 | 75 candles | RSI(14): 52.97 | EMA(20): $3030.70 | MACD: 0.0189[0m
+[32m   ✅ Fetched market data for 3 assets[0m
+🌐 Hyperliquid API URL: https://api.hyperliquid.xyz (testnet=undefined)
+[36m   Found 221 assets in universe, 221 asset contexts, 7 margin tables[0m
+[36m   📊 Processing 1 batch(es) in parallel (1 total assets)...[0m
+[36m   📊 Batch 1/1: 1 assets[0m
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Klinger Oscillator calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+[32m   ✅ BTC: $90583.0 | 75 candles | RSI(14): 62.75 | EMA(20): $90536.66 | MACD: 20.0958[0m
+[32m   ✅ Fetched market data for 1 assets[0m
+🌐 Hyperliquid API URL: https://api.hyperliquid.xyz (testnet=undefined)
+[36m   Found 221 assets in universe, 221 asset contexts, 7 margin tables[0m
+[36m   📊 Processing 1 batch(es) in parallel (1 total assets)...[0m
+[36m   📊 Batch 1/1: 1 assets[0m
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Klinger Oscillator calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+[32m   ✅ BTC: $90595.0 | 75 candles | RSI(14): 62.75 | EMA(20): $90538.18 | MACD: 21.1111[0m
+[32m   ✅ Fetched market data for 1 assets[0m
+🌐 Hyperliquid API URL: https://api.hyperliquid.xyz (testnet=undefined)
+🌐 Hyperliquid API URL: https://api.hyperliquid.xyz (testnet=undefined)
+[36m   Found 221 assets in universe, 221 asset contexts, 7 margin tables[0m
+[36m   📊 Processing 1 batch(es) in parallel (1 total assets)...[0m
+[36m   📊 Batch 1/1: 1 assets[0m
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Klinger Oscillator calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+[32m   ✅ BTC: $90596.0 | 75 candles | RSI(14): 62.75 | EMA(20): $90538.18 | MACD: 21.1105[0m
+[32m   ✅ Fetched market data for 1 assets[0m
+🌐 Hyperliquid API URL: https://api.hyperliquid.xyz (testnet=undefined)
+🌐 Hyperliquid API URL: https://api.hyperliquid.xyz (testnet=undefined)
+[36m   Found 221 assets in universe, 221 asset contexts, 7 margin tables[0m
+[36m   📊 Processing 1 batch(es) in parallel (1 total assets)...[0m
+[36m   📊 Batch 1/1: 1 assets[0m
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Klinger Oscillator calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+[32m   ✅ BTC: $90597.0 | 75 candles | RSI(14): 62.75 | EMA(20): $90537.37 | MACD: 20.5712[0m
+[32m   ✅ Fetched market data for 1 assets[0m
+🌐 Hyperliquid API URL: https://api.hyperliquid.xyz (testnet=undefined)
+🌐 Hyperliquid API URL: https://api.hyperliquid.xyz (testnet=undefined)
+[36m   Found 221 assets in universe, 221 asset contexts, 7 margin tables[0m
+[36m   📊 Processing 1 batch(es) in parallel (1 total assets)...[0m
+[36m   📊 Batch 1/1: 1 assets[0m
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Klinger Oscillator calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+[32m   ✅ BTC: $90592.0 | 75 candles | RSI(14): 62.75 | EMA(20): $90537.37 | MACD: 20.5712[0m
+[32m   ✅ Fetched market data for 1 assets[0m
+🌐 Hyperliquid API URL: https://api.hyperliquid.xyz (testnet=undefined)
+🌐 Hyperliquid API URL: https://api.hyperliquid.xyz (testnet=undefined)
+[36m   Found 221 assets in universe, 221 asset contexts, 7 margin tables[0m
+[36m   📊 Processing 1 batch(es) in parallel (1 total assets)...[0m
+[36m   📊 Batch 1/1: 1 assets[0m
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Klinger Oscillator calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+[32m   ✅ BTC: $90592.0 | 75 candles | RSI(14): 62.75 | EMA(20): $90537.37 | MACD: 20.5706[0m
+[32m   ✅ Fetched market data for 1 assets[0m
+🌐 Hyperliquid API URL: https://api.hyperliquid.xyz (testnet=undefined)
+🌐 Hyperliquid API URL: https://api.hyperliquid.xyz (testnet=undefined)
+[36m   Found 221 assets in universe, 221 asset contexts, 7 margin tables[0m
+[36m   📊 Processing 1 batch(es) in parallel (1 total assets)...[0m
+[36m   📊 Batch 1/1: 1 assets[0m
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Klinger Oscillator calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+[32m   ✅ BTC: $90592.0 | 75 candles | RSI(14): 62.75 | EMA(20): $90537.37 | MACD: 20.5712[0m
+[32m   ✅ Fetched market data for 1 assets[0m
+🌐 Hyperliquid API URL: https://api.hyperliquid.xyz (testnet=undefined)
+🌐 Hyperliquid API URL: https://api.hyperliquid.xyz (testnet=undefined)
+[36m   Found 221 assets in universe, 221 asset contexts, 7 margin tables[0m
+[36m   📊 Processing 1 batch(es) in parallel (1 total assets)...[0m
+[36m   📊 Batch 1/1: 1 assets[0m
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Klinger Oscillator calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+[32m   ✅ BTC: $90599.0 | 75 candles | RSI(14): 62.75 | EMA(20): $90539.04 | MACD: 21.6893[0m
+[32m   ✅ Fetched market data for 1 assets[0m
+🌐 Hyperliquid API URL: https://api.hyperliquid.xyz (testnet=undefined)
+🌐 Hyperliquid API URL: https://api.hyperliquid.xyz (testnet=undefined)
+🌐 Hyperliquid API URL: https://api.hyperliquid.xyz (testnet=undefined)
+[36m   Found 221 assets in universe, 221 asset contexts, 7 margin tables[0m
+[36m   📊 Processing 1 batch(es) in parallel (1 total assets)...[0m
+[36m   📊 Batch 1/1: 1 assets[0m
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Klinger Oscillator calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+[32m   ✅ BTC: $90612.0 | 75 candles | RSI(14): 62.75 | EMA(20): $90540.04 | MACD: 22.3575[0m
+[32m   ✅ Fetched market data for 1 assets[0m
+🌐 Hyperliquid API URL: https://api.hyperliquid.xyz (testnet=undefined)
+🌐 Hyperliquid API URL: https://api.hyperliquid.xyz (testnet=undefined)
+[36m   Found 221 assets in universe, 221 asset contexts, 7 margin tables[0m
+[36m   📊 Processing 1 batch(es) in parallel (1 total assets)...[0m
+[36m   📊 Batch 1/1: 1 assets[0m
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Klinger Oscillator calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+[32m   ✅ BTC: $90631.0 | 75 candles | RSI(14): 62.75 | EMA(20): $90541.24 | MACD: 23.1654[0m
+[32m   ✅ Fetched market data for 1 assets[0m
+🌐 Hyperliquid API URL: https://api.hyperliquid.xyz (testnet=undefined)
+🌐 Hyperliquid API URL: https://api.hyperliquid.xyz (testnet=undefined)
+[36m   Found 221 assets in universe, 221 asset contexts, 7 margin tables[0m
+[36m   📊 Processing 1 batch(es) in parallel (1 total assets)...[0m
+[36m   📊 Batch 1/1: 1 assets[0m
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Klinger Oscillator calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+[32m   ✅ ETH: $3033.3 | 75 candles | RSI(14): 52.97 | EMA(20): $3031.01 | MACD: 0.2269[0m
+[32m   ✅ Fetched market data for 1 assets[0m
+🌐 Hyperliquid API URL: https://api.hyperliquid.xyz (testnet=undefined)
+🌐 Hyperliquid API URL: https://api.hyperliquid.xyz (testnet=undefined)
+[36m   Found 221 assets in universe, 221 asset contexts, 7 margin tables[0m
+[36m   📊 Processing 1 batch(es) in parallel (1 total assets)...[0m
+[36m   📊 Batch 1/1: 1 assets[0m
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+KST calculation failed: Maximum call stack size exceeded
+Detrended Price calculation failed: Maximum call stack size exceeded
+Klinger Oscillator calculation failed: Maximum call stack size exceeded
+Ease of Movement calculation failed: Maximum call stack size exceeded
+Relative Vigor Index calculation failed: Maximum call stack size exceeded
+[32m   ✅ SOL: $142.17 | 75 candles | RSI(14): 41.15 | EMA(20): $142.80 | MACD: -0.0682[0m
+[32m   ✅ Fetched market data for 1 assets[0m
