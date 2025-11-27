@@ -57,6 +57,8 @@ pnpm run terminal
 
 Server runs at `http://localhost:8787` with SSE streaming support for real-time market analysis!
 
+📖 **Full Guide**: See [QUICKSTART.md](./QUICKSTART.md) and [STREAMING_GUIDE.md](./STREAMING_GUIDE.md)
+
 ### Installation:
 ```bash
 # Clone the repository
@@ -130,6 +132,58 @@ claude mcp list
   }
 }
 ```
+
+## 🌍 Geographic Access & Restrictions
+
+### Binance Access in Restricted Countries
+
+If Binance is banned or restricted in your country, you can still access the platform and use this MCP server by configuring Cloudflare's DNS (1.1.1.1). If Cloudflare DNS fails, use a VPN as an alternative solution.
+
+**Recommended Setup:**
+1. First, try configuring DNS to use Cloudflare's 1.1.1.1 (primary) and 1.0.0.1 (secondary)
+2. If DNS configuration doesn't work, use a reputable VPN service (NordVPN, ExpressVPN, or similar)
+3. Connect to a server in a country where Binance operates freely (e.g., Netherlands, Singapore, Japan)
+
+**Cloudflare DNS Configuration (Try First):**
+```bash
+# Linux DNS configuration
+sudo nano /etc/resolv.conf
+# Add these lines:
+nameserver 1.1.1.1
+nameserver 1.0.0.1
+```
+
+**VPN Alternative (If DNS Fails):**
+- Install a reputable VPN service
+- Connect to a server in an unrestricted country
+- Access Binance normally through the VPN connection
+
+### Countries with Complete Bans
+
+| Country | Status | Year | Main Reason |
+|---------|--------|------|-------------|
+| United States | Banned | 2019 | Regulatory violations; Binance.US launched as compliant alternative |
+| Canada | Withdrew from market | 2023 | Strict regulations; $4.32 million fine for anti-money laundering violations (2024) |
+| United Kingdom | Banned | 2021-2023 | FCA revoked license for non-compliance with anti-money laundering rules; total license revocation in 2023 |
+| Netherlands | Withdrew from market | 2023 | Failed to obtain regulatory approval; €3.3 million fine for unlicensed operations (2022) |
+| Nigeria | Declared illegal | 2023-2024 | SEC Nigeria declared Binance illegal; Executives arrested; Naira services deactivated |
+| Belgium | Banned | 2023 | Financial regulator ordered operations halt for non-compliance with EU financial laws |
+| Philippines | Blocked | 2024 | SEC blocked website (March 2024) for unlicensed operations; Attempts to block app |
+| Japan | Banned | 2021 | Financial Services Agency banned operations for being unregistered; AML violation complaints |
+| Thailand | Blocked | 2021 | SEC Thailand filed criminal complaints for unlicensed operations |
+| Malaysia | Not available | - | Listed in SC Malaysia's investor warning list |
+| Singapore | Restricted | 2021 | MAS banned Binance.com from recruiting Singapore users without license; IP geo-blocking |
+| Italy | Temporarily blocked | 2021 | CONSOB ordered blocking (July 2021); Obtained regulatory approval (May 2022) |
+| India | Blocked | 2024 | App removed from App Store and Google Play (January 2024); PMLA violations |
+
+### Countries with Partial Restrictions
+
+| Country | Restriction Type | Details |
+|---------|------------------|---------|
+| China | Spot trading blocked | Excluding Hong Kong SAR and Taiwan |
+| Indonesia | No official license | Serves through local partner Tokocrypto regulated by Bappebti |
+
+**Note:** This information is for educational purposes. Always comply with local laws and regulations regarding cryptocurrency trading in your jurisdiction.
 
 ## 📦 MCP Capabilities
 
@@ -299,7 +353,7 @@ claude mcp list
 
 ```
 ╔═══════════════════════════════════════════════════════════════════════╗
-║                     MCP Technical Analysis Server                     ║
+║                     MCP Technical Analysis Server                      ║
 ║                  AI-Powered Cryptocurrency Analysis                   ║
 ╠═══════════════════════════════════════════════════════════════════════╣
 ║                                                                       ║
@@ -338,15 +392,15 @@ claude mcp list
 ║                                       │                               ║
 ║                                       ▼                               ║
 ║  ┌─────────────────────────────────────────────────────────────────┐  ║
-║  │                     Data Sources                                │  ║
-║  │  ┌───────────────────────────────────────────────────────────┐  │  ║
-║  │  │             Market Data APIs                              │  │  ║
-║  │  │  ┌─────────────────────────────────────────────────────┐  │  │  ║
-║  │  │  │ Hyperliquid                                         │  │  │  ║
-║  │  │  │ Binance                                             │  │  │  ║
-║  │  │  │ Real-time Data                                      │  │  │  ║
-║  │  │  └─────────────────────────────────────────────────────┘  │  │  ║
-║  │  └───────────────────────────────────────────────────────────┘  │  ║
+║  │              Data Sources & AI Integration                      │  ║
+║  │  ┌───────────────────────┐  ┌───────────────────────────────┐   │  ║
+║  │  │   Market Data APIs    │  │      AI Providers             │   │  ║
+║  │  │  ┌───────────────────┐│  │  ┌─────────────────────────┐  │   │  ║
+║  │  │  │ Hyperliquid       ││  │  │ OpenRouter              │  │   │  ║
+║  │  │  │ Binance           ││  │  │ OpenAI                  │  │   │  ║
+║  │  │  │ Real-time Data    ││  │  │ Custom Models           │  │   │  ║
+║  │  │  └───────────────────┘│  │  └─────────────────────────┘  │   │  ║
+║  │  └───────────────────────┘  └───────────────────────────────┘   │  ║
 ║  └─────────────────────────────────────────────────────────────────┘  ║
 ║                                       │                               ║
 ║                                       ▼                               ║
