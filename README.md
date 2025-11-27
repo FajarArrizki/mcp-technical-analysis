@@ -1,5 +1,13 @@
 # MCP Technical Analysis Server
 
+## 🎥 **Video Demo**
+
+**🎬 Coming Soon - AI-Powered Cryptocurrency Analysis Demo**
+
+*Video demonstration will be available soon showcasing real-time market analysis, technical indicators, and AI integration capabilities*
+
+[Watch Demo](https://youtu.be/UkXCrjjJa8c?si=CKKa8KTIByQPkQoP)
+
 🤖 **Model Context Protocol Server for AI-Powered Cryptocurrency Analysis**
 
 A comprehensive Model Context Protocol (MCP) server that bridges AI assistants with professional cryptocurrency market analysis capabilities. This server transforms AI conversations by providing real-time market data, sophisticated technical analysis, and intelligent trading insights through standardized MCP protocols. Whether you're building analysis tools, research systems, or AI financial advisors, this server delivers the complete infrastructure needed for data-driven market analysis and decision-making across multiple timeframes and asset classes.
