@@ -6,7 +6,13 @@
 
 *Watch the full demonstration of AI-powered cryptocurrency analysis capabilities*
 
-[![MCP Technical Analysis Server Demo](https://img.youtube.com/vi/UkXCrjjJa8c/maxresdefault.jpg)](https://youtu.be/UkXCrjjJa8c?si=CKKa8KTIByQPkQoP)
+<div align="center">
+  <a href="https://www.youtube.com/watch?v=SVaSJQo2iSk">
+    <img src="https://img.youtube.com/vi/SVaSJQo2iSk/maxresdefault.jpg" alt="MCP Technical Analysis Server Demo" width="100%">
+    <br>
+    <img src="https://img.shields.io/badge/▶️_Click_to_Play-FF0000?style=for-the-badge&logo=youtube&logoColor=white" alt="Play Video">
+  </a>
+</div>
 
 🤖 **Model Context Protocol Server for AI-Powered Cryptocurrency Analysis**
 
