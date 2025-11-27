@@ -124,6 +124,18 @@ Server runs at `http://localhost:8787` with SSE streaming support!
 }
 ```
 
+**For Claude Code (CLI)**:
+```bash
+# Add the MCP server to Claude Code
+claude mcp add --transport http geartrade http://localhost:8787/mcp
+
+# List configured servers
+claude mcp list
+
+# Check server status in Claude Code
+/mcp
+```
+
 **For Claude Desktop & Chatbots** (`~/Library/Application Support/Claude/claude_desktop_config.json`):
 ```json
 {
