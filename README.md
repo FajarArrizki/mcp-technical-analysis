@@ -11,7 +11,7 @@ A comprehensive Model Context Protocol (MCP) server that bridges AI assistants w
 - 💰 **Risk Management** - Position sizing, stop loss, take profit calculations
 - 📈 **Multi-Timeframe Analysis** - Daily, 4H, 1H trend alignment
 - 🤖 **24 AI Prompts** - Pre-configured analysis workflows
-- 📚 **20 Resources** - Comprehensive trading documentation
+- 📚 **20 Resources** - Comprehensive analysis documentation
 - 🔄 **Streaming Support** - HTTP/SSE for real-time updates
 - 📈 **Analysis-Only Focus** - Pure market intelligence without execution risks
 
@@ -414,7 +414,6 @@ GEARTRADE/
 │       │       ├── types/                  # TypeScript types
 │       │       ├── utils/                  # Utilities
 │       │       └── validation/             # Input validation
-│       │   └── index.ts                    # Main MCP server entry (81+ tools, 20 resources, 24 prompts)
 │       ├── local-server.ts                 # HTTP/SSE streaming server for MCP
 │       ├── package.json                    # MCP server package configuration
 │       ├── tsconfig.json                   # TypeScript configuration
