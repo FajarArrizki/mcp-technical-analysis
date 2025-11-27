@@ -4,7 +4,7 @@
 # Usage: ./scripts/setup-git-remote.sh
 
 # GitHub Personal Access Token
-GITHUB_TOKEN="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"
+GITHUB_TOKEN="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"
 
 # GitHub Repository URL
 REPO_URL="https://github.com/FajarArrizki/mcp-technical-analysis"
