@@ -11,9 +11,13 @@
     <img src="https://img.youtube.com/vi/SVaSJQo2iSk/maxresdefault.jpg" alt="MCP Technical Analysis Server Demo" width="100%">
   </a>
   <br><br>
-  <div style="text-align: left; display: inline-block;">
-    <img src="https://img.shields.io/badge/▶️_Watch_Demo-FF0000?style=for-the-badge&logo=youtube&logoColor=white" alt="Watch Demo">
-  </div>
+  <table style="width: 100%; border: none;">
+    <tr>
+      <td style="text-align: left; border: none; padding: 0;">
+        <img src="https://img.shields.io/badge/▶️_Watch_Demo-FF0000?style=for-the-badge&logo=youtube&logoColor=white" alt="Watch Demo">
+      </td>
+    </tr>
+  </table>
 </div>
 
 🤖 **Model Context Protocol Server for AI-Powered Cryptocurrency Analysis**
