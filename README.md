@@ -1,4 +1,4 @@
-# GearTrade MCP Server
+# MCP Technical Analysis Server
 
 🤖 **Model Context Protocol Server for AI-Powered Cryptocurrency Analysis**
 
@@ -87,10 +87,10 @@ Server runs at `http://localhost:8787` with SSE streaming support!
 ```json
 {
   "mcpServers": {
-    "geartrade": {
+    "mcp-technical-analysis": {
       "command": "bash",
       "args": ["/root/GEARTRADE/scripts/mcp-auto-start.sh"],
-      "description": "GearTrade MCP Server - Localhost Only"
+      "description": "MCP Technical Analysis Server - Localhost Only"
     }
   }
 }
@@ -99,7 +99,7 @@ Server runs at `http://localhost:8787` with SSE streaming support!
 **For Claude Code (CLI)**:
 ```bash
 # Add the MCP server to Claude Code
-claude mcp add --transport http geartrade http://localhost:8787/mcp
+claude mcp add --transport http mcp-technical-analysis http://localhost:8787/mcp
 
 # List configured servers
 claude mcp list
@@ -112,7 +112,7 @@ claude mcp list
 ```json
 {
   "mcpServers": {
-    "geartrade": {
+    "mcp-technical-analysis": {
       "command": "npx",
       "args": ["mcp-remote", "http://localhost:8787/mcp"]
     }
@@ -125,7 +125,7 @@ claude mcp list
 {
   "name": "my-plugin",
   "mcpServers": {
-    "geartrade": {
+    "mcp-technical-analysis": {
       "command": "npx",
       "args": ["mcp-remote", "http://localhost:8787/mcp"]
     }
@@ -238,7 +238,7 @@ claude mcp list
 
 | Resource URI | Description |
 |--------------|-------------|
-| `geartrade://trading-strategies` | Comprehensive guide on trading strategies, technical analysis, and best practices for using GearTrade MCP Server |
+| `geartrade://trading-strategies` | Comprehensive guide on trading strategies, technical analysis, and best practices for using MCP Technical Analysis Server |
 | `geartrade://risk-management` | Guide on risk management, position sizing, stop loss, and take profit strategies |
 | `geartrade://tools-overview` | Complete tools documentation and usage examples |
 | `geartrade://execution-workflow` | Step-by-step guide for analysis to execution workflow |
@@ -301,7 +301,7 @@ claude mcp list
 
 ```
 ╔═══════════════════════════════════════════════════════════════════════╗
-║                        GearTrade MCP Server                           ║
+║                     MCP Technical Analysis Server                      ║
 ║                  AI-Powered Cryptocurrency Analysis                   ║
 ╠═══════════════════════════════════════════════════════════════════════╣
 ║                                                                       ║
@@ -511,4 +511,4 @@ MIT
 
 ---
 
-*Built for the AI analysis community - empowering AI assistants with professional market analysis capabilities*
+*Built for the AI analysis community - empowering AI assistants with professional technical analysis capabilities*
