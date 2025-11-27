@@ -2,11 +2,11 @@
 
 ## 🎥 **Video Demo**
 
-**🎬 Coming Soon - AI-Powered Cryptocurrency Analysis Demo**
+**🎬 MCP Technical Analysis Server Demo**
 
-*Video demonstration will be available soon showcasing real-time market analysis, technical indicators, and AI integration capabilities*
+*Watch the full demonstration of AI-powered cryptocurrency analysis capabilities*
 
-[Watch Demo](https://youtu.be/UkXCrjjJa8c?si=CKKa8KTIByQPkQoP)
+[![MCP Technical Analysis Server Demo](https://img.youtube.com/vi/UkXCrjjJa8c/maxresdefault.jpg)](https://youtu.be/UkXCrjjJa8c?si=CKKa8KTIByQPkQoP)
 
 🤖 **Model Context Protocol Server for AI-Powered Cryptocurrency Analysis**
 
