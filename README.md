@@ -1,158 +1,68 @@
-<div align="center">
+# Model Context Protocol Server for AI-Powered Cryptocurrency Analysis
 
-# 🚀 Model Context Protocol Server for AI-Powered Cryptocurrency Analysis
+A comprehensive Model Context Protocol (MCP) server that bridges AI assistants with professional cryptocurrency market analysis capabilities. This server transforms AI conversations by providing real-time market data, sophisticated technical analysis, and intelligent trading insights through standardized MCP protocols. Whether you're building analysis tools, research systems, or AI financial advisors, this server delivers the complete infrastructure needed for data-driven market analysis and decision-making across multiple timeframes and asset classes.
 
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/FajarArrizki/mcp-technical-analysis)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Node.js](https://img.shields.io/badge/Node.js-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
 
-*A comprehensive Model Context Protocol (MCP) server that bridges AI assistants with professional cryptocurrency market analysis capabilities. This server transforms AI conversations by providing real-time market data, sophisticated technical analysis, and intelligent trading insights through standardized MCP protocols.*
-
-<p align="center">
-  <img src="https://img.shields.io/badge/81%2B_Analysis_Tools-FF6B6B?style=for-the-badge&logo=chart-line&logoColor=white" alt="81+ Tools"/>
-  <img src="https://img.shields.io/badge/24_AI_Prompts-4ECDC4?style=for-the-badge&logo=robot&logoColor=white" alt="24 AI Prompts"/>
-  <img src="https://img.shields.io/badge/20_Resources-45B7D1?style=for-the-badge&logo=book&logoColor=white" alt="20 Resources"/>
-  <img src="https://img.shields.io/badge/Real_Time-00D4AA?style=for-the-badge&logo=zap&logoColor=white" alt="Real-time"/>
-</p>
-
----
-
-## 🎥 **Live Demo**
+**🎬 MCP Technical Analysis Server Demo**
 
 *Watch the full demonstration of AI-powered cryptocurrency analysis capabilities*
 
 <div align="center">
   <a href="https://www.youtube.com/watch?v=SVaSJQo2iSk&autoplay=1">
-    <img src="https://img.youtube.com/vi/SVaSJQo2iSk/maxresdefault.jpg" alt="MCP Technical Analysis Server Demo" width="100%" style="border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+    <img src="https://img.youtube.com/vi/SVaSJQo2iSk/maxresdefault.jpg" alt="MCP Technical Analysis Server Demo" width="100%">
   </a>
   <br><br>
-  <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
-    <a href="https://www.youtube.com/watch?v=SVaSJQo2iSk&autoplay=1">
-      <img src="https://img.shields.io/badge/▶️_Watch_Demo-FF0000?style=for-the-badge&logo=youtube&logoColor=white" alt="Watch Demo">
-    </a>
-    <a href="https://nullshot.ai/brainstorm/c5ee234a-da45-4c8e-8b1b-2df3cc5abadb">
-      <img src="https://img.shields.io/badge/🗳️_Upvote_Now-00ADD8?style=for-the-badge&logo=github&logoColor=white" alt="Upvote Now">
-    </a>
+  <div style="position: relative; width: 100%;">
+    <div style="position: absolute; left: 0; display: flex; gap: 10px;">
+      <a href="https://www.youtube.com/watch?v=SVaSJQo2iSk&autoplay=1">
+        <img src="https://img.shields.io/badge/Coming_Soon-FF0000?style=for-the-badge" alt="Coming Soon">
+      </a>
+      <a href="https://nullshot.ai/brainstorm/c5ee234a-da45-4c8e-8b1b-2df3cc5abadb">
+        <img src="https://img.shields.io/badge/Upvote_Now-00ADD8?style=for-the-badge&logo=null&logoColor=white" alt="Upvote Now">
+      </a>
+    </div>
   </div>
 </div>
 
----
 
-## ✨ **Key Features**
+**🔥 Key Features:**
+- 🔴 **81+ Analysis Tools** - Complete market analysis toolkit
+- 📊 **Real-time Market Data** - Live prices, indicators, volume analysis
+- 🎯 **Advanced Technical Analysis** - RSI, MACD, Fibonacci, Order Book, etc.
+- 💰 **Risk Management** - Position sizing, stop loss, take profit calculations
+- 📈 **Multi-Timeframe Analysis** - Daily, 4H, 1H trend alignment
+- 🤖 **24 AI Prompts** - Pre-configured analysis workflows
+- 📚 **20 Resources** - Comprehensive analysis documentation
+- 🔄 **Streaming Support** - HTTP/SSE for real-time updates
+- 📈 **Analysis-Only Focus** - Pure market intelligence without execution risks
 
-<table>
-  <tr>
-    <td>
-      <h3>🔴 Analysis Tools</h3>
-      <ul>
-        <li><strong>81+ Professional Indicators</strong> - Complete technical analysis toolkit</li>
-        <li><strong>Real-time Market Data</strong> - Live prices, volume, and indicators</li>
-        <li><strong>Advanced Algorithms</strong> - RSI, MACD, Fibonacci, Order Book analysis</li>
-      </ul>
-    </td>
-    <td>
-      <h3>🤖 AI Integration</h3>
-      <ul>
-        <li><strong>24 AI Prompts</strong> - Pre-configured analysis workflows</li>
-        <li><strong>Intelligent Insights</strong> - AI-powered market intelligence</li>
-        <li><strong>Multi-Timeframe</strong> - Daily, 4H, 1H trend alignment</li>
-      </ul>
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <h3>💰 Risk Management</h3>
-      <ul>
-        <li><strong>Position Sizing</strong> - Stop loss, take profit calculations</li>
-        <li><strong>Portfolio Analysis</strong> - Risk assessment and optimization</li>
-        <li><strong>Analysis-Only Focus</strong> - Pure market intelligence</li>
-      </ul>
-    </td>
-    <td>
-      <h3>📚 Resources</h3>
-      <ul>
-        <li><strong>20 Documentation Guides</strong> - Comprehensive trading resources</li>
-        <li><strong>Streaming Support</strong> - HTTP/SSE real-time updates</li>
-        <li><strong>Developer Friendly</strong> - Easy integration and deployment</li>
-      </ul>
-    </td>
-  </tr>
-</table>
+🏠 **Local Development:** Run the MCP server locally for full control and privacy  
+🌐 **HTTP Streaming:** Remote MCP connection via `mcp-remote` for Cursor IDE
 
----
+## 🌟 **What's Included**
 
-## 🏠 **Quick Start**
-
-### ⚡ **Recommended: Streaming Mode**
-
-```bash
-# Terminal 1 - Start Streaming Server
-bash scripts/mcp-auto-start.sh
-
-# Terminal 2 - Test with MCP client
-pnpm run terminal
-```
-
-<div align="center">
-  <img src="https://img.shields.io/badge/🚀_Server_Running-00D4AA?style=for-the-badge&logo=server&logoColor=white" alt="Server Running"/>
-  <img src="https://img.shields.io/badge/📡_Port_8787-FF6B6B?style=for-the-badge&logo=network&logoColor=white" alt="Port 8787"/>
-</div>
-
-**📖 Full Documentation**: See [QUICKSTART.md](./QUICKSTART.md) and [STREAMING_GUIDE.md](./STREAMING_GUIDE.md)
-
-## 📊 **What's Included**
-
-<div align="center">
-
-### 🎯 **81+ Complete Analysis Tools**
-
-| Category | Tools | Description |
-|----------|-------|-------------|
-| 📈 **Price & Market Data** | 2 Tools | Real-time pricing for single/multiple assets |
-| 📊 **Technical Analysis** | 2 Tools | 70+ indicators (RSI, EMA, MACD, Bollinger Bands, ATR, ADX) |
-| 💹 **Volume Analysis** | 2 Tools | Buy/sell pressure, CVD, liquidity zones analysis |
-| 🔄 **Multi-Timeframe** | 2 Tools | Daily, 4H, 1H trend alignment analysis |
-| 🎯 **Advanced Analysis** | 3 Tools | Fibonacci, Order Book Depth, Liquidation Levels |
-| 📊 **Market Analysis** | 8 Tools | Volume Profile, Market Structure, Candlestick Patterns, Divergence |
-| 💰 **Risk Management** | 2 Tools | Position sizing, stop loss, take profit calculations |
-| 🔍 **Comprehensive Analysis** | 2 Tools | Complete crypto analysis with position setup |
-| 🧠 **Analysis Tools** | 4 Tools | Advanced market intelligence and research capabilities |
-| ⚡ **Batch Operations** | 11 Tools | Multi-asset analysis for all above tools |
-
----
+### 📊 **81+ Complete Analysis Tools**
+- **Price Tools** (2): Real-time pricing for single/multiple assets
+- **Technical Analysis** (2): 20+ indicators (RSI, EMA, MACD, Bollinger Bands, ATR, ADX, etc.)
+- **Volume Analysis** (2): Buy/sell pressure, CVD, liquidity zones analysis
+- **Multi-Timeframe** (2): Daily, 4H, 1H trend alignment analysis
+- **Advanced Analysis** (3): Fibonacci, Order Book Depth, Liquidation Levels
+- **Market Analysis** (8): Volume Profile, Market Structure, Candlestick Patterns, Divergence, Long/Short Ratio, Spot-Futures Divergence, External Data
+- **Risk Management** (2): Position sizing, stop loss, take profit calculations
+- **Comprehensive Analysis** (2): Complete crypto analysis with position setup
+- **Analysis Tools** (4): Advanced market intelligence and research capabilities
+- **Batch Operations** (11): Multi-asset analysis for all above tools
 
 ### 📚 **20 Analysis Resources**
-
-<div align="center">
-
-| 📖 **Documentation** | 🛠️ **Technical** | 📈 **Trading** |
-|---------------------|------------------|----------------|
-| Trading Strategies | API References | Risk Management |
-| Market Analysis | Integration Guides | Position Sizing |
-| Technical Indicators | Volume Analysis | Fibonacci Trading |
-| Order Book Analysis | Market Structure | Candlestick Patterns |
-
-</div>
-
----
+- Comprehensive documentation for trading strategies, risk management, and technical analysis
+- API references and integration guides
+- Specialized guides for volume analysis, Fibonacci, orderbook, and more
 
 ### 🤖 **24 AI Analysis Prompts**
-
-<div align="center">
-
-| 🎯 **Core Analysis** | 📊 **Technical** | 💰 **Risk** | ⚡ **Advanced** |
-|---------------------|-----------------|----------------|-----------------|
-| `analyze_and_execute` | `technical_indicator_analysis` | `risk_analysis` | `fibonacci_trading_strategy` |
-| `multi_asset_scan` | `volume_profile_analysis` | `position_monitoring` | `spot_futures_arbitrage` |
-| `comprehensive_analysis` | `market_structure_analysis` | `portfolio_review` | `arbitrage_opportunities` |
-| `quick_price_check` | `divergence_scan` | `volatility_analysis` | `options_strategy` |
-| `trend_analysis` | `liquidation_analysis` | `entry_exit_strategy` | `momentum_trading` |
-| `market_overview` |  |  | `breakout_trading` |
-
-</div>
-
-</div>
+- Core analysis workflows for comprehensive market research
+- Technical analysis prompts for indicator-based insights
+- Risk management and position sizing guidance
+- Specialized prompts for advanced trading strategies
 
 ## 🚀 **Quick Start**
 
@@ -170,12 +80,7 @@ Server runs at `http://localhost:8787` with SSE streaming support for real-time 
 
 📖 **Full Guide**: See [QUICKSTART.md](./QUICKSTART.md) and [STREAMING_GUIDE.md](./STREAMING_GUIDE.md)
 
----
-
-## 🛠️ **Installation & Setup**
-
-### 📦 **1. Install Dependencies**
-
+### Installation:
 ```bash
 # Clone the repository
 git clone https://github.com/FajarArrizki/mcp-technical-analysis.git
@@ -188,24 +93,18 @@ pnpm install
 pnpm run build
 ```
 
-<div align="center">
-  <img src="https://img.shields.io/badge/✅_Installation_Complete-00D4AA?style=for-the-badge&logo=checkmark&logoColor=white" alt="Installation Complete"/>
-</div>
 
-### 🔧 **2. MCP Client Configuration**
+### 🔧 MCP Client Configuration
 
-#### **🚀 Start the Server**
+**Start the server:**
 ```bash
 cd /root/GEARTRADE
 bash scripts/mcp-auto-start.sh
 ```
 
-<div align="center">
-  <img src="https://img.shields.io/badge/🌐_Server_Ready-FF6B6B?style=for-the-badge&logo=server&logoColor=white" alt="Server Ready"/>
-  <img src="https://img.shields.io/badge/📡_Port_8787-4ECDC4?style=for-the-badge&logo=network&logoColor=white" alt="Port 8787"/>
-</div>
+Server runs at `http://localhost:8787` with SSE streaming support!
 
-#### **💻 For Cursor IDE** (`.cursor/mcp.json`)
+**For Cursor IDE** (`.cursor/mcp.json`):
 ```json
 {
   "mcpServers": {
@@ -218,7 +117,7 @@ bash scripts/mcp-auto-start.sh
 }
 ```
 
-#### **🤖 For Claude Code (CLI)**
+**For Claude Code (CLI)**:
 ```bash
 # Add the MCP server to Claude Code
 claude mcp add --transport http mcp-technical-analysis http://localhost:8787/mcp
@@ -230,7 +129,7 @@ claude mcp list
 /mcp
 ```
 
-#### **🖥️ For Claude Desktop** (`.mcp.json` in project root)
+**For Claude Desktop** (`.mcp.json` in project root):
 ```json
 {
   "mcpServers": {
@@ -242,7 +141,7 @@ claude mcp list
 }
 ```
 
-#### **🔌 Alternative: Inline in plugin.json**
+**Alternative: Inline in plugin.json** (for plugin development):
 ```json
 {
   "name": "my-plugin",
@@ -255,25 +154,18 @@ claude mcp list
 }
 ```
 
----
+## 🌍 Geographic Access & Restrictions
 
-## 🌍 **Geographic Access & Restrictions**
-
-<div align="center">
-  <img src="https://img.shields.io/badge/🌐_Global_Access-4ECDC4?style=for-the-badge&logo=worldmap&logoColor=white" alt="Global Access"/>
-  <img src="https://img.shields.io/badge/🔓_VPN_Required-FF6B6B?style=for-the-badge&logo=vpn&logoColor=white" alt="VPN Required"/>
-</div>
-
-### 🛡️ **Binance Access in Restricted Countries**
+### Binance Access in Restricted Countries
 
 If Binance is banned or restricted in your country, you can still access the platform and use this MCP server by configuring Cloudflare's DNS (1.1.1.1). If Cloudflare DNS fails, use a VPN as an alternative solution.
 
-#### **📋 Recommended Setup:**
-1. **🌐 Try DNS First**: Configure Cloudflare's 1.1.1.1 (primary) and 1.0.0.1 (secondary)
-2. **🔒 VPN Fallback**: If DNS doesn't work, use NordVPN, ExpressVPN, or similar
-3. **🎯 Connect Smart**: Choose servers in unrestricted countries (Netherlands, Singapore, Japan)
+**Recommended Setup:**
+1. First, try configuring DNS to use Cloudflare's 1.1.1.1 (primary) and 1.0.0.1 (secondary)
+2. If DNS configuration doesn't work, use a reputable VPN service (NordVPN, ExpressVPN, or similar)
+3. Connect to a server in a country where Binance operates freely (e.g., Netherlands, Singapore, Japan)
 
-#### **⚙️ Cloudflare DNS Configuration (Try First):**
+**Cloudflare DNS Configuration (Try First):**
 ```bash
 # Linux DNS configuration
 sudo nano /etc/resolv.conf
@@ -282,57 +174,37 @@ nameserver 1.1.1.1
 nameserver 1.0.0.1
 ```
 
-#### **🔐 VPN Alternative (If DNS Fails):**
-<div align="center">
+**VPN Alternative (If DNS Fails):**
+- Install a reputable VPN service
+- Connect to a server in an unrestricted country
+- Access Binance normally through the VPN connection
 
-| Step | Action | Status |
-|------|--------|--------|
-| 1 | Install reputable VPN service | ✅ Required |
-| 2 | Connect to unrestricted country server | ✅ Required |
-| 3 | Access Binance normally | ✅ Ready |
+### Countries with Complete Bans
 
-</div>
+| Country | Status | Year | Main Reason |
+|---------|--------|------|-------------|
+| United States | Banned | 2019 | Regulatory violations; Binance.US launched as compliant alternative |
+| Canada | Withdrew from market | 2023 | Strict regulations; $4.32 million fine for anti-money laundering violations (2024) |
+| United Kingdom | Banned | 2021-2023 | FCA revoked license for non-compliance with anti-money laundering rules; total license revocation in 2023 |
+| Netherlands | Withdrew from market | 2023 | Failed to obtain regulatory approval; €3.3 million fine for unlicensed operations (2022) |
+| Nigeria | Declared illegal | 2023-2024 | SEC Nigeria declared Binance illegal; Executives arrested; Naira services deactivated |
+| Belgium | Banned | 2023 | Financial regulator ordered operations halt for non-compliance with EU financial laws |
+| Philippines | Blocked | 2024 | SEC blocked website (March 2024) for unlicensed operations; Attempts to block app |
+| Japan | Banned | 2021 | Financial Services Agency banned operations for being unregistered; AML violation complaints |
+| Thailand | Blocked | 2021 | SEC Thailand filed criminal complaints for unlicensed operations |
+| Malaysia | Not available | - | Listed in SC Malaysia's investor warning list |
+| Singapore | Restricted | 2021 | MAS banned Binance.com from recruiting Singapore users without license; IP geo-blocking |
+| Italy | Temporarily blocked | 2021 | CONSOB ordered blocking (July 2021); Obtained regulatory approval (May 2022) |
+| India | Blocked | 2024 | App removed from App Store and Google Play (January 2024); PMLA violations |
 
-### 🚫 **Countries with Complete Bans**
+### Countries with Partial Restrictions
 
-<div align="center">
+| Country | Restriction Type | Details |
+|---------|------------------|---------|
+| China | Spot trading blocked | Excluding Hong Kong SAR and Taiwan |
+| Indonesia | No official license | Serves through local partner Tokocrypto regulated by Bappebti |
 
-| 🚩 Country | 📊 Status | 📅 Year | ⚖️ Main Reason |
-|------------|-----------|---------|---------------|
-| 🇺🇸 United States | ❌ **Banned** | 2019 | Regulatory violations; Binance.US launched as compliant alternative |
-| 🇨🇦 Canada | 🚪 **Withdrew** | 2023 | Strict regulations; $4.32M fine for AML violations (2024) |
-| 🇬🇧 United Kingdom | 🚫 **Banned** | 2021-2023 | FCA revoked license for AML non-compliance; total revocation 2023 |
-| 🇳🇱 Netherlands | 🚪 **Withdrew** | 2023 | Failed regulatory approval; €3.3M fine for unlicensed operations (2022) |
-| 🇳🇬 Nigeria | ⚖️ **Illegal** | 2023-2024 | SEC declared illegal; Executives arrested; Naira services deactivated |
-| 🇧🇪 Belgium | 🚫 **Banned** | 2023 | Regulator halted operations for EU financial law non-compliance |
-| 🇵🇭 Philippines | 🚫 **Blocked** | 2024 | SEC blocked website (March 2024) for unlicensed operations |
-| 🇯🇵 Japan | 🚫 **Banned** | 2021 | FSA banned unregistered operations; AML violation complaints |
-| 🇹🇭 Thailand | 🚫 **Blocked** | 2021 | SEC filed criminal complaints for unlicensed operations |
-| 🇲🇾 Malaysia | ⚠️ **Warning** | - | Listed in SC Malaysia's investor warning list |
-| 🇸🇬 Singapore | 🚧 **Restricted** | 2021 | MAS banned user recruitment without license; IP geo-blocking |
-| 🇮🇹 Italy | ⏸️ **Temp Blocked** | 2021 | CONSOB blocking (July 2021); regulatory approval (May 2022) |
-| 🇮🇳 India | 🚫 **Blocked** | 2024 | App removed from stores (January 2024); PMLA violations |
-
-</div>
-
-### ⚠️ **Countries with Partial Restrictions**
-
-<div align="center">
-
-| 🚩 Country | 🔒 Restriction Type | 📋 Details |
-|------------|-------------------|------------|
-| 🇨🇳 China | 🚫 **Spot Trading Blocked** | Excluding Hong Kong SAR and Taiwan |
-| 🇮🇩 Indonesia | ⚠️ **No Official License** | Serves through local partner Tokocrypto regulated by Bappebti |
-
-</div>
-
----
-
-<div align="center">
-  <img src="https://img.shields.io/badge/⚖️_Legal_Notice-FFA500?style=for-the-badge&logo=balance-scale&logoColor=white" alt="Legal Notice"/>
-</div>
-
-> **📋 Important Note:** This information is for educational purposes only. Always comply with local laws and regulations regarding cryptocurrency trading in your jurisdiction. Consult legal professionals for advice specific to your location.
+**Note:** This information is for educational purposes. Always comply with local laws and regulations regarding cryptocurrency trading in your jurisdiction.
 
 ## 📦 MCP Capabilities
 
@@ -650,77 +522,47 @@ GEARTRADE/
 | `scripts/` | Utility scripts for development and deployment |
 | `logs/` | Application logs and debugging information |
 
----
-
-## 🛠️ **Development & Commands**
-
-<div align="center">
-
-| Command | Description | Status |
-|---------|-------------|--------|
-| `pnpm run dev` | 🚀 Start development server | Development |
-| `pnpm run build` | 🔨 Build production server | Production |
-| `pnpm run validate` | ✅ Validate MCP configuration | Testing |
-| `pnpm run list` | 📋 List all tools & resources | Information |
-| `pnpm run terminal` | 💻 Start terminal interface | Development |
-
-</div>
+## 🛠️ Development
 
 ```bash
-# Quick development workflow
-pnpm run dev          # Start development server
-pnpm run build        # Build for production
-pnpm run validate     # Check MCP configuration
+# Development mode
+pnpm run dev
+
+# Build
+pnpm run build
+
+# Validate MCP config
+pnpm run validate
+
+# List tools & resources
+pnpm run list
 ```
 
----
+## 🔐 Security & Analysis-Only Focus
 
-## 🔐 **Security & Analysis-Only Focus**
+### Pure Analysis Environment
+This server is designed exclusively for market analysis and research. No trading execution capabilities are included.
 
-<div align="center">
-  <img src="https://img.shields.io/badge/🔒_Analysis_Only-00D4AA?style=for-the-badge&logo=shield&logoColor=white" alt="Analysis Only"/>
-  <img src="https://img.shields.io/badge/🚫_No_Trading-FF6B6B?style=for-the-badge&logo=block&logoColor=white" alt="No Trading"/>
-  <img src="https://img.shields.io/badge/✅_Secure-4ECDC4?style=for-the-badge&logo=lock&logoColor=white" alt="Secure"/>
-</div>
+**Security Features:**
+- ✅ No wallet credentials required
+- ✅ Zod schema validation for all inputs
+- ✅ Read-only market data access
+- ✅ No execution permissions
+- ✅ Analysis-focused security model
+- ✅ Multi-user support for research teams
 
-### 🛡️ **Pure Analysis Environment**
-This server is designed **exclusively** for market analysis and research. **No trading execution capabilities** are included.
-
-#### **🔒 Security Features:**
-- ✅ **No Wallet Credentials** - Zero financial risk
-- ✅ **Zod Validation** - Comprehensive input validation
-- ✅ **Read-Only Access** - Market data only, no execution
-- ✅ **Zero Permissions** - No trading or withdrawal rights
-- ✅ **Research Focus** - Pure market intelligence
-- ✅ **Multi-User Safe** - Secure for research teams
-
-<div align="center">
-  <img src="https://img.shields.io/badge/🎯_Risk_Free_Analysis-00D4AA?style=for-the-badge&logo=target&logoColor=white" alt="Risk Free"/>
-</div>
-
----
-
-## 🌐 **API Endpoints (HTTP Streaming Mode)**
-
-<div align="center">
-  <img src="https://img.shields.io/badge/🚀_Server_Running-00D4AA?style=for-the-badge&logo=server&logoColor=white" alt="Server Running"/>
-  <img src="https://img.shields.io/badge/📡_Streaming_Ready-FF6B6B?style=for-the-badge&logo=streaming&logoColor=white" alt="Streaming Ready"/>
-</div>
+## 🌐 API Endpoints (HTTP Streaming Mode)
 
 When running `bash scripts/mcp-auto-start.sh`:
 
-<div align="center">
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `http://localhost:8787/` | GET | Server info & documentation |
+| `http://localhost:8787/health` | GET | Health check (JSON) |
+| `http://localhost:8787/mcp` | POST | MCP JSON-RPC endpoint |
+| `http://localhost:8787/stream` | GET/POST | SSE streaming endpoint |
 
-| 🔗 Endpoint | 📡 Method | 📋 Description |
-|-------------|-----------|----------------|
-| `http://localhost:8787/` | `GET` | 🏠 Server info & documentation |
-| `http://localhost:8787/health` | `GET` | 💚 Health check (JSON) |
-| `http://localhost:8787/mcp` | `POST` | 🤖 MCP JSON-RPC endpoint |
-| `http://localhost:8787/stream` | `GET/POST` | 📡 SSE streaming endpoint |
-
-</div>
-
-### 🧪 **Test Commands**
+**Test Commands:**
 ```bash
 # Health check
 curl http://localhost:8787/health
@@ -736,34 +578,10 @@ curl -X POST http://localhost:8787/mcp \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"get_price","arguments":{"ticker":"BTC"}}}'
 ```
 
----
+## 📄 License
 
-## 📄 **License**
-
-<div align="center">
-  <img src="https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge&logo=mit&logoColor=white" alt="MIT License"/>
-</div>
-
-**MIT License** - Open source and free to use for personal and commercial projects.
+MIT
 
 ---
 
-<div align="center">
-
-## 🎉 **Ready to Transform Your AI Trading Experience?**
-
-<p align="center">
-  <img src="https://img.shields.io/badge/🤖_AI_Powered-FF6B6B?style=for-the-badge&logo=robot&logoColor=white" alt="AI Powered"/>
-  <img src="https://img.shields.io/badge/📊_Market_Intelligence-00D4AA?style=for-the-badge&logo=chart-line&logoColor=white" alt="Market Intelligence"/>
-  <img src="https://img.shields.io/badge/🚀_Production_Ready-4ECDC4?style=for-the-badge&logo=rocket&logoColor=white" alt="Production Ready"/>
-</p>
-
-**Built for the AI analysis community** - Empowering AI assistants with professional technical analysis capabilities through the Model Context Protocol.
-
----
-
-<div align="center">
-  <sub>⭐ Star this repository • 🍴 Fork for customization • 🐛 Report issues • 📧 Reach out for collaboration</sub>
-</div>
-
-</div>
+*Built for the AI analysis community - empowering AI assistants with professional technical analysis capabilities*
