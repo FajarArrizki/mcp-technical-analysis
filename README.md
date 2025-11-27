@@ -33,20 +33,15 @@ A comprehensive Model Context Protocol (MCP) server that bridges AI assistants w
 - **Batch Operations** (11): Multi-asset analysis for all above tools
 
 ### 📚 **20 Analysis Resources**
-- `geartrade://trading-strategies` - Comprehensive trading strategies guide
-- `geartrade://risk-management` - Risk management best practices
-- `geartrade://tools-overview` - Complete tools overview
-- `geartrade://analysis-workflow` - Market analysis and research workflow
-- `geartrade://technical-indicators-guide` - Technical indicators guide
-- `geartrade://hyperliquid-api-reference` - Hyperliquid API reference
-- Plus 13 more specialized guides (volume analysis, fibonacci, orderbook, etc.)
+- Comprehensive documentation for trading strategies, risk management, and technical analysis
+- API references and integration guides
+- Specialized guides for volume analysis, Fibonacci, orderbook, and more
 
 ### 🤖 **24 AI Analysis Prompts**
-- **Core Analysis**: `analyze_and_research`, `multi_asset_scan`, `comprehensive_analysis`
-- **Technical Analysis**: `technical_indicator_analysis`, `volume_profile_analysis`, `market_structure_analysis`
-- **Advanced**: `divergence_scan`, `liquidation_analysis`, `fibonacci_analysis_strategy`, `spot_futures_analysis`
-- **Risk Management**: `risk_analysis`, `market_monitoring`, `portfolio_review`, `volatility_analysis`
-- Plus 12 more specialized prompts
+- Core analysis workflows for comprehensive market research
+- Technical analysis prompts for indicator-based insights
+- Risk management and position sizing guidance
+- Specialized prompts for advanced trading strategies
 
 ## 🚀 **Quick Start**
 
@@ -78,11 +73,7 @@ pnpm run build
 ```
 
 
-### 🔧 Configure MCP Client
-
-## 🚀 Quick Start - MCP Integration
-
-### Option 1: HTTP Streaming Mode (Recommended)
+### 🔧 MCP Client Configuration
 
 **Start the server:**
 ```bash
@@ -91,25 +82,6 @@ bash scripts/mcp-auto-start.sh
 ```
 
 Server runs at `http://localhost:8787` with SSE streaming support!
-
-**Configure Cursor** (`~/.cursor/mcp.json`):
-```json
-{
-  "mcpServers": {
-    "geartrade-local-stream": {
-      "command": "npx",
-      "args": [
-        "mcp-remote",
-        "http://localhost:8787/mcp"
-      ],
-    }
-  }
-}
-```
-
-**Note:** Server runs with default configurations for analysis. No additional setup required.
-
-### MCP Client Configuration
 
 **For Cursor IDE** (`.cursor/mcp.json`):
 ```json
