@@ -13,9 +13,12 @@ A comprehensive Model Context Protocol (MCP) server that bridges AI assistants w
   </a>
   <br><br>
   <div style="position: relative; width: 100%;">
-    <div style="position: absolute; left: 0;">
+    <div style="position: absolute; left: 0; display: flex; gap: 10px;">
       <a href="https://www.youtube.com/watch?v=SVaSJQo2iSk&autoplay=1">
         <img src="https://img.shields.io/badge/Coming_Soon-FF0000?style=for-the-badge" alt="Coming Soon">
+      </a>
+      <a href="https://nullshot.ai/brainstorm/c5ee234a-da45-4c8e-8b1b-2df3cc5abadb">
+        <img src="https://img.shields.io/badge/Upvote_Now-00ADD8?style=for-the-badge&logo=null&logoColor=white" alt="Upvote Now">
       </a>
     </div>
   </div>
