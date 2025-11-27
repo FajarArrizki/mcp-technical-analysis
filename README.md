@@ -111,19 +111,20 @@ Server runs at `http://localhost:8787` with SSE streaming support!
 
 ### MCP Client Configuration
 
-**For Claude Desktop** (`~/Library/Application Support/Claude/claude_desktop_config.json`):
+**For Cursor IDE** (`.cursor/mcp.json`):
 ```json
 {
   "mcpServers": {
     "geartrade": {
-      "command": "npx",
-      "args": ["mcp-remote", "http://localhost:8787/mcp"]
+      "command": "bash",
+      "args": ["/root/GEARTRADE/scripts/mcp-auto-start.sh"],
+      "description": "GearTrade MCP Server - Localhost Only"
     }
   }
 }
 ```
 
-**For Cursor IDE** (`.cursor/mcp.json`):
+**For Claude Desktop & Chatbots** (`~/Library/Application Support/Claude/claude_desktop_config.json`):
 ```json
 {
   "mcpServers": {
