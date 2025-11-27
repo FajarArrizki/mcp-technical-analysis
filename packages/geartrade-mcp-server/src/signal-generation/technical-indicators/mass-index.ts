@@ -1,0 +1,277 @@
+/**
+ * Mass Index Indicator
+ * Uses EMA of High-Low range to identify potential reversals
+ */
+
+export interface MassIndexData {
+  // Mass Index value
+  massIndex: number
+
+  // Single EMA of range (9-period)
+  singleEMA: number
+
+  // Double EMA of range (9-period EMA of single EMA)
+  doubleEMA: number
+
+  // Current High-Low range
+  currentRange: number
+
+  // Ratio of single to double EMA
+  emaRatio: number
+
+  // Reversal signal (Mass Index > 27)
+  reversalSignal: boolean
+
+  // Overbought level (Mass Index > 27)
+  overbought: boolean
+
+  // Trend direction
+  trend: 'rising' | 'falling' | 'stable'
+
+  // Signal strength (0-100)
+  strength: number
+
+  // Trading signal
+  signal: 'buy' | 'sell' | 'neutral'
+
+  // Reversal probability
+  reversalProbability: 'high' | 'moderate' | 'low'
+}
+
+/**
+ * Calculate Mass Index
+ * @param highs Array of high prices
+ * @param lows Array of low prices
+ * @param emaPeriod EMA period for range calculation (default 9)
+ * @param sumPeriod Period for summing EMA ratios (default 25)
+ * @returns MassIndexData object
+ */
+export function calculateMassIndex(
+  highs: number[],
+  lows: number[],
+  emaPeriod: number = 9,
+  sumPeriod: number = 25
+): MassIndexData | null {
+  if (highs.length !== lows.length || highs.length < emaPeriod * 2 + sumPeriod) {
+    return null
+  }
+
+  // Calculate High-Low ranges
+  const ranges: number[] = []
+  for (let i = 0; i < highs.length; i++) {
+    ranges.push(highs[i] - lows[i])
+  }
+
+  // Calculate single EMA of ranges
+  const singleEMA = calculateEMA(ranges, emaPeriod)
+
+  // Calculate double EMA of ranges (EMA of single EMA)
+  const doubleEMA = calculateEMA(singleEMA, emaPeriod)
+
+  if (singleEMA.length < sumPeriod || doubleEMA.length < sumPeriod) {
+    return null
+  }
+
+  // Calculate EMA ratio and sum over sumPeriod
+  let massIndex = 0
+  let emaRatioSum = 0
+
+  for (let i = 0; i < sumPeriod; i++) {
+    const ratio = doubleEMA[doubleEMA.length - 1 - i] > 0 ?
+      singleEMA[singleEMA.length - 1 - i] / doubleEMA[doubleEMA.length - 1 - i] : 1
+    emaRatioSum += ratio
+  }
+
+  massIndex = emaRatioSum
+
+  // Get current values
+  const currentRange = ranges[ranges.length - 1]
+  const currentSingleEMA = singleEMA[singleEMA.length - 1]
+  const currentDoubleEMA = doubleEMA[doubleEMA.length - 1]
+  const emaRatio = currentDoubleEMA > 0 ? currentSingleEMA / currentDoubleEMA : 1
+
+  // Check for reversal signal (Mass Index > 27)
+  const reversalSignal = massIndex > 27
+
+  // Overbought level
+  const overbought = massIndex > 27
+
+  // Determine trend
+  let trend: 'rising' | 'falling' | 'stable' = 'stable'
+  if (massIndex > 26.5) {
+    trend = 'rising'
+  } else if (massIndex < 26.0) {
+    trend = 'falling'
+  }
+
+  // Calculate signal strength based on distance from reversal level
+  const distanceFromReversal = Math.abs(massIndex - 27)
+  const strength = overbought ? Math.min(100, (massIndex - 27) * 10) : Math.max(0, 100 - distanceFromReversal * 10)
+
+  // Generate trading signal
+  let signal: 'buy' | 'sell' | 'neutral' = 'neutral'
+
+  if (reversalSignal) {
+    // Mass Index > 27 often precedes reversals
+    signal = 'sell' // Potential reversal signal
+  }
+
+  // Determine reversal probability
+  let reversalProbability: 'high' | 'moderate' | 'low' = 'low'
+  if (massIndex > 27) {
+    reversalProbability = 'high'
+  } else if (massIndex > 26.5) {
+    reversalProbability = 'moderate'
+  }
+
+  return {
+    massIndex,
+    singleEMA: currentSingleEMA,
+    doubleEMA: currentDoubleEMA,
+    currentRange,
+    emaRatio,
+    reversalSignal,
+    overbought,
+    trend,
+    strength,
+    signal,
+    reversalProbability
+  }
+}
+
+/**
+ * Helper function to calculate EMA
+ */
+function calculateEMA(values: number[], period: number): number[] {
+  if (values.length < period) {
+    return values
+  }
+
+  const ema: number[] = []
+  const multiplier = 2 / (period + 1)
+
+  // First EMA value is the simple average
+  let sum = 0
+  for (let i = 0; i < period; i++) {
+    sum += values[i]
+  }
+  ema.push(sum / period)
+
+  // Calculate subsequent EMA values
+  for (let i = period; i < values.length; i++) {
+    const currentEMA = (values[i] - ema[ema.length - 1]) * multiplier + ema[ema.length - 1]
+    ema.push(currentEMA)
+  }
+
+  return ema
+}
+
+/**
+ * Get Mass Index interpretation
+ * @param mass MassIndexData object
+ * @returns Human-readable interpretation
+ */
+export function getMassIndexInterpretation(mass: MassIndexData): string {
+  const { massIndex, reversalSignal, reversalProbability, trend } = mass
+
+  let interpretation = `Mass Index: ${massIndex.toFixed(2)}`
+
+  if (reversalSignal) {
+    interpretation += ' - Reversal signal triggered'
+  } else {
+    interpretation += ` - ${trend} trend`
+  }
+
+  interpretation += ` (${reversalProbability} reversal probability)`
+
+  return interpretation
+}
+
+/**
+ * Calculate Mass Index reversal zones
+ * @param mass MassIndexData object
+ * @returns Reversal zone analysis
+ */
+export function calculateMassIndexReversalZones(mass: MassIndexData): {
+  inReversalZone: boolean
+  zoneType: 'bullish_setup' | 'bearish_setup' | 'neutral'
+  timeToReversal: number
+  recommendation: string
+} {
+  const { massIndex, reversalSignal } = mass
+
+  let inReversalZone = false
+  let zoneType: 'bullish_setup' | 'bearish_setup' | 'neutral' = 'neutral'
+  let timeToReversal = 0
+  let recommendation = 'Monitor Mass Index levels'
+
+  if (massIndex > 27) {
+    inReversalZone = true
+    zoneType = 'bearish_setup' // High Mass Index often precedes downward reversals
+    timeToReversal = Math.max(0, massIndex - 27) * 2 // Rough estimate
+    recommendation = 'Bearish reversal likely - consider reducing long positions'
+  } else if (massIndex > 26.5) {
+    inReversalZone = true
+    zoneType = 'bearish_setup'
+    timeToReversal = (27 - massIndex) * 4 // Rough estimate
+    recommendation = 'Approaching reversal zone - exercise caution'
+  } else if (massIndex < 25) {
+    zoneType = 'bullish_setup' // Low Mass Index may precede upward moves
+    recommendation = 'Potential bullish setup developing'
+  }
+
+  return { inReversalZone, zoneType, timeToReversal, recommendation }
+}
+
+/**
+ * Analyze Mass Index trend consistency
+ * @param highs Array of high prices
+ * @param lows Array of low prices
+ * @param periods Number of periods to analyze
+ * @returns Trend consistency analysis
+ */
+export function analyzeMassIndexTrend(
+  highs: number[],
+  lows: number[],
+  periods: number = 30
+): {
+  dominantTrend: 'reversal_due' | 'continuation' | 'neutral'
+  reversalSignals: number
+  averageMassIndex: number
+  trendStrength: number
+} {
+  if (highs.length < periods + 50) {
+    return { dominantTrend: 'neutral', reversalSignals: 0, averageMassIndex: 0, trendStrength: 0 }
+  }
+
+  const massData: MassIndexData[] = []
+
+  // Calculate Mass Index for multiple periods
+  for (let i = 50; i <= highs.length; i++) {
+    const sliceHighs = highs.slice(0, i)
+    const sliceLows = lows.slice(0, i)
+    const mass = calculateMassIndex(sliceHighs, sliceLows)
+    if (mass) {
+      massData.push(mass)
+    }
+  }
+
+  if (massData.length === 0) {
+    return { dominantTrend: 'neutral', reversalSignals: 0, averageMassIndex: 0, trendStrength: 0 }
+  }
+
+  // Analyze trend
+  const reversalSignals = massData.filter(m => m.reversalSignal).length
+  const averageMassIndex = massData.reduce((sum, m) => sum + m.massIndex, 0) / massData.length
+
+  let dominantTrend: 'reversal_due' | 'continuation' | 'neutral' = 'neutral'
+  if (reversalSignals > massData.length * 0.3) {
+    dominantTrend = 'reversal_due'
+  } else if (averageMassIndex > 26) {
+    dominantTrend = 'continuation' // High but not extreme levels suggest continuation
+  }
+
+  const trendStrength = Math.min(100, reversalSignals / massData.length * 100 + (averageMassIndex - 26) * 5)
+
+  return { dominantTrend, reversalSignals, averageMassIndex, trendStrength }
+}

@@ -5,6 +5,7 @@
 
 import { log, logSection } from './utils/logger'
 import { getMarketData } from './data-fetchers/market-data'
+import { MarketData } from './types'
 import { getAssetMetadata, getUserState } from './data-fetchers/hyperliquid'
 import { generateSignals } from './signal-generation/generate-signals'
 import { formatSignal } from './formatting/format-signal'
@@ -153,6 +154,12 @@ export async function main(): Promise<void> {
         throw new Error('Invalid market data returned from getMarketData')
       }
 
+      // Ensure marketData is the correct type (Map or Record)
+      const normalizedMarketData: Map<string, MarketData> | Record<string, MarketData> =
+        marketData instanceof Map ? marketData :
+        (typeof marketData === 'object' && (marketData as any).marketDataMap) ? (marketData as any).marketDataMap :
+        marketData
+
       // Ensure marketData is iterable (Map or Object)
       const marketDataSize = marketData instanceof Map 
         ? marketData.size 
@@ -168,7 +175,7 @@ export async function main(): Promise<void> {
       
       // OPTIMIZATION: Rank ALL fetched assets ONCE (avoid duplicate ranking calls)
       const assetsToRank = assetsToFetch // Rank all assets we fetched
-      const rankedScores = rankAssetsByIndicatorQuality(marketData, assetsToRank)
+      const rankedScores = rankAssetsByIndicatorQuality(normalizedMarketData, assetsToRank)
       const assetQualityScoreMap = new Map<string, number>()
       rankedScores.forEach(rs => assetQualityScoreMap.set(rs.asset, rs.score))
       

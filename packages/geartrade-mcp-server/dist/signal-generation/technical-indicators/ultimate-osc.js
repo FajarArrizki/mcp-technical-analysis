@@ -1,0 +1,57 @@
+/**
+ * Ultimate Oscillator Indicator
+ * Combines momentum from three different timeframes
+ */
+export function calculateUltimateOscillator(highs, lows, closes, shortPeriod = 7, mediumPeriod = 14, longPeriod = 28) {
+    if (closes.length < longPeriod + 1) {
+        return {
+            ultimateOsc: null,
+            signal: null,
+        };
+    }
+    // Calculate Buying Pressure and True Range
+    const buyingPressures = [];
+    const trueRanges = [];
+    for (let i = 1; i < closes.length; i++) {
+        const close = closes[i];
+        const closePrev = closes[i - 1];
+        const high = highs[i];
+        const low = lows[i];
+        // Buying Pressure = Close - min(Low, Close_prev)
+        const buyingPressure = close - Math.min(low, closePrev);
+        buyingPressures.push(buyingPressure);
+        // True Range = max(High, Close_prev) - min(Low, Close_prev)
+        const trueRange = Math.max(high, closePrev) - Math.min(low, closePrev);
+        trueRanges.push(trueRange);
+    }
+    if (buyingPressures.length < longPeriod) {
+        return {
+            ultimateOsc: null,
+            signal: null,
+        };
+    }
+    // Calculate Average for each timeframe
+    function calculateAverageBP_TR(period) {
+        const bpSum = buyingPressures.slice(-period).reduce((sum, bp) => sum + bp, 0);
+        const trSum = trueRanges.slice(-period).reduce((sum, tr) => sum + tr, 0);
+        return trSum > 0 ? bpSum / trSum : 0;
+    }
+    const avg7 = calculateAverageBP_TR(shortPeriod);
+    const avg14 = calculateAverageBP_TR(mediumPeriod);
+    const avg28 = calculateAverageBP_TR(longPeriod);
+    // Ultimate Oscillator = (4 × avg7 + 2 × avg14 + avg28) / (4 + 2 + 1)
+    const rawUO = (4 * avg7) + (2 * avg14) + avg28;
+    const ultimateOsc = rawUO / 7;
+    // Determine signal
+    let signal = null;
+    if (ultimateOsc >= 70)
+        signal = 'overbought';
+    else if (ultimateOsc <= 30)
+        signal = 'oversold';
+    else
+        signal = 'neutral';
+    return {
+        ultimateOsc,
+        signal,
+    };
+}

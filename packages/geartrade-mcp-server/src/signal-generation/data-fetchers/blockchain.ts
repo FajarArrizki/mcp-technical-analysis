@@ -61,8 +61,8 @@ export async function fetchPublicBlockchainData(
           throw new Error(`Blockchair API returned ${response.status}`)
         }
 
-        const blockchairData = await response.json()
-        
+        const blockchairData: any = await response.json()
+
         // Extract large transaction data from stats
         // Blockchair stats include transaction volume data
         if (blockchairData && blockchairData.data) {
@@ -112,7 +112,7 @@ export async function fetchPublicBlockchainData(
             throw new Error(`Etherscan API returned ${response.status}`)
           }
 
-          const result = await response.json()
+          const result: any = await response.json()
           if (!result.result) {
             throw new Error('No block number in response')
           }

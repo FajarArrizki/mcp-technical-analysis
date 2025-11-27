@@ -45,22 +45,19 @@ export interface FibonacciRetracement {
  * @returns FibonacciRetracement object with levels and analysis
  */
 export function calculateFibonacciRetracement(
-  highs: number[],
-  lows: number[],
   closes: number[],
   lookbackPeriod: number = 50
 ): FibonacciRetracement | null {
-  if (highs.length < lookbackPeriod || lows.length < lookbackPeriod || closes.length < lookbackPeriod) {
+  if (closes.length < lookbackPeriod) {
     return null
   }
   
-  // Find swing high and swing low within lookback period
-  const recentHighs = highs.slice(-lookbackPeriod)
-  const recentLows = lows.slice(-lookbackPeriod)
+  // Find swing high and swing low within lookback period using closes
+  const recentCloses = closes.slice(-lookbackPeriod)
   
-  // Use the highest high and lowest low in the period
-  const swingHigh = Math.max(...recentHighs)
-  const swingLow = Math.min(...recentLows)
+  // Use the highest and lowest close in the period
+  const swingHigh = Math.max(...recentCloses)
+  const swingLow = Math.min(...recentCloses)
   const range = swingHigh - swingLow
   
   if (range <= 0) {

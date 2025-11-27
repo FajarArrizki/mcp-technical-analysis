@@ -77,14 +77,7 @@ export { formatSignal } from './formatting/format-signal'
 export * from './signal-generation'
 export { generateSignalForSingleAsset } from './signal-generation/generate-single-asset'
 
-// Execution
-export * from './execution'
-export { LiveExecutor } from './execution/live-executor'
-
-// Cycle Management
-export { initializeTestMode, runTestModeCycle } from './cycle/test-mode'
-export { loadCycleState, saveCycleState } from './cycle/shared/state-manager'
-export type { StateManagerConfig } from './cycle/shared/state-manager'
+// Execution and Cycle Management - Removed
 
 // Validation
 export * from './validation'

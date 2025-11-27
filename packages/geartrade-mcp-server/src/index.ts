@@ -11,11 +11,11 @@ import { z } from 'zod'
 import { getRealTimePrice } from './signal-generation/data-fetchers/hyperliquid'
 import { getMarketData } from './signal-generation/data-fetchers/market-data'
 import type { ComprehensiveVolumeAnalysis } from './signal-generation/analysis/volume-analysis'
+import { performComprehensiveVolumeAnalysis } from './signal-generation/analysis/volume-analysis'
 import { getActivePositions } from './signal-generation/position-management/positions'
 import type { Position } from './signal-generation/position-management/positions'
 import { calculateMAE } from './signal-generation/risk-management/mae'
 import { calculateStopLoss } from './signal-generation/exit-conditions/stop-loss'
-import { calculatePositionSize } from './signal-generation/execution/position-sizer'
 import { calculateDynamicLeverage } from './signal-generation/risk-management/leverage'
 import { calculateDynamicMarginPercentage } from './signal-generation/risk-management/margin'
 import { calculateFibonacciRetracement } from './signal-generation/technical-indicators/fibonacci'
@@ -35,8 +35,52 @@ import type { LongShortRatioIndicator } from './signal-generation/technical-indi
 import { calculateSpotFuturesDivergenceIndicators } from './signal-generation/technical-indicators/spot-futures-divergence'
 import type { SpotFuturesDivergenceIndicator } from './signal-generation/technical-indicators/spot-futures-divergence'
 import { calculateRSI } from './signal-generation/technical-indicators/momentum'
-import { PaperExecutor } from './signal-generation/execution/paper-executor'
-import { LiveExecutor } from './signal-generation/execution/live-executor'
+import { calculateMomentum } from './signal-generation/technical-indicators/momentum-indicator'
+import { calculateLinearRegression, LinearRegressionData } from './signal-generation/technical-indicators/linear-regression'
+import { calculateMAEnvelope, MAEnvelopeData } from './signal-generation/technical-indicators/ma-envelope'
+import { calculateVWMA, VWMAData } from './signal-generation/technical-indicators/vwma'
+import { calculatePriceChannel, PriceChannelData } from './signal-generation/technical-indicators/price-channel'
+import { calculateMcGinleyDynamic, McGinleyDynamicData } from './signal-generation/technical-indicators/mcginley-dynamic'
+import { calculateRainbowMA, RainbowMAData } from './signal-generation/technical-indicators/rainbow-ma'
+import { calculateKaufmanAdaptiveMA, KaufmanAdaptiveMAData } from './signal-generation/technical-indicators/kaufman-adaptive-ma'
+import { calculateDetrendedPrice, DetrendedPriceData } from './signal-generation/technical-indicators/detrended-price'
+import { calculateRelativeVigorIndex, RelativeVigorIndexData } from './signal-generation/technical-indicators/relative-vigor-index'
+import { calculateElderRay, ElderRayData } from './signal-generation/technical-indicators/elder-ray'
+import { calculateFisherTransform, FisherTransformData } from './signal-generation/technical-indicators/fisher-transform'
+import { calculateKST, KSTData } from './signal-generation/technical-indicators/kst'
+import { calculateCamarillaPivots } from './signal-generation/technical-indicators/pivot-camarilla'
+import { calculatePivotPoints } from './signal-generation/technical-indicators/pivot-standard'
+import { calculateChandeMomentum, ChandeMomentumData } from './signal-generation/technical-indicators/chande-momentum'
+import { calculateBullBearPower, BullBearPowerData } from './signal-generation/technical-indicators/bull-bear-power'
+import { calculateTrueStrengthIndex, TrueStrengthIndexData } from './signal-generation/technical-indicators/true-strength-index'
+import { calculatePercentagePriceOscillator, PercentagePriceOscillatorData } from './signal-generation/technical-indicators/percentage-price-oscillator'
+import { calculateAcceleratorOscillator, AcceleratorOscillatorData } from './signal-generation/technical-indicators/accelerator-oscillator'
+import { calculateSchaffTrendCycle, SchaffTrendCycleData } from './signal-generation/technical-indicators/schaff-trend-cycle'
+import { calculateCoppockCurve, CoppockCurveData } from './signal-generation/technical-indicators/coppock-curve'
+import { calculateVolumeOscillator, VolumeOscillatorData } from './signal-generation/technical-indicators/volume-oscillator'
+import { calculateEaseOfMovement, EaseOfMovementData } from './signal-generation/technical-indicators/ease-of-movement'
+import { calculatePriceVolumeTrend, PriceVolumeTrendData } from './signal-generation/technical-indicators/price-volume-trend'
+import { calculatePositiveVolumeIndex, PositiveVolumeIndexData } from './signal-generation/technical-indicators/positive-volume-index'
+import { calculateVolumeROC, VolumeROCData } from './signal-generation/technical-indicators/volume-roc'
+import { calculateROC } from './signal-generation/technical-indicators/roc'
+import { calculateAnchoredVWAP, AnchoredVWAPData } from './signal-generation/technical-indicators/anchored-vwap'
+import { calculateChaikinMF, ChaikinMFData } from './signal-generation/technical-indicators/chaikin-mf'
+import { calculateVolumeZoneOscillator, VolumeZoneOscillatorData } from './signal-generation/technical-indicators/volume-zone-oscillator'
+import { calculateMassIndex, MassIndexData } from './signal-generation/technical-indicators/mass-index'
+import { calculateUlcerIndex, UlcerIndexData } from './signal-generation/technical-indicators/ulcer-index'
+// Import all remaining technical indicator functions
+import {
+  calculateGatorOscillator, calculateKlingerOscillator, calculateChaikinVolatility,
+  calculateBBPercentB, calculateBBWidth, calculateHistoricalVolatility,
+  calculateTRIX, calculateVortex, calculateCOG, calculateChaikinOscillator,
+  calculateStochasticRSI, calculateMFI, calculateUltimateOscillator, calculateBOP,
+  calculateAdvanceDeclineLine, calculateMcClellanOscillator, calculateArmsIndex,
+  calculateFractals, calculateZigZag, calculateHMA, calculateWMA, calculateSMMA,
+  calculateDEMA, calculateTEMA, calculateKeltnerChannels, calculateDonchianChannels,
+  calculateAlligator, calculateAwesomeOscillator, calculateIchimokuCloud,
+  calculateCorrelationCoefficient, calculateRSquared,
+  calculateForceIndex, calculateSuperTrend
+} from './signal-generation/technical-indicators'
 import type { Signal, HistoricalDataPoint } from './signal-generation/types'
 
 // Placeholder functions for local development
@@ -173,7 +217,7 @@ function formatTechnicalIndicators(assetData: any, price: number | null) {
           const highs = historicalData.map((d: any) => d.high || d.close)
           const lows = historicalData.map((d: any) => d.low || d.close)
           const closes = historicalData.map((d: any) => d.close)
-          const fibResult = calculateFibonacciRetracement(highs, lows, closes, 50)
+          const fibResult = calculateFibonacciRetracement(closes, 50)
           if (fibResult) {
             return {
               level: fibResult.currentLevel || null,
@@ -870,126 +914,11 @@ const server = {
   }
 } as any
 
-// Register get_price tool
+// Register get_prices tool
 server.registerTool(
   'get_price',
   {
-    title: 'Get Price',
-    description: 'Get latest price for a trading ticker/symbol (e.g., BTC, ETH, SOL)',
-    inputSchema: {
-      ticker: z.string().describe('Asset ticker symbol (e.g., "BTC", "ETH", "SOL")'),
-    },
-    outputSchema: {
-      ticker: z.string(),
-      price: z.number().nullable(),
-      timestamp: z.string().optional(),
-    },
-  },
-  async ({ ticker }: { ticker: string }) => {
-    if (!ticker || typeof ticker !== 'string' || ticker.trim().length === 0) {
-      const errorResult = {
-        ticker: ticker || '',
-        price: null as number | null,
-        timestamp: new Date().toISOString(),
-      }
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                ...errorResult,
-                error: 'Invalid ticker parameter',
-                message: 'Ticker must be a non-empty string',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: errorResult,
-      }
-    }
-
-    // Normalize ticker (uppercase, remove spaces)
-    const normalizedTicker = ticker.trim().toUpperCase()
-
-    try {
-      // Get real-time price
-      const price = await getRealTimePrice(normalizedTicker)
-
-      if (price === null) {
-        const notFoundResult = {
-          ticker: normalizedTicker,
-          price: null as number | null,
-          timestamp: new Date().toISOString(),
-        }
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(
-                {
-                  ...notFoundResult,
-                  error: 'Price not found',
-                  message: `Could not fetch price for ${normalizedTicker}. Asset may not be available on Hyperliquid.`,
-                },
-                null,
-                2
-              ),
-            },
-          ],
-          structuredContent: notFoundResult,
-        }
-      }
-
-      const result = {
-        ticker: normalizedTicker,
-        price: price,
-        timestamp: new Date().toISOString(),
-      }
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          },
-        ],
-        structuredContent: result,
-      }
-    } catch (error) {
-      const errorResult = {
-        ticker: normalizedTicker,
-        price: null as number | null,
-        timestamp: new Date().toISOString(),
-      }
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                ...errorResult,
-                error: error instanceof Error ? error.message : String(error),
-                message: 'Failed to fetch price',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: errorResult,
-      }
-    }
-  }
-)
-
-// Register get_multiple_prices tool
-server.registerTool(
-  'get_multiple_prices',
-  {
-    title: 'Get Multiple Prices',
+    title: 'Get Prices',
     description: 'Get latest prices for multiple trading tickers/symbols at once (e.g., ["BTC", "ETH", "SOL"])',
     inputSchema: {
       tickers: z
@@ -1102,242 +1031,11 @@ server.registerTool(
   }
 )
 
-// Register get_indicator tool (single ticker only)
+// Register get_indicators tool
 server.registerTool(
-  'get_indicator',
+  'get_indicators',
   {
-    title: 'Get Technical Indicator',
-    description: 'Get comprehensive technical analysis indicators for a single trading ticker (RSI, EMA, MACD, Bollinger Bands, etc.). For multiple tickers, use get_multiple_prices.',
-    inputSchema: {
-      ticker: z.string().describe('Single asset ticker symbol (e.g., "BTC", "ETH", "SOL"). Only one ticker allowed.'),
-    },
-    outputSchema: {
-      ticker: z.string(),
-      price: z.number().nullable(),
-      timestamp: z.string().optional(),
-      technical: z
-        .object({
-          rsi: z
-            .object({
-              rsi14: z.number().nullable().optional(),
-              rsi7: z.number().nullable().optional(),
-              rsi4h: z.number().nullable().optional(),
-            })
-            .nullable()
-            .optional(),
-          ema: z
-            .object({
-              ema20: z.number().nullable().optional(),
-              ema50: z.number().nullable().optional(),
-            })
-            .nullable()
-            .optional(),
-          macd: z
-            .object({
-              macd: z.number().nullable().optional(),
-              signal: z.number().nullable().optional(),
-              histogram: z.number().nullable().optional(),
-            })
-            .nullable()
-            .optional(),
-          bollingerBands: z
-            .object({
-              upper: z.number().nullable().optional(),
-              middle: z.number().nullable().optional(),
-              lower: z.number().nullable().optional(),
-              position: z.string().nullable().optional(),
-            })
-            .nullable()
-            .optional(),
-          atr: z.number().nullable().optional(),
-          adx: z
-            .object({
-              adx: z.number().nullable().optional(),
-              plusDI: z.number().nullable().optional(),
-              minusDI: z.number().nullable().optional(),
-              trend: z.string().nullable().optional(),
-            })
-            .nullable()
-            .optional(),
-          obv: z.number().nullable().optional(),
-          vwap: z.number().nullable().optional(),
-          stochastic: z
-            .object({
-              k: z.number().nullable().optional(),
-              d: z.number().nullable().optional(),
-            })
-            .nullable()
-            .optional(),
-          cci: z.number().nullable().optional(),
-          williamsR: z.number().nullable().optional(),
-          parabolicSAR: z
-            .object({
-              value: z.number().nullable().optional(),
-              trend: z.string().nullable().optional(),
-            })
-            .nullable()
-            .optional(),
-          aroon: z
-            .object({
-              up: z.number().nullable().optional(),
-              down: z.number().nullable().optional(),
-              trend: z.string().nullable().optional(),
-            })
-            .nullable()
-            .optional(),
-          support: z.number().nullable().optional(),
-          resistance: z.number().nullable().optional(),
-          fibonacci: z
-            .object({
-              level: z.string().nullable().optional(),
-              direction: z.string().nullable().optional(),
-              range: z.string().nullable().optional(),
-              keyLevels: z.string().nullable().optional(),
-            })
-            .nullable()
-            .optional(),
-          trend: z
-            .object({
-              direction: z.string().nullable().optional(),
-              strength: z.string().nullable().optional(),
-            })
-            .nullable()
-            .optional(),
-          marketStructure: z
-            .object({
-              structure: z.string().nullable().optional(),
-              higherHigh: z.boolean().optional(),
-              lowerLow: z.boolean().optional(),
-            })
-            .nullable()
-            .optional(),
-          rsiDivergence: z.string().nullable().optional(),
-          candlestick: z.string().nullable().optional(),
-          marketRegime: z.string().nullable().optional(),
-          change24h: z.number().nullable().optional(),
-          volumeChange24h: z.number().nullable().optional(),
-        })
-        .nullable()
-        .optional(),
-    },
-  },
-  async ({ ticker }: { ticker: string }) => {
-    if (!ticker || typeof ticker !== 'string' || ticker.trim().length === 0) {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                ticker: ticker || '',
-                price: null,
-                technical: null,
-                error: 'Invalid ticker parameter',
-                message: 'Ticker must be a non-empty string',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: {
-          ticker: ticker || '',
-          price: null,
-          technical: null,
-        },
-      }
-    }
-
-    // Normalize ticker (uppercase, remove spaces)
-    const normalizedTicker = ticker.trim().toUpperCase()
-
-    try {
-      // Fetch market data with sufficient candles for indicators (75+ candles)
-      if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 75) {
-        process.env.CANDLES_COUNT = '75'
-      }
-      // Get market data which includes technical indicators
-      const { marketDataMap } = await getMarketData([normalizedTicker])
-      const assetData = marketDataMap.get(normalizedTicker)
-
-      if (!assetData) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(
-                {
-                  ticker: normalizedTicker,
-                  price: null,
-                  technical: null,
-                  error: 'Asset data not found',
-                  message: `Could not fetch technical data for ${normalizedTicker}. Asset may not be available on Hyperliquid.`,
-                },
-                null,
-                2
-              ),
-            },
-          ],
-          structuredContent: {
-            ticker: normalizedTicker,
-            price: null,
-            technical: null,
-          },
-        }
-      }
-
-      const price = assetData.price || assetData.data?.price || null
-      const technical = formatTechnicalIndicators(assetData, price)
-
-      const result = {
-        ticker: normalizedTicker,
-        price: price,
-        timestamp: new Date().toISOString(),
-        technical: technical,
-      }
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          },
-        ],
-        structuredContent: result,
-      }
-    } catch (error) {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                ticker: normalizedTicker,
-                price: null,
-                technical: null,
-                error: error instanceof Error ? error.message : String(error),
-                message: 'Failed to fetch technical analysis',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: {
-          ticker: normalizedTicker,
-          price: null,
-          technical: null,
-        },
-      }
-    }
-  }
-)
-
-// Register get_multiple_indicators tool
-server.registerTool(
-  'get_multiple_indicators',
-  {
-    title: 'Get Multiple Technical Indicators',
+    title: 'Get Technical Indicators',
     description: 'Get comprehensive technical analysis indicators for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"])',
     inputSchema: {
       tickers: z
@@ -1587,202 +1285,11 @@ server.registerTool(
   }
 )
 
-// Register get_volume_analysis tool
+// Register get__volume_analysis tool
 server.registerTool(
   'get_volume_analysis',
   {
     title: 'Get Volume Analysis',
-    description: 'Get comprehensive volume analysis for a single trading ticker (buy/sell volume, POC, VAH/VAL, HVN/LVN, CVD, liquidity zones, etc.). For multiple tickers, use get_multiple_volume_analysis.',
-    inputSchema: {
-      ticker: z.string().describe('Asset ticker symbol (e.g., "BTC", "ETH", "SOL")'),
-    },
-    outputSchema: z.object({
-      ticker: z.string(),
-      price: z.number().nullable(),
-      timestamp: z.string().optional(),
-      volumeAnalysis: z
-        .object({
-          buyVolume: z.number().nullable().optional(),
-          sellVolume: z.number().nullable().optional(),
-          netDelta: z.number().nullable().optional(),
-          buyPressure: z.number().nullable().optional(),
-          sellPressure: z.number().nullable().optional(),
-          dominantSide: z.string().nullable().optional(),
-          keyLevel: z.number().nullable().optional(),
-          keyLevelDelta: z.number().nullable().optional(),
-          poc: z.number().nullable().optional(),
-          vah: z.number().nullable().optional(),
-          val: z.number().nullable().optional(),
-          hvn: z.string().nullable().optional(),
-          lvn: z.string().nullable().optional(),
-          cvdTrend: z.string().nullable().optional(),
-          cvdDelta: z.number().nullable().optional(),
-          topLiquidityZones: z
-            .array(
-              z.object({
-                priceRange: z.string(),
-                type: z.string(),
-                strength: z.string(),
-              })
-            )
-            .nullable()
-            .optional(),
-          recommendation: z.string().nullable().optional(),
-          confidence: z.number().nullable().optional(),
-          riskLevel: z.string().nullable().optional(),
-        })
-        .nullable()
-        .optional(),
-    }),
-  },
-  async ({ ticker }: { ticker: string }) => {
-    if (!ticker || typeof ticker !== 'string' || ticker.trim().length === 0) {
-      const errorResult = {
-        ticker: ticker || '',
-        price: null as number | null,
-        timestamp: new Date().toISOString(),
-        volumeAnalysis: null,
-      }
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                ...errorResult,
-                error: 'Invalid ticker parameter',
-                message: 'Ticker must be a non-empty string',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: errorResult,
-      }
-    }
-
-    try {
-      const normalizedTicker = ticker.trim().toUpperCase()
-
-      // Fetch market data with sufficient candles for volume analysis (75+ candles)
-      // Ensure CANDLES_COUNT is set to at least 75 for comprehensive volume analysis
-      if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 75) {
-        process.env.CANDLES_COUNT = '75'
-      }
-      const { marketDataMap } = await getMarketData([normalizedTicker])
-      const assetData = marketDataMap.get(normalizedTicker)
-
-      if (!assetData) {
-        const errorResult = {
-          ticker: normalizedTicker,
-          price: null as number | null,
-          timestamp: new Date().toISOString(),
-          volumeAnalysis: null,
-        }
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(
-                {
-                  ...errorResult,
-                  error: 'Asset not found',
-                  message: `No market data available for ${normalizedTicker}`,
-                },
-                null,
-                2
-              ),
-            },
-          ],
-          structuredContent: errorResult,
-        }
-      }
-
-      const price = assetData.price || assetData.data?.price || null
-      const historicalData = assetData.historicalData || assetData.data?.historicalData || []
-      const externalData = assetData.externalData || assetData.data?.externalData || {}
-      const volumeAnalysis = externalData.comprehensiveVolumeAnalysis || assetData.comprehensiveVolumeAnalysis || assetData.data?.comprehensiveVolumeAnalysis
-
-      // If volume analysis is not available but we have historical data, try to calculate it
-      // Note: This is a fallback - normally getMarketData should provide it
-      let finalVolumeAnalysis = volumeAnalysis
-      if (!finalVolumeAnalysis && historicalData && historicalData.length >= 20 && price) {
-        // Import dynamically to avoid circular dependencies
-        const { performComprehensiveVolumeAnalysis } = await import('../signal-generation/analysis/volume-analysis')
-        const volumeProfileData = externalData.volumeProfile || {}
-        const sessionVolumeProfile = volumeProfileData.session || assetData.sessionVolumeProfile || assetData.data?.sessionVolumeProfile
-        const compositeVolumeProfile = volumeProfileData.composite || assetData.compositeVolumeProfile || assetData.data?.compositeVolumeProfile
-        const cumulativeVolumeDelta = externalData.volumeDelta || assetData.volumeDelta || assetData.data?.volumeDelta
-        
-        try {
-          finalVolumeAnalysis = performComprehensiveVolumeAnalysis(
-            historicalData,
-            price,
-            undefined,
-            undefined,
-            sessionVolumeProfile || compositeVolumeProfile || undefined,
-            cumulativeVolumeDelta || undefined,
-            undefined
-          )
-        } catch (error) {
-          // If calculation fails, keep it as null
-          console.error(`Failed to calculate volume analysis for ${normalizedTicker}:`, error)
-        }
-      }
-
-      // Format volume analysis
-      const formattedVolumeAnalysis = formatVolumeAnalysis(finalVolumeAnalysis, price)
-
-      const result = {
-        ticker: normalizedTicker,
-        price,
-        timestamp: new Date().toISOString(),
-        volumeAnalysis: formattedVolumeAnalysis,
-      }
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          },
-        ],
-        structuredContent: result,
-      }
-    } catch (error) {
-      const errorResult = {
-        ticker: ticker.trim().toUpperCase(),
-        price: null as number | null,
-        timestamp: new Date().toISOString(),
-        volumeAnalysis: null,
-      }
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                ...errorResult,
-                error: error instanceof Error ? error.message : String(error),
-                message: 'Failed to fetch volume analysis',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: errorResult,
-      }
-    }
-  }
-)
-
-// Register get_multiple_volume_analysis tool
-server.registerTool(
-  'get_multiple_volume_analysis',
-  {
-    title: 'Get Multiple Volume Analysis',
     description: 'Get comprehensive volume analysis for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"])',
     inputSchema: {
       tickers: z
@@ -1926,8 +1433,7 @@ server.registerTool(
         // If volume analysis is not available but we have historical data, try to calculate it
         let finalVolumeAnalysis = volumeAnalysis
         if (!finalVolumeAnalysis && historicalData && historicalData.length >= 20 && price) {
-          // Import dynamically to avoid circular dependencies
-          const { performComprehensiveVolumeAnalysis } = await import('../signal-generation/analysis/volume-analysis')
+          // Use static import
           const volumeProfileData = externalData.volumeProfile || {}
           const sessionVolumeProfile = volumeProfileData.session || assetData.sessionVolumeProfile || assetData.data?.sessionVolumeProfile
           const compositeVolumeProfile = volumeProfileData.composite || assetData.compositeVolumeProfile || assetData.data?.compositeVolumeProfile
@@ -2003,174 +1509,13 @@ server.registerTool(
       }
     }
   }
-)
+),
 
-// Register get_multitimeframe tool
+// Register get__multitimeframe tool
 server.registerTool(
-  'get_multitimeframe',
+  'get_Multitimeframe',
   {
     title: 'Get Multi-Timeframe Analysis',
-    description: 'Get multi-timeframe trend alignment analysis for a single trading ticker (Daily, 4H, 1H alignment). For multiple tickers, use get_multiple_multitimeframe.',
-    inputSchema: {
-      ticker: z.string().describe('Asset ticker symbol (e.g., "BTC", "ETH", "SOL")'),
-    },
-    outputSchema: z.object({
-      ticker: z.string(),
-      price: z.number().nullable(),
-      timestamp: z.string().optional(),
-      multiTimeframe: z
-        .object({
-          dailyTrend: z.string().nullable().optional(),
-          h4Aligned: z.boolean().nullable().optional(),
-          h1Aligned: z.boolean().nullable().optional(),
-          overall: z.string().nullable().optional(),
-          score: z.number().nullable().optional(),
-          reason: z.string().nullable().optional(),
-          daily: z
-            .object({
-              price: z.number().nullable().optional(),
-              ema20: z.number().nullable().optional(),
-              ema50: z.number().nullable().optional(),
-              rsi14: z.number().nullable().optional(),
-            })
-            .nullable()
-            .optional(),
-          h4: z
-            .object({
-              price: z.number().nullable().optional(),
-              ema20: z.number().nullable().optional(),
-              rsi14: z.number().nullable().optional(),
-            })
-            .nullable()
-            .optional(),
-          h1: z
-            .object({
-              price: z.number().nullable().optional(),
-              ema20: z.number().nullable().optional(),
-              rsi14: z.number().nullable().optional(),
-            })
-            .nullable()
-            .optional(),
-        })
-        .nullable()
-        .optional(),
-    }),
-  },
-  async ({ ticker }: { ticker: string }) => {
-    if (!ticker || typeof ticker !== 'string' || ticker.trim().length === 0) {
-      const errorResult = {
-        ticker: ticker || '',
-        price: null as number | null,
-        timestamp: new Date().toISOString(),
-        multiTimeframe: null,
-      }
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                ...errorResult,
-                error: 'Invalid ticker parameter',
-                message: 'Ticker must be a non-empty string',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: errorResult,
-      }
-    }
-
-    try {
-      const normalizedTicker = ticker.trim().toUpperCase()
-
-      // Fetch market data with sufficient candles for multi-timeframe analysis (75+ candles)
-      if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 75) {
-        process.env.CANDLES_COUNT = '75'
-      }
-      const { marketDataMap } = await getMarketData([normalizedTicker])
-      const assetData = marketDataMap.get(normalizedTicker)
-
-      if (!assetData) {
-        const errorResult = {
-          ticker: normalizedTicker,
-          price: null as number | null,
-          timestamp: new Date().toISOString(),
-          multiTimeframe: null,
-        }
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(
-                {
-                  ...errorResult,
-                  error: 'Asset not found',
-                  message: `No market data available for ${normalizedTicker}`,
-                },
-                null,
-                2
-              ),
-            },
-          ],
-          structuredContent: errorResult,
-        }
-      }
-
-      const price = assetData.price || assetData.data?.price || null
-      const formattedMultiTimeframe = formatMultiTimeframe(assetData)
-
-      const result = {
-        ticker: normalizedTicker,
-        price,
-        timestamp: new Date().toISOString(),
-        multiTimeframe: formattedMultiTimeframe,
-      }
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          },
-        ],
-        structuredContent: result,
-      }
-    } catch (error) {
-      const errorResult = {
-        ticker: ticker.trim().toUpperCase(),
-        price: null as number | null,
-        timestamp: new Date().toISOString(),
-        multiTimeframe: null,
-      }
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                ...errorResult,
-                error: error instanceof Error ? error.message : String(error),
-                message: 'Failed to fetch multi-timeframe analysis',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: errorResult,
-      }
-    }
-  }
-)
-
-// Register get_multiple_multitimeframe tool
-server.registerTool(
-  'get_multiple_multitimeframe',
-  {
-    title: 'Get Multiple Multi-Timeframe Analysis',
     description: 'Get multi-timeframe trend alignment analysis for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"])',
     inputSchema: {
       tickers: z
@@ -2365,147 +1710,11 @@ server.registerTool(
   }
 )
 
-// Register get_external_data tool
+// Register get__external_data tool
 server.registerTool(
-  'get_external_data',
+  'get_External_data',
   {
     title: 'Get External Data',
-    description: 'Get external market data for a single trading ticker (funding rate, open interest, volume trend, volatility). For multiple tickers, use get_multiple_external_data.',
-    inputSchema: {
-      ticker: z.string().describe('Asset ticker symbol (e.g., "BTC", "ETH", "SOL")'),
-    },
-    outputSchema: z.object({
-      ticker: z.string(),
-      price: z.number().nullable(),
-      timestamp: z.string().optional(),
-      externalData: z
-        .object({
-          fundingRate: z.string().nullable().optional(),
-          fundingRateTrend: z.string().nullable().optional(),
-          openInterest: z.union([z.string(), z.number()]).nullable().optional(),
-          openInterestTrend: z.string().nullable().optional(),
-          volumeTrend: z.string().nullable().optional(),
-          volatility: z.string().nullable().optional(),
-        })
-        .nullable()
-        .optional(),
-    }),
-  },
-  async ({ ticker }: { ticker: string }) => {
-    if (!ticker || typeof ticker !== 'string' || ticker.trim().length === 0) {
-      const errorResult = {
-        ticker: ticker || '',
-        price: null as number | null,
-        timestamp: new Date().toISOString(),
-        externalData: null,
-      }
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                ...errorResult,
-                error: 'Invalid ticker parameter',
-                message: 'Ticker must be a non-empty string',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: errorResult,
-      }
-    }
-
-    try {
-      const normalizedTicker = ticker.trim().toUpperCase()
-
-      // Fetch market data
-      if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 75) {
-        process.env.CANDLES_COUNT = '75'
-      }
-      const { marketDataMap } = await getMarketData([normalizedTicker])
-      const assetData = marketDataMap.get(normalizedTicker)
-
-      if (!assetData) {
-        const errorResult = {
-          ticker: normalizedTicker,
-          price: null as number | null,
-          timestamp: new Date().toISOString(),
-          externalData: null,
-        }
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(
-                {
-                  ...errorResult,
-                  error: 'Asset not found',
-                  message: `No market data available for ${normalizedTicker}`,
-                },
-                null,
-                2
-              ),
-            },
-          ],
-          structuredContent: errorResult,
-        }
-      }
-
-      const price = assetData.price || assetData.data?.price || null
-      const formattedExternalData = formatExternalData(assetData)
-
-      const result = {
-        ticker: normalizedTicker,
-        price,
-        timestamp: new Date().toISOString(),
-        externalData: formattedExternalData,
-      }
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          },
-        ],
-        structuredContent: result,
-      }
-    } catch (error) {
-      const errorResult = {
-        ticker: ticker.trim().toUpperCase(),
-        price: null as number | null,
-        timestamp: new Date().toISOString(),
-        externalData: null,
-      }
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                ...errorResult,
-                error: error instanceof Error ? error.message : String(error),
-                message: 'Failed to fetch external data',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: errorResult,
-      }
-    }
-  }
-)
-
-// Register get_multiple_external_data tool
-server.registerTool(
-  'get_multiple_external_data',
-  {
-    title: 'Get Multiple External Data',
     description: 'Get external market data for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"])',
     inputSchema: {
       tickers: z
@@ -2673,373 +1882,7 @@ server.registerTool(
       }
     }
   }
-)
-
-// Register get_position tool
-server.registerTool(
-  'get_position',
-  {
-    title: 'Get Position',
-    description: 'Get current position information for a single trading ticker (side, quantity, entry price, PnL, MAE). For multiple tickers, use get_multiple_positions.',
-    inputSchema: {
-      ticker: z.string().describe('Asset ticker symbol (e.g., "BTC", "ETH", "SOL")'),
-    },
-    outputSchema: z.object({
-      ticker: z.string(),
-      price: z.number().nullable(),
-      timestamp: z.string().optional(),
-      position: z
-        .object({
-          side: z.string().nullable().optional(),
-          quantity: z.number().nullable().optional(),
-          entryPrice: z.number().nullable().optional(),
-          currentPrice: z.number().nullable().optional(),
-          leverage: z.number().nullable().optional(),
-          unrealizedPnl: z.number().nullable().optional(),
-          unrealizedPnlPct: z.number().nullable().optional(),
-          pnlPctOnMargin: z.number().nullable().optional(),
-          mae: z.number().nullable().optional(),
-          worstPrice: z.number().nullable().optional(),
-          entryTime: z.number().nullable().optional(),
-        })
-        .nullable()
-        .optional(),
-    }),
-  },
-  async ({ ticker }: { ticker: string }) => {
-    if (!ticker || typeof ticker !== 'string' || ticker.trim().length === 0) {
-      const errorResult = {
-        ticker: ticker || '',
-        price: null as number | null,
-        timestamp: new Date().toISOString(),
-        position: null,
-      }
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                ...errorResult,
-                error: 'Invalid ticker parameter',
-                message: 'Ticker must be a non-empty string',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: errorResult,
-      }
-    }
-
-    try {
-      const normalizedTicker = ticker.trim().toUpperCase()
-
-      // Get current price
-      const currentPrice = await getRealTimePrice(normalizedTicker).catch(() => null)
-
-      // Get active positions (from account state or tracked positions)
-      const positions = getActivePositions(null)
-      const position = positions.get(normalizedTicker) || null
-
-      if (!position) {
-        const result = {
-          ticker: normalizedTicker,
-          price: currentPrice,
-          timestamp: new Date().toISOString(),
-          position: null,
-        }
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-          structuredContent: result,
-        }
-      }
-
-      // Get historical data for MAE calculation
-      let maeResult = null
-      if (currentPrice) {
-        try {
-          const { marketDataMap } = await getMarketData([normalizedTicker])
-          const assetData = marketDataMap.get(normalizedTicker)
-          const historicalData = assetData?.historicalData || assetData?.data?.historicalData || []
-          
-          maeResult = calculateMAE(
-            {
-              entryPrice: position.entryPrice,
-              quantity: position.quantity,
-              side: position.side,
-              entryTime: position.entryTime,
-            },
-            currentPrice,
-            historicalData
-          )
-        } catch (error) {
-          // If MAE calculation fails, continue without it
-          console.error(`Failed to calculate MAE for ${normalizedTicker}:`, error)
-        }
-      }
-
-      const formattedPosition = formatPosition(position, currentPrice, maeResult)
-
-      const result = {
-        ticker: normalizedTicker,
-        price: currentPrice,
-        timestamp: new Date().toISOString(),
-        position: formattedPosition,
-      }
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          },
-        ],
-        structuredContent: result,
-      }
-    } catch (error) {
-      const errorResult = {
-        ticker: ticker.trim().toUpperCase(),
-        price: null as number | null,
-        timestamp: new Date().toISOString(),
-        position: null,
-      }
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                ...errorResult,
-                error: error instanceof Error ? error.message : String(error),
-                message: 'Failed to fetch position',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: errorResult,
-      }
-    }
-  }
-)
-
-// Register get_multiple_positions tool
-server.registerTool(
-  'get_multiple_positions',
-  {
-    title: 'Get Multiple Positions',
-    description: 'Get current position information for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"])',
-    inputSchema: {
-      tickers: z
-        .array(z.string())
-        .min(1)
-        .describe('Array of asset ticker symbols (e.g., ["BTC", "ETH", "SOL"])'),
-    },
-    outputSchema: z.object({
-      results: z.array(
-        z.object({
-          ticker: z.string(),
-          price: z.number().nullable(),
-          timestamp: z.string().optional(),
-          position: z
-            .object({
-              side: z.string().nullable().optional(),
-              quantity: z.number().nullable().optional(),
-              entryPrice: z.number().nullable().optional(),
-              currentPrice: z.number().nullable().optional(),
-              leverage: z.number().nullable().optional(),
-              unrealizedPnl: z.number().nullable().optional(),
-              unrealizedPnlPct: z.number().nullable().optional(),
-              pnlPctOnMargin: z.number().nullable().optional(),
-              mae: z.number().nullable().optional(),
-              worstPrice: z.number().nullable().optional(),
-              entryTime: z.number().nullable().optional(),
-            })
-            .nullable()
-            .optional(),
-        })
-      ),
-      summary: z
-        .object({
-          total: z.number(),
-          found: z.number(),
-          notFound: z.number(),
-        })
-        .optional(),
-    }),
-  },
-  async ({ tickers }: { tickers: string[] }) => {
-    if (!Array.isArray(tickers) || tickers.length === 0) {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                results: [],
-                error: 'Invalid tickers parameter',
-                message: 'Tickers must be a non-empty array of strings',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: {
-          results: [],
-        },
-      }
-    }
-
-    // Normalize all tickers
-    const normalizedTickers = tickers
-      .filter((t) => t && typeof t === 'string' && t.trim().length > 0)
-      .map((t) => t.trim().toUpperCase())
-
-    if (normalizedTickers.length === 0) {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                results: [],
-                error: 'No valid tickers',
-                message: 'All tickers must be non-empty strings',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: {
-          results: [],
-        },
-      }
-    }
-
-    try {
-      // Get active positions
-      const positions = getActivePositions(null)
-
-      // Get prices for all tickers in parallel
-      const pricePromises = normalizedTickers.map(async (ticker) => {
-        try {
-          const price = await getRealTimePrice(ticker)
-          return { ticker, price }
-        } catch (error) {
-          return { ticker, price: null as number | null }
-        }
-      })
-      const priceResults = await Promise.all(pricePromises)
-
-      // Get market data for MAE calculation
-      const { marketDataMap } = await getMarketData(normalizedTickers)
-
-      const results: Array<{
-        ticker: string
-        price: number | null
-        timestamp?: string
-        position: ReturnType<typeof formatPosition>
-      }> = []
-
-      for (const { ticker, price } of priceResults) {
-        const position = positions.get(ticker) || null
-
-        if (!position) {
-          results.push({
-            ticker,
-            price,
-            timestamp: new Date().toISOString(),
-            position: null,
-          })
-          continue
-        }
-
-        // Calculate MAE
-        let maeResult = null
-        if (price) {
-          try {
-            const assetData = marketDataMap.get(ticker)
-            const historicalData = assetData?.historicalData || assetData?.data?.historicalData || []
-            
-            maeResult = calculateMAE(
-              {
-                entryPrice: position.entryPrice,
-                quantity: position.quantity,
-                side: position.side,
-                entryTime: position.entryTime,
-              },
-              price,
-              historicalData
-            )
-          } catch (error) {
-            // Continue without MAE if calculation fails
-          }
-        }
-
-        const formattedPosition = formatPosition(position, price, maeResult)
-
-        results.push({
-          ticker,
-          price,
-          timestamp: new Date().toISOString(),
-          position: formattedPosition,
-        })
-      }
-
-      const found = results.filter((r) => r.position !== null).length
-      const notFound = results.length - found
-
-      const result = {
-        results,
-        summary: {
-          total: normalizedTickers.length,
-          found,
-          notFound,
-        },
-      }
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          },
-        ],
-        structuredContent: result,
-      }
-    } catch (error) {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                results: [],
-                error: error instanceof Error ? error.message : String(error),
-                message: 'Failed to fetch positions',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: {
-          results: [],
-        },
-      }
-    }
-  }
-)
+),
 
 // Register calculate_risk_management tool
 server.registerTool(
@@ -3403,20 +2246,8 @@ server.registerTool(
         entry_price: entryPrice,
       } as any
 
-      // Calculate position size
-      const positionSizeResult = calculatePositionSize(
-        mockSignal,
-        {
-          strategy: strategy as any,
-          totalCapital,
-          maxPositionSizePct: 20,
-          reserveCapitalPct: 10,
-          topNRanking: ranking,
-        },
-        0 // existingPositionsCount
-      )
-
-      const positionSizeUsd = positionSizeResult.sizeUsd || totalCapital * 0.1 // Fallback to 10% of capital
+      // Calculate position size (simplified - removed execution logic)
+      const positionSizeUsd = totalCapital * 0.1 // Use 10% of capital
 
       // Calculate dynamic leverage
       const leverage = calculateDynamicLeverage(
@@ -3499,532 +2330,11 @@ server.registerTool(
   }
 )
 
-// Register get_fibonacci tool
-server.registerTool(
-  'get_fibonacci',
-  {
-    title: 'Get Fibonacci Retracement',
-    description: 'Get Fibonacci retracement levels and analysis for a single trading ticker. For multiple tickers, use get_multiple_fibonacci.',
-    inputSchema: {
-      ticker: z.string().describe('Asset ticker symbol (e.g., "BTC", "ETH", "SOL")'),
-    },
-    outputSchema: z.object({
-      ticker: z.string(),
-      price: z.number().nullable(),
-      timestamp: z.string().optional(),
-      fibonacci: z
-        .object({
-          levels: z.object({
-            level0: z.number(),
-            level236: z.number(),
-            level382: z.number(),
-            level500: z.number(),
-            level618: z.number(),
-            level786: z.number(),
-            level100: z.number(),
-            level1272: z.number(),
-            level1618: z.number(),
-            level2000: z.number(),
-          }),
-          currentLevel: z.string().nullable(),
-          distanceFromLevel: z.number().nullable(),
-          isNearLevel: z.boolean(),
-          nearestLevel: z.string().nullable(),
-          nearestLevelPrice: z.number().nullable(),
-          swingHigh: z.number(),
-          swingLow: z.number(),
-          range: z.number(),
-          direction: z.enum(['uptrend', 'downtrend', 'neutral']),
-          strength: z.number(),
-          signal: z.enum(['buy', 'sell', 'neutral']).nullable(),
-        })
-        .nullable()
-        .optional(),
-    }),
-  },
-  async ({ ticker }: { ticker: string }) => {
-    if (!ticker || typeof ticker !== 'string' || ticker.trim().length === 0) {
-      const errorResult = {
-        ticker: ticker || '',
-        price: null as number | null,
-        timestamp: new Date().toISOString(),
-        fibonacci: null,
-      }
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                ...errorResult,
-                error: 'Invalid ticker parameter',
-                message: 'Ticker must be a non-empty string',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: errorResult,
-      }
-    }
-
-    try {
-      const normalizedTicker = ticker.trim().toUpperCase()
-
-      // Get current price
-      const currentPrice = await getRealTimePrice(normalizedTicker).catch(() => null)
-
-      // Get market data
-      if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 75) {
-        process.env.CANDLES_COUNT = '75'
-      }
-      const { marketDataMap } = await getMarketData([normalizedTicker])
-      const assetData = marketDataMap.get(normalizedTicker)
-
-      if (!assetData) {
-        const result = {
-          ticker: normalizedTicker,
-          price: currentPrice,
-          timestamp: new Date().toISOString(),
-          fibonacci: null,
-        }
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-          structuredContent: result,
-        }
-      }
-
-      const historicalData = assetData?.historicalData || assetData?.data?.historicalData || []
-      if (historicalData.length < 50) {
-        const result = {
-          ticker: normalizedTicker,
-          price: currentPrice,
-          timestamp: new Date().toISOString(),
-          fibonacci: null,
-        }
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-          structuredContent: result,
-        }
-      }
-
-      const highs = historicalData.map((d: any) => d.high || d.close)
-      const lows = historicalData.map((d: any) => d.low || d.close)
-      const closes = historicalData.map((d: any) => d.close)
-
-      const fibonacci = calculateFibonacciRetracement(highs, lows, closes, 50)
-      const formattedFibonacci = formatFibonacci(fibonacci)
-
-      const result = {
-        ticker: normalizedTicker,
-        price: currentPrice,
-        timestamp: new Date().toISOString(),
-        fibonacci: formattedFibonacci,
-      }
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          },
-        ],
-        structuredContent: result,
-      }
-    } catch (error) {
-      const errorResult = {
-        ticker: ticker.trim().toUpperCase(),
-        price: null as number | null,
-        timestamp: new Date().toISOString(),
-        fibonacci: null,
-      }
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                ...errorResult,
-                error: error instanceof Error ? error.message : String(error),
-                message: 'Failed to fetch Fibonacci data',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: errorResult,
-      }
-    }
-  }
-)
-
-// Register get_multiple_fibonacci tool
-server.registerTool(
-  'get_multiple_fibonacci',
-  {
-    title: 'Get Multiple Fibonacci Retracement',
-    description: 'Get Fibonacci retracement levels and analysis for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"])',
-    inputSchema: {
-      tickers: z
-        .array(z.string())
-        .min(1)
-        .describe('Array of asset ticker symbols (e.g., ["BTC", "ETH", "SOL"])'),
-    },
-    outputSchema: z.object({
-      results: z.array(
-        z.object({
-          ticker: z.string(),
-          price: z.number().nullable(),
-          timestamp: z.string().optional(),
-          fibonacci: z
-            .object({
-              levels: z.object({
-                level0: z.number(),
-                level236: z.number(),
-                level382: z.number(),
-                level500: z.number(),
-                level618: z.number(),
-                level786: z.number(),
-                level100: z.number(),
-                level1272: z.number(),
-                level1618: z.number(),
-                level2000: z.number(),
-              }),
-              currentLevel: z.string().nullable(),
-              distanceFromLevel: z.number().nullable(),
-              isNearLevel: z.boolean(),
-              nearestLevel: z.string().nullable(),
-              nearestLevelPrice: z.number().nullable(),
-              swingHigh: z.number(),
-              swingLow: z.number(),
-              range: z.number(),
-              direction: z.enum(['uptrend', 'downtrend', 'neutral']),
-              strength: z.number(),
-              signal: z.enum(['buy', 'sell', 'neutral']).nullable(),
-            })
-            .nullable()
-            .optional(),
-        })
-      ),
-      summary: z
-        .object({
-          total: z.number(),
-          found: z.number(),
-          notFound: z.number(),
-        })
-        .optional(),
-    }),
-  },
-  async ({ tickers }: { tickers: string[] }) => {
-    if (!Array.isArray(tickers) || tickers.length === 0) {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                results: [],
-                error: 'Invalid tickers parameter',
-                message: 'Tickers must be a non-empty array of strings',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: {
-          results: [],
-        },
-      }
-    }
-
-    const normalizedTickers = tickers
-      .filter((t) => t && typeof t === 'string' && t.trim().length > 0)
-      .map((t) => t.trim().toUpperCase())
-
-    if (normalizedTickers.length === 0) {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                results: [],
-                error: 'No valid tickers',
-                message: 'All tickers must be non-empty strings',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: {
-          results: [],
-        },
-      }
-    }
-
-    try {
-      if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 75) {
-        process.env.CANDLES_COUNT = '75'
-      }
-      const { marketDataMap } = await getMarketData(normalizedTickers)
-
-      const results: Array<{
-        ticker: string
-        price: number | null
-        timestamp?: string
-        fibonacci: ReturnType<typeof formatFibonacci>
-      }> = []
-
-      for (const ticker of normalizedTickers) {
-        const assetData = marketDataMap.get(ticker)
-        const price = await getRealTimePrice(ticker).catch(() => null)
-
-        if (!assetData) {
-          results.push({
-            ticker,
-            price,
-            timestamp: new Date().toISOString(),
-            fibonacci: null,
-          })
-          continue
-        }
-
-        const historicalData = assetData?.historicalData || assetData?.data?.historicalData || []
-        if (historicalData.length < 50) {
-          results.push({
-            ticker,
-            price,
-            timestamp: new Date().toISOString(),
-            fibonacci: null,
-          })
-          continue
-        }
-
-        const highs = historicalData.map((d: any) => d.high || d.close)
-        const lows = historicalData.map((d: any) => d.low || d.close)
-        const closes = historicalData.map((d: any) => d.close)
-
-        const fibonacci = calculateFibonacciRetracement(highs, lows, closes, 50)
-        const formattedFibonacci = formatFibonacci(fibonacci)
-
-        results.push({
-          ticker,
-          price,
-          timestamp: new Date().toISOString(),
-          fibonacci: formattedFibonacci,
-        })
-      }
-
-      const found = results.filter((r) => r.fibonacci !== null).length
-      const notFound = results.length - found
-
-      const result = {
-        results,
-        summary: {
-          total: normalizedTickers.length,
-          found,
-          notFound,
-        },
-      }
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          },
-        ],
-        structuredContent: result,
-      }
-    } catch (error) {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                results: [],
-                error: error instanceof Error ? error.message : String(error),
-                message: 'Failed to fetch Fibonacci data',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: {
-          results: [],
-        },
-      }
-    }
-  }
-)
-
 // Register get_orderbook_depth tool
 server.registerTool(
   'get_orderbook_depth',
   {
     title: 'Get Order Book Depth',
-    description: 'Get order book depth analysis for a single trading ticker (bid/ask depth, spread, imbalance, support/resistance zones). For multiple tickers, use get_multiple_orderbook_depth.',
-    inputSchema: {
-      ticker: z.string().describe('Asset ticker symbol (e.g., "BTC", "ETH", "SOL")'),
-    },
-    outputSchema: z.object({
-      ticker: z.string(),
-      price: z.number().nullable(),
-      timestamp: z.string().optional(),
-      orderBookDepth: z
-        .object({
-          bidPrice: z.number(),
-          askPrice: z.number(),
-          midPrice: z.number(),
-          spread: z.number(),
-          spreadPercent: z.number(),
-          bidDepth: z.number(),
-          askDepth: z.number(),
-          imbalance: z.number(),
-          supportZones: z.array(
-            z.object({
-              price: z.number(),
-              depth: z.number(),
-              distance: z.number(),
-            })
-          ),
-          resistanceZones: z.array(
-            z.object({
-              price: z.number(),
-              depth: z.number(),
-              distance: z.number(),
-            })
-          ),
-          liquidityScore: z.number(),
-          timestamp: z.number(),
-        })
-        .nullable()
-        .optional(),
-    }),
-  },
-  async ({ ticker }: { ticker: string }) => {
-    if (!ticker || typeof ticker !== 'string' || ticker.trim().length === 0) {
-      const errorResult = {
-        ticker: ticker || '',
-        price: null as number | null,
-        timestamp: new Date().toISOString(),
-        orderBookDepth: null,
-      }
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                ...errorResult,
-                error: 'Invalid ticker parameter',
-                message: 'Ticker must be a non-empty string',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: errorResult,
-      }
-    }
-
-    try {
-      const normalizedTicker = ticker.trim().toUpperCase()
-      const currentPrice = await getRealTimePrice(normalizedTicker).catch(() => null)
-
-      if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 75) {
-        process.env.CANDLES_COUNT = '75'
-      }
-      const { marketDataMap } = await getMarketData([normalizedTicker])
-      const assetData = marketDataMap.get(normalizedTicker)
-
-      if (!assetData) {
-        const result = {
-          ticker: normalizedTicker,
-          price: currentPrice,
-          timestamp: new Date().toISOString(),
-          orderBookDepth: null,
-        }
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-          structuredContent: result,
-        }
-      }
-
-      const orderBookDepth = assetData?.externalData?.orderBook || assetData?.data?.externalData?.orderBook || null
-      const formattedOrderBook = formatOrderBookDepth(orderBookDepth)
-
-      const result = {
-        ticker: normalizedTicker,
-        price: currentPrice,
-        timestamp: new Date().toISOString(),
-        orderBookDepth: formattedOrderBook,
-      }
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          },
-        ],
-        structuredContent: result,
-      }
-    } catch (error) {
-      const errorResult = {
-        ticker: ticker.trim().toUpperCase(),
-        price: null as number | null,
-        timestamp: new Date().toISOString(),
-        orderBookDepth: null,
-      }
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                ...errorResult,
-                error: error instanceof Error ? error.message : String(error),
-                message: 'Failed to fetch order book depth',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: errorResult,
-      }
-    }
-  }
-)
-
-// Register get_multiple_orderbook_depth tool
-server.registerTool(
-  'get_multiple_orderbook_depth',
-  {
-    title: 'Get Multiple Order Book Depth',
     description: 'Get order book depth analysis for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"])',
     inputSchema: {
       tickers: z
@@ -4205,176 +2515,6 @@ server.registerTool(
   'get_volume_profile',
   {
     title: 'Get Volume Profile',
-    description: 'Get volume profile analysis for a single trading ticker (POC, VAH/VAL, HVN/LVN, accumulation/distribution zones). For multiple tickers, use get_multiple_volume_profile.',
-    inputSchema: {
-      ticker: z.string().describe('Asset ticker symbol (e.g., "BTC", "ETH", "SOL")'),
-    },
-    outputSchema: z.object({
-      ticker: z.string(),
-      price: z.number().nullable(),
-      timestamp: z.string().optional(),
-      volumeProfile: z
-        .object({
-          session: z
-            .object({
-              poc: z.number(),
-              vah: z.number(),
-              val: z.number(),
-              hvn: z.array(z.object({ price: z.number(), volume: z.number() })),
-              lvn: z.array(z.object({ price: z.number(), volume: z.number() })),
-              totalVolume: z.number(),
-              sessionType: z.string(),
-              timestamp: z.number(),
-            })
-            .nullable(),
-          composite: z
-            .object({
-              poc: z.number(),
-              vah: z.number(),
-              val: z.number(),
-              compositePoc: z.number(),
-              compositeVah: z.number(),
-              compositeVal: z.number(),
-              accumulationZone: z
-                .object({
-                  priceRange: z.tuple([z.number(), z.number()]),
-                  volumeRatio: z.number(),
-                  strength: z.string(),
-                })
-                .nullable(),
-              distributionZone: z
-                .object({
-                  priceRange: z.tuple([z.number(), z.number()]),
-                  volumeRatio: z.number(),
-                  strength: z.string(),
-                })
-                .nullable(),
-              balanceZones: z.array(
-                z.object({
-                  priceRange: z.tuple([z.number(), z.number()]),
-                  volume: z.number(),
-                  center: z.number(),
-                })
-              ),
-              timeRange: z.string(),
-              timestamp: z.number(),
-            })
-            .nullable(),
-        })
-        .nullable()
-        .optional(),
-    }),
-  },
-  async ({ ticker }: { ticker: string }) => {
-    if (!ticker || typeof ticker !== 'string' || ticker.trim().length === 0) {
-      const errorResult = {
-        ticker: ticker || '',
-        price: null as number | null,
-        timestamp: new Date().toISOString(),
-        volumeProfile: null,
-      }
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                ...errorResult,
-                error: 'Invalid ticker parameter',
-                message: 'Ticker must be a non-empty string',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: errorResult,
-      }
-    }
-
-    try {
-      const normalizedTicker = ticker.trim().toUpperCase()
-      const currentPrice = await getRealTimePrice(normalizedTicker).catch(() => null)
-
-      if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 75) {
-        process.env.CANDLES_COUNT = '75'
-      }
-      const { marketDataMap } = await getMarketData([normalizedTicker])
-      const assetData = marketDataMap.get(normalizedTicker)
-
-      if (!assetData) {
-        const result = {
-          ticker: normalizedTicker,
-          price: currentPrice,
-          timestamp: new Date().toISOString(),
-          volumeProfile: null,
-        }
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-          structuredContent: result,
-        }
-      }
-
-      const volumeProfileData = assetData?.externalData?.volumeProfile || assetData?.data?.externalData?.volumeProfile || null
-      const formattedVolumeProfile = formatVolumeProfile(
-        volumeProfileData?.session || null,
-        volumeProfileData?.composite || null
-      )
-
-      const result = {
-        ticker: normalizedTicker,
-        price: currentPrice,
-        timestamp: new Date().toISOString(),
-        volumeProfile: formattedVolumeProfile,
-      }
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          },
-        ],
-        structuredContent: result,
-      }
-    } catch (error) {
-      const errorResult = {
-        ticker: ticker.trim().toUpperCase(),
-        price: null as number | null,
-        timestamp: new Date().toISOString(),
-        volumeProfile: null,
-      }
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                ...errorResult,
-                error: error instanceof Error ? error.message : String(error),
-                message: 'Failed to fetch volume profile',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: errorResult,
-      }
-    }
-  }
-)
-
-// Register get_multiple_volume_profile tool
-server.registerTool(
-  'get_multiple_volume_profile',
-  {
-    title: 'Get Multiple Volume Profile',
     description: 'Get volume profile analysis for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"])',
     inputSchema: {
       tickers: z
@@ -4579,168 +2719,6 @@ server.registerTool(
   'get_market_structure',
   {
     title: 'Get Market Structure',
-    description: 'Get market structure analysis (Change of Character, swing highs/lows, reversal signals) for a single trading ticker. For multiple tickers, use get_multiple_market_structure.',
-    inputSchema: {
-      ticker: z.string().describe('Asset ticker symbol (e.g., "BTC", "ETH", "SOL")'),
-    },
-    outputSchema: z.object({
-      ticker: z.string(),
-      price: z.number().nullable(),
-      timestamp: z.string().optional(),
-      marketStructure: z
-        .object({
-          structure: z.enum(['bullish', 'bearish', 'neutral']),
-          coc: z.enum(['bullish', 'bearish', 'none']),
-          lastSwingHigh: z.number().nullable(),
-          lastSwingLow: z.number().nullable(),
-          structureStrength: z.number(),
-          reversalSignal: z.boolean(),
-          swingHighs: z.array(
-            z.object({
-              price: z.number(),
-              index: z.number(),
-              timestamp: z.number(),
-            })
-          ),
-          swingLows: z.array(
-            z.object({
-              price: z.number(),
-              index: z.number(),
-              timestamp: z.number(),
-            })
-          ),
-          timestamp: z.number(),
-        })
-        .nullable()
-        .optional(),
-    }),
-  },
-  async ({ ticker }: { ticker: string }) => {
-    if (!ticker || typeof ticker !== 'string' || ticker.trim().length === 0) {
-      const errorResult = {
-        ticker: ticker || '',
-        price: null as number | null,
-        timestamp: new Date().toISOString(),
-        marketStructure: null,
-      }
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                ...errorResult,
-                error: 'Invalid ticker parameter',
-                message: 'Ticker must be a non-empty string',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: errorResult,
-      }
-    }
-
-    try {
-      const normalizedTicker = ticker.trim().toUpperCase()
-      const currentPrice = await getRealTimePrice(normalizedTicker).catch(() => null)
-
-      if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 75) {
-        process.env.CANDLES_COUNT = '75'
-      }
-      const { marketDataMap } = await getMarketData([normalizedTicker])
-      const assetData = marketDataMap.get(normalizedTicker)
-
-      if (!assetData || !currentPrice) {
-        const result = {
-          ticker: normalizedTicker,
-          price: currentPrice,
-          timestamp: new Date().toISOString(),
-          marketStructure: null,
-        }
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-          structuredContent: result,
-        }
-      }
-
-      const historicalData = assetData?.historicalData || assetData?.data?.historicalData || []
-      if (historicalData.length < 20) {
-        const result = {
-          ticker: normalizedTicker,
-          price: currentPrice,
-          timestamp: new Date().toISOString(),
-          marketStructure: null,
-        }
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-          structuredContent: result,
-        }
-      }
-
-      const marketStructure = detectChangeOfCharacter(historicalData, currentPrice)
-      const formattedMarketStructure = formatMarketStructure(marketStructure)
-
-      const result = {
-        ticker: normalizedTicker,
-        price: currentPrice,
-        timestamp: new Date().toISOString(),
-        marketStructure: formattedMarketStructure,
-      }
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          },
-        ],
-        structuredContent: result,
-      }
-    } catch (error) {
-      const errorResult = {
-        ticker: ticker.trim().toUpperCase(),
-        price: null as number | null,
-        timestamp: new Date().toISOString(),
-        marketStructure: null,
-      }
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                ...errorResult,
-                error: error instanceof Error ? error.message : String(error),
-                message: 'Failed to fetch market structure',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: errorResult,
-      }
-    }
-  }
-)
-
-// Register get_multiple_market_structure tool
-server.registerTool(
-  'get_multiple_market_structure',
-  {
-    title: 'Get Multiple Market Structure',
     description: 'Get market structure analysis for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"])',
     inputSchema: {
       tickers: z
@@ -4939,163 +2917,6 @@ server.registerTool(
   'get_candlestick_patterns',
   {
     title: 'Get Candlestick Patterns',
-    description: 'Get candlestick pattern detection for a single trading ticker (doji, hammer, engulfing patterns). For multiple tickers, use get_multiple_candlestick_patterns.',
-    inputSchema: {
-      ticker: z.string().describe('Asset ticker symbol (e.g., "BTC", "ETH", "SOL")'),
-    },
-    outputSchema: z.object({
-      ticker: z.string(),
-      price: z.number().nullable(),
-      timestamp: z.string().optional(),
-      candlestickPatterns: z
-        .object({
-          patterns: z.array(
-            z.object({
-              type: z.enum(['doji', 'hammer', 'bullish_engulfing', 'bearish_engulfing']),
-              index: z.number(),
-              bullish: z.boolean(),
-            })
-          ),
-          latestPattern: z
-            .object({
-              type: z.enum(['doji', 'hammer', 'bullish_engulfing', 'bearish_engulfing']),
-              index: z.number(),
-              bullish: z.boolean(),
-            })
-            .nullable(),
-          bullishCount: z.number(),
-          bearishCount: z.number(),
-        })
-        .nullable()
-        .optional(),
-    }),
-  },
-  async ({ ticker }: { ticker: string }) => {
-    if (!ticker || typeof ticker !== 'string' || ticker.trim().length === 0) {
-      const errorResult = {
-        ticker: ticker || '',
-        price: null as number | null,
-        timestamp: new Date().toISOString(),
-        candlestickPatterns: null,
-      }
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                ...errorResult,
-                error: 'Invalid ticker parameter',
-                message: 'Ticker must be a non-empty string',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: errorResult,
-      }
-    }
-
-    try {
-      const normalizedTicker = ticker.trim().toUpperCase()
-      const currentPrice = await getRealTimePrice(normalizedTicker).catch(() => null)
-
-      if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 75) {
-        process.env.CANDLES_COUNT = '75'
-      }
-      const { marketDataMap } = await getMarketData([normalizedTicker])
-      const assetData = marketDataMap.get(normalizedTicker)
-
-      if (!assetData) {
-        const result = {
-          ticker: normalizedTicker,
-          price: currentPrice,
-          timestamp: new Date().toISOString(),
-          candlestickPatterns: null,
-        }
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-          structuredContent: result,
-        }
-      }
-
-      const historicalData = assetData?.historicalData || assetData?.data?.historicalData || []
-      if (historicalData.length < 5) {
-        const result = {
-          ticker: normalizedTicker,
-          price: currentPrice,
-          timestamp: new Date().toISOString(),
-          candlestickPatterns: formatCandlestickPatterns(null),
-        }
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-          structuredContent: result,
-        }
-      }
-
-      const patterns = detectCandlestickPatterns(historicalData, 5)
-      const formattedPatterns = formatCandlestickPatterns(patterns)
-
-      const result = {
-        ticker: normalizedTicker,
-        price: currentPrice,
-        timestamp: new Date().toISOString(),
-        candlestickPatterns: formattedPatterns,
-      }
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          },
-        ],
-        structuredContent: result,
-      }
-    } catch (error) {
-      const errorResult = {
-        ticker: ticker.trim().toUpperCase(),
-        price: null as number | null,
-        timestamp: new Date().toISOString(),
-        candlestickPatterns: null,
-      }
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                ...errorResult,
-                error: error instanceof Error ? error.message : String(error),
-                message: 'Failed to fetch candlestick patterns',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: errorResult,
-      }
-    }
-  }
-)
-
-// Register get_multiple_candlestick_patterns tool
-server.registerTool(
-  'get_multiple_candlestick_patterns',
-  {
-    title: 'Get Multiple Candlestick Patterns',
     description: 'Get candlestick pattern detection for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"])',
     inputSchema: {
       tickers: z
@@ -5289,174 +3110,6 @@ server.registerTool(
   'get_divergence',
   {
     title: 'Get Divergence Detection',
-    description: 'Get RSI divergence detection for a single trading ticker (bullish/bearish divergence signals). For multiple tickers, use get_multiple_divergence.',
-    inputSchema: {
-      ticker: z.string().describe('Asset ticker symbol (e.g., "BTC", "ETH", "SOL")'),
-    },
-    outputSchema: z.object({
-      ticker: z.string(),
-      price: z.number().nullable(),
-      timestamp: z.string().optional(),
-      divergence: z
-        .object({
-          bullishDivergence: z.boolean(),
-          bearishDivergence: z.boolean(),
-          divergence: z.enum(['bullish', 'bearish']).nullable(),
-        })
-        .nullable()
-        .optional(),
-    }),
-  },
-  async ({ ticker }: { ticker: string }) => {
-    if (!ticker || typeof ticker !== 'string' || ticker.trim().length === 0) {
-      const errorResult = {
-        ticker: ticker || '',
-        price: null as number | null,
-        timestamp: new Date().toISOString(),
-        divergence: null,
-      }
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                ...errorResult,
-                error: 'Invalid ticker parameter',
-                message: 'Ticker must be a non-empty string',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: errorResult,
-      }
-    }
-
-    try {
-      const normalizedTicker = ticker.trim().toUpperCase()
-      const currentPrice = await getRealTimePrice(normalizedTicker).catch(() => null)
-
-      if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 75) {
-        process.env.CANDLES_COUNT = '75'
-      }
-      const { marketDataMap } = await getMarketData([normalizedTicker])
-      const assetData = marketDataMap.get(normalizedTicker)
-
-      if (!assetData) {
-        const result = {
-          ticker: normalizedTicker,
-          price: currentPrice,
-          timestamp: new Date().toISOString(),
-          divergence: null,
-        }
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-          structuredContent: result,
-        }
-      }
-
-      const historicalData = assetData?.historicalData || assetData?.data?.historicalData || []
-
-      if (historicalData.length < 20) {
-        const result = {
-          ticker: normalizedTicker,
-          price: currentPrice,
-          timestamp: new Date().toISOString(),
-          divergence: null,
-        }
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-          structuredContent: result,
-        }
-      }
-
-      // Calculate RSI values for divergence detection
-      const prices = historicalData.map((d: any) => d.close)
-      const rsiValues = calculateRSI(prices, 14)
-
-      if (rsiValues.length < 20) {
-        const result = {
-          ticker: normalizedTicker,
-          price: currentPrice,
-          timestamp: new Date().toISOString(),
-          divergence: null,
-        }
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-          structuredContent: result,
-        }
-      }
-
-      // Use RSI array for divergence detection
-      const divergence = detectDivergence(prices, rsiValues, 20)
-      const formattedDivergence = formatDivergence(divergence)
-
-      const result = {
-        ticker: normalizedTicker,
-        price: currentPrice,
-        timestamp: new Date().toISOString(),
-        divergence: formattedDivergence,
-      }
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          },
-        ],
-        structuredContent: result,
-      }
-    } catch (error) {
-      const errorResult = {
-        ticker: ticker.trim().toUpperCase(),
-        price: null as number | null,
-        timestamp: new Date().toISOString(),
-        divergence: null,
-      }
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                ...errorResult,
-                error: error instanceof Error ? error.message : String(error),
-                message: 'Failed to fetch divergence data',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: errorResult,
-      }
-    }
-  }
-)
-
-// Register get_multiple_divergence tool
-server.registerTool(
-  'get_multiple_divergence',
-  {
-    title: 'Get Multiple Divergence Detection',
     description: 'Get RSI divergence detection for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"])',
     inputSchema: {
       tickers: z
@@ -5653,183 +3306,6 @@ server.registerTool(
   'get_liquidation_levels',
   {
     title: 'Get Liquidation Levels',
-    description: 'Get liquidation level analysis for a single trading ticker (clusters, stop hunt zones, safe entry zones). For multiple tickers, use get_multiple_liquidation_levels.',
-    inputSchema: {
-      ticker: z.string().describe('Asset ticker symbol (e.g., "BTC", "ETH", "SOL")'),
-    },
-    outputSchema: z.object({
-      ticker: z.string(),
-      price: z.number().nullable(),
-      timestamp: z.string().optional(),
-      liquidationLevels: z
-        .object({
-          clusters: z.object({
-            long: z.array(z.any()),
-            short: z.array(z.any()),
-            nearest: z.any().nullable(),
-            distance: z.number(),
-          }),
-          liquidityGrab: z.object({
-            detected: z.boolean(),
-            zone: z
-              .object({
-                priceLow: z.number(),
-                priceHigh: z.number(),
-              })
-              .nullable(),
-            side: z.enum(['long', 'short', 'none']),
-          }),
-          stopHunt: z.object({
-            predicted: z.boolean(),
-            targetPrice: z.number().nullable(),
-            side: z.enum(['long', 'short', 'none']),
-          }),
-          cascade: z.object({
-            risk: z.enum(['high', 'medium', 'low']),
-            triggerPrice: z.number().nullable(),
-          }),
-          safeEntry: z.object({
-            zones: z.array(
-              z.object({
-                priceLow: z.number(),
-                priceHigh: z.number(),
-              })
-            ),
-            confidence: z.number(),
-          }),
-        })
-        .nullable()
-        .optional(),
-    }),
-  },
-  async ({ ticker }: { ticker: string }) => {
-    if (!ticker || typeof ticker !== 'string' || ticker.trim().length === 0) {
-      const errorResult = {
-        ticker: ticker || '',
-        price: null as number | null,
-        timestamp: new Date().toISOString(),
-        liquidationLevels: null,
-      }
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                ...errorResult,
-                error: 'Invalid ticker parameter',
-                message: 'Ticker must be a non-empty string',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: errorResult,
-      }
-    }
-
-    try {
-      const normalizedTicker = ticker.trim().toUpperCase()
-      const currentPrice = await getRealTimePrice(normalizedTicker).catch(() => null)
-
-      if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 75) {
-        process.env.CANDLES_COUNT = '75'
-      }
-      const { marketDataMap } = await getMarketData([normalizedTicker])
-      const assetData = marketDataMap.get(normalizedTicker)
-
-      if (!assetData || !currentPrice) {
-        const result = {
-          ticker: normalizedTicker,
-          price: currentPrice,
-          timestamp: new Date().toISOString(),
-          liquidationLevels: null,
-        }
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-          structuredContent: result,
-        }
-      }
-
-      const futuresData = assetData?.externalData?.futures || assetData?.data?.externalData?.futures || null
-      const liquidationData = futuresData?.liquidation || null
-
-      if (!liquidationData) {
-        const result = {
-          ticker: normalizedTicker,
-          price: currentPrice,
-          timestamp: new Date().toISOString(),
-          liquidationLevels: null,
-        }
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-          structuredContent: result,
-        }
-      }
-
-      const liquidation = calculateLiquidationIndicators(liquidationData, currentPrice)
-      const formattedLiquidation = formatLiquidationLevels(liquidation)
-
-      const result = {
-        ticker: normalizedTicker,
-        price: currentPrice,
-        timestamp: new Date().toISOString(),
-        liquidationLevels: formattedLiquidation,
-      }
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          },
-        ],
-        structuredContent: result,
-      }
-    } catch (error) {
-      const errorResult = {
-        ticker: ticker.trim().toUpperCase(),
-        price: null as number | null,
-        timestamp: new Date().toISOString(),
-        liquidationLevels: null,
-      }
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                ...errorResult,
-                error: error instanceof Error ? error.message : String(error),
-                message: 'Failed to fetch liquidation levels',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: errorResult,
-      }
-    }
-  }
-)
-
-// Register get_multiple_liquidation_levels tool
-server.registerTool(
-  'get_multiple_liquidation_levels',
-  {
-    title: 'Get Multiple Liquidation Levels',
     description: 'Get liquidation level analysis for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"])',
     inputSchema: {
       tickers: z
@@ -6043,168 +3519,6 @@ server.registerTool(
   'get_long_short_ratio',
   {
     title: 'Get Long/Short Ratio',
-    description: 'Get long/short ratio analysis for a single trading ticker (sentiment, contrarian signals, extreme ratios). For multiple tickers, use get_multiple_long_short_ratio.',
-    inputSchema: {
-      ticker: z.string().describe('Asset ticker symbol (e.g., "BTC", "ETH", "SOL")'),
-    },
-    outputSchema: z.object({
-      ticker: z.string(),
-      price: z.number().nullable(),
-      timestamp: z.string().optional(),
-      longShortRatio: z
-        .object({
-          sentiment: z.object({
-            overall: z.enum(['extreme_long', 'extreme_short', 'moderate_long', 'moderate_short', 'balanced']),
-            retail: z.enum(['long', 'short', 'balanced']),
-            pro: z.enum(['long', 'short', 'balanced']),
-          }),
-          contrarian: z.object({
-            signal: z.boolean(),
-            direction: z.enum(['long', 'short', 'neutral']),
-            strength: z.number(),
-          }),
-          extreme: z.object({
-            detected: z.boolean(),
-            level: z.enum(['extreme_long', 'extreme_short', 'normal']),
-            reversalSignal: z.boolean(),
-          }),
-          divergence: z.object({
-            retailVsPro: z.number(),
-            signal: z.enum(['follow_pro', 'fade_retail', 'neutral']),
-          }),
-        })
-        .nullable()
-        .optional(),
-    }),
-  },
-  async ({ ticker }: { ticker: string }) => {
-    if (!ticker || typeof ticker !== 'string' || ticker.trim().length === 0) {
-      const errorResult = {
-        ticker: ticker || '',
-        price: null as number | null,
-        timestamp: new Date().toISOString(),
-        longShortRatio: null,
-      }
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                ...errorResult,
-                error: 'Invalid ticker parameter',
-                message: 'Ticker must be a non-empty string',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: errorResult,
-      }
-    }
-
-    try {
-      const normalizedTicker = ticker.trim().toUpperCase()
-      const currentPrice = await getRealTimePrice(normalizedTicker).catch(() => null)
-
-      if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 75) {
-        process.env.CANDLES_COUNT = '75'
-      }
-      const { marketDataMap } = await getMarketData([normalizedTicker])
-      const assetData = marketDataMap.get(normalizedTicker)
-
-      if (!assetData) {
-        const result = {
-          ticker: normalizedTicker,
-          price: currentPrice,
-          timestamp: new Date().toISOString(),
-          longShortRatio: null,
-        }
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-          structuredContent: result,
-        }
-      }
-
-      const futuresData = assetData?.externalData?.futures || assetData?.data?.externalData?.futures || null
-      const longShortRatioData = futuresData?.longShortRatio || null
-
-      if (!longShortRatioData) {
-        const result = {
-          ticker: normalizedTicker,
-          price: currentPrice,
-          timestamp: new Date().toISOString(),
-          longShortRatio: null,
-        }
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-          structuredContent: result,
-        }
-      }
-
-      const ratio = calculateLongShortRatioIndicators(longShortRatioData)
-      const formattedRatio = formatLongShortRatio(ratio)
-
-      const result = {
-        ticker: normalizedTicker,
-        price: currentPrice,
-        timestamp: new Date().toISOString(),
-        longShortRatio: formattedRatio,
-      }
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          },
-        ],
-        structuredContent: result,
-      }
-    } catch (error) {
-      const errorResult = {
-        ticker: ticker.trim().toUpperCase(),
-        price: null as number | null,
-        timestamp: new Date().toISOString(),
-        longShortRatio: null,
-      }
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                ...errorResult,
-                error: error instanceof Error ? error.message : String(error),
-                message: 'Failed to fetch long/short ratio',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: errorResult,
-      }
-    }
-  }
-)
-
-// Register get_multiple_long_short_ratio tool
-server.registerTool(
-  'get_multiple_long_short_ratio',
-  {
-    title: 'Get Multiple Long/Short Ratio',
     description: 'Get long/short ratio analysis for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"])',
     inputSchema: {
       tickers: z
@@ -6398,1725 +3712,11 @@ server.registerTool(
   }
 )
 
-// Register get_spot_futures_divergence tool
-server.registerTool(
-  'get_spot_futures_divergence',
-  {
-    title: 'Get Spot-Futures Divergence',
-    description: 'Get spot-futures divergence analysis for a single trading ticker (premium/discount, arbitrage opportunities, mean reversion signals). For multiple tickers, use get_multiple_spot_futures_divergence.',
-    inputSchema: {
-      ticker: z.string().describe('Asset ticker symbol (e.g., "BTC", "ETH", "SOL")'),
-    },
-    outputSchema: z.object({
-      ticker: z.string(),
-      price: z.number().nullable(),
-      timestamp: z.string().optional(),
-      spotFuturesDivergence: z
-        .object({
-          premium: z.object({
-            current: z.number(),
-            level: z.enum(['high', 'normal', 'low']),
-            trend: z.enum(['rising', 'falling', 'neutral']),
-          }),
-          arbitrage: z.object({
-            opportunity: z.boolean(),
-            type: z.enum(['long_spot_short_futures', 'short_spot_long_futures', 'none']),
-            profit: z.number(),
-          }),
-          meanReversion: z.object({
-            signal: z.boolean(),
-            direction: z.enum(['long', 'short', 'neutral']),
-            strength: z.number(),
-          }),
-          divergence: z.object({
-            fromAverage: z.number(),
-            signal: z.enum(['bullish', 'bearish', 'neutral']),
-          }),
-        })
-        .nullable()
-        .optional(),
-    }),
-  },
-  async ({ ticker }: { ticker: string }) => {
-    if (!ticker || typeof ticker !== 'string' || ticker.trim().length === 0) {
-      const errorResult = {
-        ticker: ticker || '',
-        price: null as number | null,
-        timestamp: new Date().toISOString(),
-        spotFuturesDivergence: null,
-      }
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                ...errorResult,
-                error: 'Invalid ticker parameter',
-                message: 'Ticker must be a non-empty string',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: errorResult,
-      }
-    }
-
-    try {
-      const normalizedTicker = ticker.trim().toUpperCase()
-      const currentPrice = await getRealTimePrice(normalizedTicker).catch(() => null)
-
-      if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 75) {
-        process.env.CANDLES_COUNT = '75'
-      }
-      const { marketDataMap } = await getMarketData([normalizedTicker])
-      const assetData = marketDataMap.get(normalizedTicker)
-
-      if (!assetData) {
-        const result = {
-          ticker: normalizedTicker,
-          price: currentPrice,
-          timestamp: new Date().toISOString(),
-          spotFuturesDivergence: null,
-        }
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-          structuredContent: result,
-        }
-      }
-
-      const futuresData = assetData?.externalData?.futures || assetData?.data?.externalData?.futures || null
-      const premiumIndexData = futuresData?.premiumIndex || null
-
-      if (!premiumIndexData) {
-        const result = {
-          ticker: normalizedTicker,
-          price: currentPrice,
-          timestamp: new Date().toISOString(),
-          spotFuturesDivergence: null,
-        }
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(result, null, 2),
-            },
-          ],
-          structuredContent: result,
-        }
-      }
-
-      const divergence = calculateSpotFuturesDivergenceIndicators(premiumIndexData)
-      const formattedDivergence = formatSpotFuturesDivergence(divergence)
-
-      const result = {
-        ticker: normalizedTicker,
-        price: currentPrice,
-        timestamp: new Date().toISOString(),
-        spotFuturesDivergence: formattedDivergence,
-      }
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          },
-        ],
-        structuredContent: result,
-      }
-    } catch (error) {
-      const errorResult = {
-        ticker: ticker.trim().toUpperCase(),
-        price: null as number | null,
-        timestamp: new Date().toISOString(),
-        spotFuturesDivergence: null,
-      }
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                ...errorResult,
-                error: error instanceof Error ? error.message : String(error),
-                message: 'Failed to fetch spot-futures divergence',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: errorResult,
-      }
-    }
-  }
-)
-
-// Register get_multiple_spot_futures_divergence tool
-server.registerTool(
-  'get_multiple_spot_futures_divergence',
-  {
-    title: 'Get Multiple Spot-Futures Divergence',
-    description: 'Get spot-futures divergence analysis for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"])',
-    inputSchema: {
-      tickers: z
-        .array(z.string())
-        .min(1)
-        .describe('Array of asset ticker symbols (e.g., ["BTC", "ETH", "SOL"])'),
-    },
-    outputSchema: z.object({
-      results: z.array(
-        z.object({
-          ticker: z.string(),
-          price: z.number().nullable(),
-          timestamp: z.string().optional(),
-          spotFuturesDivergence: z
-            .object({
-              premium: z.object({
-                current: z.number(),
-                level: z.enum(['high', 'normal', 'low']),
-                trend: z.enum(['rising', 'falling', 'neutral']),
-              }),
-              arbitrage: z.object({
-                opportunity: z.boolean(),
-                type: z.enum(['long_spot_short_futures', 'short_spot_long_futures', 'none']),
-                profit: z.number(),
-              }),
-              meanReversion: z.object({
-                signal: z.boolean(),
-                direction: z.enum(['long', 'short', 'neutral']),
-                strength: z.number(),
-              }),
-              divergence: z.object({
-                fromAverage: z.number(),
-                signal: z.enum(['bullish', 'bearish', 'neutral']),
-              }),
-            })
-            .nullable()
-            .optional(),
-        })
-      ),
-      summary: z
-        .object({
-          total: z.number(),
-          found: z.number(),
-          notFound: z.number(),
-        })
-        .optional(),
-    }),
-  },
-  async ({ tickers }: { tickers: string[] }) => {
-    if (!Array.isArray(tickers) || tickers.length === 0) {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                results: [],
-                error: 'Invalid tickers parameter',
-                message: 'Tickers must be a non-empty array of strings',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: {
-          results: [],
-        },
-      }
-    }
-
-    const normalizedTickers = tickers
-      .filter((t) => t && typeof t === 'string' && t.trim().length > 0)
-      .map((t) => t.trim().toUpperCase())
-
-    if (normalizedTickers.length === 0) {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                results: [],
-                error: 'No valid tickers',
-                message: 'All tickers must be non-empty strings',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: {
-          results: [],
-        },
-      }
-    }
-
-    try {
-      if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 75) {
-        process.env.CANDLES_COUNT = '75'
-      }
-      const { marketDataMap } = await getMarketData(normalizedTickers)
-
-      const results: Array<{
-        ticker: string
-        price: number | null
-        timestamp?: string
-        spotFuturesDivergence: ReturnType<typeof formatSpotFuturesDivergence>
-      }> = []
-
-      for (const ticker of normalizedTickers) {
-        const assetData = marketDataMap.get(ticker)
-        const price = await getRealTimePrice(ticker).catch(() => null)
-
-        if (!assetData) {
-          results.push({
-            ticker,
-            price,
-            timestamp: new Date().toISOString(),
-            spotFuturesDivergence: null,
-          })
-          continue
-        }
-
-        const futuresData = assetData?.externalData?.futures || assetData?.data?.externalData?.futures || null
-        const premiumIndexData = futuresData?.premiumIndex || null
-
-        if (!premiumIndexData) {
-          results.push({
-            ticker,
-            price,
-            timestamp: new Date().toISOString(),
-            spotFuturesDivergence: null,
-          })
-          continue
-        }
-
-        const divergence = calculateSpotFuturesDivergenceIndicators(premiumIndexData)
-        const formattedDivergence = formatSpotFuturesDivergence(divergence)
-
-        results.push({
-          ticker,
-          price,
-          timestamp: new Date().toISOString(),
-          spotFuturesDivergence: formattedDivergence,
-        })
-      }
-
-      const found = results.filter((r) => r.spotFuturesDivergence !== null).length
-      const notFound = results.length - found
-
-      const result = {
-        results,
-        summary: {
-          total: normalizedTickers.length,
-          found,
-          notFound,
-        },
-      }
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          },
-        ],
-        structuredContent: result,
-      }
-    } catch (error) {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                results: [],
-                error: error instanceof Error ? error.message : String(error),
-                message: 'Failed to fetch spot-futures divergence',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: {
-          results: [],
-        },
-      }
-    }
-  }
-)
-
-// Helper function to format execution data from Order
-function formatExecutionFromOrder(order: any, isSpot: boolean = false) {
-  const leverage = isSpot ? 1 : (order.leverage || 1)
-  const positionValue = (order.filledQuantity || order.quantity) * (order.filledPrice || order.price || 0)
-  const marginRequired = isSpot ? positionValue : positionValue / leverage
-
-  return {
-    orderId: order.id,
-    ticker: order.symbol,
-    side: order.side,
-    quantity: order.filledQuantity || order.quantity,
-    price: order.filledPrice || order.price || 0,
-    leverage,
-    orderType: order.type || 'MARKET',
-    positionValue,
-    marginRequired,
-    isSpot,
-    status: order.status || 'PENDING',
-    submittedAt: order.submittedAt ? new Date(order.submittedAt).toISOString() : new Date().toISOString(),
-    filledAt: order.filledAt ? new Date(order.filledAt).toISOString() : null,
-    estimatedFillPrice: order.filledPrice || order.price || 0,
-    estimatedSlippage: order.type === 'MARKET' ? (order.filledPrice || order.price || 0) * 0.001 : 0,
-    rejectedReason: order.rejectedReason || null,
-  }
-}
-
-// Helper function to create Signal from execution parameters
-function createSignalFromExecution(
-  ticker: string,
-  side: 'LONG' | 'SHORT',
-  quantity: number,
-  price: number,
-  leverage: number = 1
-): Signal {
-  return {
-    coin: ticker,
-    signal: side === 'LONG' ? 'buy_to_enter' : 'sell_to_enter',
-    confidence: 1.0, // Default confidence for manual execution
-    entry_price: price,
-    quantity,
-    leverage,
-  }
-}
-
-// Register get_execution_spot tool
-server.registerTool(
-  'get_execution_spot',
-  {
-    title: 'Get Spot Execution',
-    description: 'Get spot trading execution information for a single ticker (no leverage, 1x). For multiple tickers, use get_multiple_execution_spot.',
-    inputSchema: {
-      ticker: z.string().describe('Asset ticker symbol (e.g., "BTC", "ETH", "SOL")'),
-      side: z.enum(['LONG', 'SHORT']).describe('Trade side: LONG (buy) or SHORT (sell)'),
-      quantity: z.number().positive().describe('Quantity to trade (in base asset units)'),
-      price: z.number().positive().optional().describe('Limit price (optional, if not provided, uses current market price)'),
-      orderType: z.enum(['MARKET', 'LIMIT']).default('MARKET').describe('Order type: MARKET or LIMIT'),
-      execute: z.boolean().default(false).optional().describe('Whether to actually execute the order via Hyperliquid (default: false, simulation only)'),
-      useLiveExecutor: z.boolean().default(false).optional().describe('Whether to use live executor (requires walletApiKey and accountAddress, default: false, uses paper executor)'),
-      accountAddress: z.string().optional().describe('Hyperliquid account address (optional, if not provided, uses environment variable HYPERLIQUID_ACCOUNT_ADDRESS)'),
-      walletApiKey: z.string().optional().describe('Hyperliquid wallet API key / private key (optional, if not provided, uses environment variable HYPERLIQUID_WALLET_API_KEY)'),
-    },
-    outputSchema: z.object({
-      execution: z.object({
-        orderId: z.string(),
-        ticker: z.string(),
-        side: z.enum(['LONG', 'SHORT']),
-        quantity: z.number(),
-        price: z.number(),
-        leverage: z.literal(1),
-        orderType: z.enum(['MARKET', 'LIMIT']),
-        positionValue: z.number(),
-        marginRequired: z.number(),
-        isSpot: z.literal(true),
-        status: z.string(),
-        submittedAt: z.string(),
-        estimatedFillPrice: z.number(),
-        estimatedSlippage: z.number(),
-      }),
-      timestamp: z.string().optional(),
-    }),
-  },
-  async ({ ticker, side, quantity, price, orderType = 'MARKET', execute = false, useLiveExecutor = false, accountAddress, walletApiKey }: { ticker: string; side: 'LONG' | 'SHORT'; quantity: number; price?: number; orderType?: 'MARKET' | 'LIMIT'; execute?: boolean; useLiveExecutor?: boolean; accountAddress?: string; walletApiKey?: string }) => {
-    if (!ticker || typeof ticker !== 'string' || ticker.trim().length === 0) {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                error: 'Invalid ticker parameter',
-                message: 'Ticker must be a non-empty string',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: {
-          execution: null,
-          timestamp: new Date().toISOString(),
-        },
-      }
-    }
-
-    if (!quantity || quantity <= 0) {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                error: 'Invalid quantity parameter',
-                message: 'Quantity must be a positive number',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: {
-          execution: null,
-          timestamp: new Date().toISOString(),
-        },
-      }
-    }
-
-    try {
-      const normalizedTicker = ticker.trim().toUpperCase()
-      const currentPrice = price || (await getRealTimePrice(normalizedTicker).catch(() => null))
-
-      if (!currentPrice || currentPrice <= 0) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(
-                {
-                  error: 'Failed to get current price',
-                  message: 'Price is required for spot execution',
-                },
-                null,
-                2
-              ),
-            },
-          ],
-          structuredContent: {
-            execution: null,
-            timestamp: new Date().toISOString(),
-          },
-        }
-      }
-
-      let execution: any
-
-      if (execute) {
-        // Actually execute the order
-        const signal = createSignalFromExecution(normalizedTicker, side, quantity, currentPrice, 1)
-        
-        if (useLiveExecutor) {
-          // Use live executor (requires Hyperliquid wallet API key)
-          // Use provided credentials or fallback to environment variables
-          const finalWalletApiKey = walletApiKey || getHyperliquidWalletApiKey()
-          const finalAccountAddress = accountAddress || getHyperliquidAccountAddress()
-          
-          if (!finalWalletApiKey || !finalAccountAddress) {
-            return {
-              content: [
-                {
-                  type: 'text',
-                  text: JSON.stringify(
-                    {
-                      error: 'Live executor requires walletApiKey and accountAddress',
-                      message: 'Please provide walletApiKey and accountAddress as parameters, or configure HYPERLIQUID_WALLET_API_KEY and HYPERLIQUID_ACCOUNT_ADDRESS in environment variables',
-                    },
-                    null,
-                    2
-                  ),
-                },
-              ],
-              structuredContent: {
-                execution: null,
-                timestamp: new Date().toISOString(),
-              },
-            }
-          }
-
-          const liveExecutor = new LiveExecutor({
-            tradesFile: './trades/live-trades.json',
-            orderFillTimeoutMs: 30000,
-            retryOnTimeout: false,
-            maxRetries: 3,
-            walletApiKey: finalWalletApiKey,
-            accountAddress: finalAccountAddress,
-          })
-
-          const order = await liveExecutor.executeEntry(signal, currentPrice)
-          execution = formatExecutionFromOrder(order, true)
-        } else {
-          // Use paper executor (simulation)
-          const paperExecutor = new PaperExecutor({
-            paperCapital: parseFloat(process.env.PAPER_CAPITAL || '10000'),
-            tradesFile: './trades/paper-trades.json',
-            simulateSlippage: true,
-            slippagePct: 0.1,
-          })
-
-          const order = await paperExecutor.executeEntry(signal, currentPrice)
-          execution = formatExecutionFromOrder(order, true)
-        }
-      } else {
-        // Simulation only - return execution info without executing
-        const positionValue = quantity * currentPrice
-        const marginRequired = positionValue // Spot = no leverage
-        const orderId = `spot_sim_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-
-        execution = {
-          orderId,
-          ticker: normalizedTicker,
-          side,
-          quantity,
-          price: currentPrice,
-          leverage: 1,
-          orderType,
-          positionValue,
-          marginRequired,
-          isSpot: true,
-          status: 'SIMULATION',
-          submittedAt: new Date().toISOString(),
-          estimatedFillPrice: currentPrice,
-          estimatedSlippage: orderType === 'MARKET' ? currentPrice * 0.001 : 0,
-          rejectedReason: null,
-        }
-      }
-
-      const result = {
-        execution,
-        timestamp: new Date().toISOString(),
-      }
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          },
-        ],
-        structuredContent: result,
-      }
-    } catch (error) {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                error: error instanceof Error ? error.message : String(error),
-                message: 'Failed to get spot execution information',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: {
-          execution: null,
-          timestamp: new Date().toISOString(),
-        },
-      }
-    }
-  }
-)
-
-// Register get_multiple_execution_spot tool
-server.registerTool(
-  'get_multiple_execution_spot',
-  {
-    title: 'Get Multiple Spot Execution',
-    description: 'Get spot trading execution information for multiple tickers at once (e.g., [{"ticker": "BTC", "side": "LONG", "quantity": 0.1}])',
-    inputSchema: {
-      executions: z
-        .array(
-          z.object({
-            ticker: z.string(),
-            side: z.enum(['LONG', 'SHORT']),
-            quantity: z.number().positive(),
-            price: z.number().positive().optional(),
-            orderType: z.enum(['MARKET', 'LIMIT']).default('MARKET').optional(),
-          })
-        )
-        .min(1)
-        .describe('Array of execution requests'),
-    },
-    outputSchema: z.object({
-      results: z.array(
-        z.object({
-          execution: z
-            .object({
-              orderId: z.string(),
-              ticker: z.string(),
-              side: z.enum(['LONG', 'SHORT']),
-              quantity: z.number(),
-              price: z.number(),
-              leverage: z.literal(1),
-              orderType: z.enum(['MARKET', 'LIMIT']),
-              positionValue: z.number(),
-              marginRequired: z.number(),
-              isSpot: z.literal(true),
-              status: z.string(),
-              submittedAt: z.string(),
-              estimatedFillPrice: z.number(),
-              estimatedSlippage: z.number(),
-            })
-            .nullable(),
-          timestamp: z.string().optional(),
-        })
-      ),
-      summary: z
-        .object({
-          total: z.number(),
-          success: z.number(),
-          failed: z.number(),
-        })
-        .optional(),
-    }),
-  },
-  async ({ executions, execute = false }: { executions: Array<{ ticker: string; side: 'LONG' | 'SHORT'; quantity: number; price?: number; orderType?: 'MARKET' | 'LIMIT' }>; execute?: boolean }) => {
-    if (!Array.isArray(executions) || executions.length === 0) {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                results: [],
-                error: 'Invalid executions parameter',
-                message: 'Executions must be a non-empty array',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: {
-          results: [],
-        },
-      }
-    }
-
-    try {
-      const results: Array<{
-        execution: any | null
-        timestamp?: string
-      }> = []
-
-      for (const exec of executions) {
-        if (!exec.ticker || !exec.side || !exec.quantity || exec.quantity <= 0) {
-          results.push({
-            execution: null,
-            timestamp: new Date().toISOString(),
-          })
-          continue
-        }
-
-        try {
-          const normalizedTicker = exec.ticker.trim().toUpperCase()
-          const currentPrice = exec.price || (await getRealTimePrice(normalizedTicker).catch(() => null))
-
-          if (!currentPrice || currentPrice <= 0) {
-            results.push({
-              execution: null,
-              timestamp: new Date().toISOString(),
-            })
-            continue
-          }
-
-          let execution: any
-
-          if (execute) {
-            // Execute using paper executor (safer for multiple executions)
-            const signal = createSignalFromExecution(normalizedTicker, exec.side, exec.quantity, currentPrice, 1)
-            const paperExecutor = new PaperExecutor({
-              paperCapital: parseFloat(process.env.PAPER_CAPITAL || '10000'),
-              tradesFile: './trades/paper-trades.json',
-              simulateSlippage: true,
-              slippagePct: 0.1,
-            })
-            const order = await paperExecutor.executeEntry(signal, currentPrice)
-            execution = formatExecutionFromOrder(order, true)
-          } else {
-            // Simulation only
-            const positionValue = exec.quantity * currentPrice
-            const marginRequired = positionValue
-            const orderId = `spot_sim_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-            execution = {
-              orderId,
-              ticker: normalizedTicker,
-              side: exec.side,
-              quantity: exec.quantity,
-              price: currentPrice,
-              leverage: 1,
-              orderType: exec.orderType || 'MARKET',
-              positionValue,
-              marginRequired,
-              isSpot: true,
-              status: 'SIMULATION',
-              submittedAt: new Date().toISOString(),
-              estimatedFillPrice: currentPrice,
-              estimatedSlippage: (exec.orderType || 'MARKET') === 'MARKET' ? currentPrice * 0.001 : 0,
-              rejectedReason: null,
-            }
-          }
-
-          results.push({
-            execution,
-            timestamp: new Date().toISOString(),
-          })
-        } catch (error) {
-          results.push({
-            execution: null,
-            timestamp: new Date().toISOString(),
-          })
-        }
-      }
-
-      const success = results.filter((r) => r.execution !== null).length
-      const failed = results.length - success
-
-      const result = {
-        results,
-        summary: {
-          total: executions.length,
-          success,
-          failed,
-        },
-      }
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          },
-        ],
-        structuredContent: result,
-      }
-    } catch (error) {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                results: [],
-                error: error instanceof Error ? error.message : String(error),
-                message: 'Failed to get spot execution information',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: {
-          results: [],
-        },
-      }
-    }
-  }
-)
-
-// Register get_execution_futures tool
-server.registerTool(
-  'get_execution_futures',
-  {
-    title: 'Get Futures Execution',
-    description: 'Get futures trading execution information for a single ticker (with leverage). For multiple tickers, use get_multiple_execution_futures.',
-      inputSchema: {
-      ticker: z.string().describe('Asset ticker symbol (e.g., "BTC", "ETH", "SOL")'),
-      side: z.enum(['LONG', 'SHORT']).describe('Trade side: LONG (buy) or SHORT (sell)'),
-      quantity: z.number().positive().describe('Quantity to trade (in base asset units)'),
-      leverage: z.number().positive().min(1).max(50).default(10).describe('Leverage multiplier (1-50x, default: 10x)'),
-      price: z.number().positive().optional().describe('Limit price (optional, if not provided, uses current market price)'),
-      orderType: z.enum(['MARKET', 'LIMIT']).default('MARKET').describe('Order type: MARKET or LIMIT'),
-      execute: z.boolean().default(false).optional().describe('Whether to actually execute the order via Hyperliquid (default: false, simulation only)'),
-      useLiveExecutor: z.boolean().default(false).optional().describe('Whether to use live executor (requires walletApiKey and accountAddress, default: false, uses paper executor)'),
-      accountAddress: z.string().optional().describe('Hyperliquid account address (optional, if not provided, uses environment variable HYPERLIQUID_ACCOUNT_ADDRESS)'),
-      walletApiKey: z.string().optional().describe('Hyperliquid wallet API key / private key (optional, if not provided, uses environment variable HYPERLIQUID_WALLET_API_KEY)'),
-    },
-    outputSchema: z.object({
-      execution: z.object({
-        orderId: z.string(),
-        ticker: z.string(),
-        side: z.enum(['LONG', 'SHORT']),
-        quantity: z.number(),
-        price: z.number(),
-        leverage: z.number(),
-        orderType: z.enum(['MARKET', 'LIMIT']),
-        positionValue: z.number(),
-        marginRequired: z.number(),
-        isSpot: z.literal(false),
-        status: z.string(),
-        submittedAt: z.string(),
-        estimatedFillPrice: z.number(),
-        estimatedSlippage: z.number(),
-      }),
-      timestamp: z.string().optional(),
-    }),
-  },
-  async ({ ticker, side, quantity, leverage = 10, price, orderType = 'MARKET', execute = false, useLiveExecutor = false, accountAddress, walletApiKey }: { ticker: string; side: 'LONG' | 'SHORT'; quantity: number; leverage?: number; price?: number; orderType?: 'MARKET' | 'LIMIT'; execute?: boolean; useLiveExecutor?: boolean; accountAddress?: string; walletApiKey?: string }) => {
-    if (!ticker || typeof ticker !== 'string' || ticker.trim().length === 0) {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                error: 'Invalid ticker parameter',
-                message: 'Ticker must be a non-empty string',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: {
-          execution: null,
-          timestamp: new Date().toISOString(),
-        },
-      }
-    }
-
-    if (!quantity || quantity <= 0) {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                error: 'Invalid quantity parameter',
-                message: 'Quantity must be a positive number',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: {
-          execution: null,
-          timestamp: new Date().toISOString(),
-        },
-      }
-    }
-
-    if (!leverage || leverage < 1 || leverage > 50) {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                error: 'Invalid leverage parameter',
-                message: 'Leverage must be between 1 and 50',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: {
-          execution: null,
-          timestamp: new Date().toISOString(),
-        },
-      }
-    }
-
-    try {
-      const normalizedTicker = ticker.trim().toUpperCase()
-      const currentPrice = price || (await getRealTimePrice(normalizedTicker).catch(() => null))
-
-      if (!currentPrice || currentPrice <= 0) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(
-                {
-                  error: 'Failed to get current price',
-                  message: 'Price is required for futures execution',
-                },
-                null,
-                2
-              ),
-            },
-          ],
-          structuredContent: {
-            execution: null,
-            timestamp: new Date().toISOString(),
-          },
-        }
-      }
-
-      let execution: any
-
-      if (execute) {
-        // Actually execute the order
-        const signal = createSignalFromExecution(normalizedTicker, side, quantity, currentPrice, leverage)
-        
-        if (useLiveExecutor) {
-          // Use live executor (requires Hyperliquid wallet API key)
-          // Use provided credentials or fallback to environment variables
-          const finalWalletApiKey = walletApiKey || getHyperliquidWalletApiKey()
-          const finalAccountAddress = accountAddress || getHyperliquidAccountAddress()
-          
-          if (!finalWalletApiKey || !finalAccountAddress) {
-            return {
-              content: [
-                {
-                  type: 'text',
-                  text: JSON.stringify(
-                    {
-                      error: 'Live executor requires walletApiKey and accountAddress',
-                      message: 'Please provide walletApiKey and accountAddress as parameters, or configure HYPERLIQUID_WALLET_API_KEY and HYPERLIQUID_ACCOUNT_ADDRESS in environment variables',
-                    },
-                    null,
-                    2
-                  ),
-                },
-              ],
-              structuredContent: {
-                execution: null,
-                timestamp: new Date().toISOString(),
-              },
-            }
-          }
-
-          const liveExecutor = new LiveExecutor({
-            tradesFile: './trades/live-trades.json',
-            orderFillTimeoutMs: 30000,
-            retryOnTimeout: false,
-            maxRetries: 3,
-            walletApiKey: finalWalletApiKey,
-            accountAddress: finalAccountAddress,
-          })
-
-          const order = await liveExecutor.executeEntry(signal, currentPrice)
-          execution = formatExecutionFromOrder(order, false)
-        } else {
-          // Use paper executor (simulation)
-          const paperExecutor = new PaperExecutor({
-            paperCapital: parseFloat(process.env.PAPER_CAPITAL || '10000'),
-            tradesFile: './trades/paper-trades.json',
-            simulateSlippage: true,
-            slippagePct: 0.1,
-          })
-
-          const order = await paperExecutor.executeEntry(signal, currentPrice)
-          execution = formatExecutionFromOrder(order, false)
-        }
-      } else {
-        // Simulation only - return execution info without executing
-        const positionValue = quantity * currentPrice
-        const marginRequired = positionValue / leverage
-        const orderId = `futures_sim_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-
-        execution = {
-          orderId,
-          ticker: normalizedTicker,
-          side,
-          quantity,
-          price: currentPrice,
-          leverage,
-          orderType,
-          positionValue,
-          marginRequired,
-          isSpot: false,
-          status: 'SIMULATION',
-          submittedAt: new Date().toISOString(),
-          estimatedFillPrice: currentPrice,
-          estimatedSlippage: orderType === 'MARKET' ? currentPrice * 0.001 : 0,
-          rejectedReason: null,
-        }
-      }
-
-      const result = {
-        execution,
-        timestamp: new Date().toISOString(),
-      }
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          },
-        ],
-        structuredContent: result,
-      }
-    } catch (error) {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                error: error instanceof Error ? error.message : String(error),
-                message: 'Failed to get futures execution information',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: {
-          execution: null,
-          timestamp: new Date().toISOString(),
-        },
-      }
-    }
-  }
-)
-
-// Register get_multiple_execution_futures tool
-server.registerTool(
-  'get_multiple_execution_futures',
-  {
-    title: 'Get Multiple Futures Execution',
-    description: 'Get futures trading execution information for multiple tickers at once (e.g., [{"ticker": "BTC", "side": "LONG", "quantity": 0.1, "leverage": 10}])',
-    inputSchema: {
-      executions: z
-        .array(
-          z.object({
-            ticker: z.string(),
-            side: z.enum(['LONG', 'SHORT']),
-            quantity: z.number().positive(),
-            leverage: z.number().positive().min(1).max(50).default(10).optional(),
-            price: z.number().positive().optional(),
-            orderType: z.enum(['MARKET', 'LIMIT']).default('MARKET').optional(),
-          })
-        )
-        .min(1)
-        .describe('Array of execution requests'),
-      execute: z.boolean().default(false).optional().describe('Whether to actually execute orders via Hyperliquid (default: false, simulation only). For multiple executions, uses paper executor for safety.'),
-    },
-    outputSchema: z.object({
-      results: z.array(
-        z.object({
-          execution: z
-            .object({
-              orderId: z.string(),
-              ticker: z.string(),
-              side: z.enum(['LONG', 'SHORT']),
-              quantity: z.number(),
-              price: z.number(),
-              leverage: z.number(),
-              orderType: z.enum(['MARKET', 'LIMIT']),
-              positionValue: z.number(),
-              marginRequired: z.number(),
-              isSpot: z.literal(false),
-              status: z.string(),
-              submittedAt: z.string(),
-              estimatedFillPrice: z.number(),
-              estimatedSlippage: z.number(),
-            })
-            .nullable(),
-          timestamp: z.string().optional(),
-        })
-      ),
-      summary: z
-        .object({
-          total: z.number(),
-          success: z.number(),
-          failed: z.number(),
-        })
-        .optional(),
-    }),
-  },
-  async ({ executions, execute = false }: { executions: Array<{ ticker: string; side: 'LONG' | 'SHORT'; quantity: number; leverage?: number; price?: number; orderType?: 'MARKET' | 'LIMIT' }>; execute?: boolean }) => {
-    if (!Array.isArray(executions) || executions.length === 0) {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                results: [],
-                error: 'Invalid executions parameter',
-                message: 'Executions must be a non-empty array',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: {
-          results: [],
-        },
-      }
-    }
-
-    try {
-      const results: Array<{
-        execution: any | null
-        timestamp?: string
-      }> = []
-
-      for (const exec of executions) {
-        if (!exec.ticker || !exec.side || !exec.quantity || exec.quantity <= 0) {
-          results.push({
-            execution: null,
-            timestamp: new Date().toISOString(),
-          })
-          continue
-        }
-
-        const leverage = exec.leverage || 10
-        if (leverage < 1 || leverage > 50) {
-          results.push({
-            execution: null,
-            timestamp: new Date().toISOString(),
-          })
-          continue
-        }
-
-        try {
-          const normalizedTicker = exec.ticker.trim().toUpperCase()
-          const currentPrice = exec.price || (await getRealTimePrice(normalizedTicker).catch(() => null))
-
-          if (!currentPrice || currentPrice <= 0) {
-            results.push({
-              execution: null,
-              timestamp: new Date().toISOString(),
-            })
-            continue
-          }
-
-          let execution: any
-
-          if (execute) {
-            // Execute using paper executor (safer for multiple executions)
-            const signal = createSignalFromExecution(normalizedTicker, exec.side, exec.quantity, currentPrice, leverage)
-            const paperExecutor = new PaperExecutor({
-              paperCapital: parseFloat(process.env.PAPER_CAPITAL || '10000'),
-              tradesFile: './trades/paper-trades.json',
-              simulateSlippage: true,
-              slippagePct: 0.1,
-            })
-            const order = await paperExecutor.executeEntry(signal, currentPrice)
-            execution = formatExecutionFromOrder(order, false)
-          } else {
-            // Simulation only
-            const positionValue = exec.quantity * currentPrice
-            const marginRequired = positionValue / leverage
-            const orderId = `futures_sim_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-            execution = {
-              orderId,
-              ticker: normalizedTicker,
-              side: exec.side,
-              quantity: exec.quantity,
-              price: currentPrice,
-              leverage,
-              orderType: exec.orderType || 'MARKET',
-              positionValue,
-              marginRequired,
-              isSpot: false,
-              status: 'SIMULATION',
-              submittedAt: new Date().toISOString(),
-              estimatedFillPrice: currentPrice,
-              estimatedSlippage: (exec.orderType || 'MARKET') === 'MARKET' ? currentPrice * 0.001 : 0,
-              rejectedReason: null,
-            }
-          }
-
-          results.push({
-            execution,
-            timestamp: new Date().toISOString(),
-          })
-        } catch (error) {
-          results.push({
-            execution: null,
-            timestamp: new Date().toISOString(),
-          })
-        }
-      }
-
-      const success = results.filter((r) => r.execution !== null).length
-      const failed = results.length - success
-
-      const result = {
-        results,
-        summary: {
-          total: executions.length,
-          success,
-          failed,
-        },
-      }
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          },
-        ],
-        structuredContent: result,
-      }
-    } catch (error) {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                results: [],
-                error: error instanceof Error ? error.message : String(error),
-                message: 'Failed to get futures execution information',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: {
-          results: [],
-        },
-      }
-    }
-  }
-)
-
-// Register analisis_crypto tool (single ticker)
+// Register analisis_crypto tool
 server.registerTool(
   'analisis_crypto',
   {
     title: 'Comprehensive Crypto Analysis',
-    description: 'Get comprehensive trading analysis for a single crypto asset including technical indicators, volume analysis, multi-timeframe, external data, position, position setup, and risk management. This tool aggregates all available data for complete market analysis.',
-    inputSchema: {
-      ticker: z.string().describe('Asset ticker symbol (e.g., "BTC", "ETH", "SOL")'),
-      capital: z.number().optional().describe('Total trading capital in USD (default: 10000)'),
-      riskPct: z.number().optional().describe('Risk percentage per trade (default: 1.0)'),
-      strategy: z.enum(['short_term', 'long_term', 'flexible']).optional().describe('Trading strategy timeframe (default: flexible)'),
-    },
-    outputSchema: z.object({
-      ticker: z.string(),
-      price: z.number().nullable(),
-      timestamp: z.string(),
-      technical: z.any().nullable().optional(),
-      volumeAnalysis: z.any().nullable().optional(),
-      multiTimeframe: z.any().nullable().optional(),
-      externalData: z.any().nullable().optional(),
-      fibonacci: z.any().nullable().optional(),
-      orderBook: z.any().nullable().optional(),
-      volumeProfile: z.any().nullable().optional(),
-      liquidationLevels: z.any().nullable().optional(),
-      longShortRatio: z.any().nullable().optional(),
-      spotFuturesDivergence: z.any().nullable().optional(),
-      position: z.any().nullable().optional(),
-      positionSetup: z.any().nullable().optional(),
-      riskManagement: z.any().nullable().optional(),
-    }),
-  },
-  async ({ ticker, capital = 10000, riskPct = 1.0, strategy = 'flexible' }: { ticker: string; capital?: number; riskPct?: number; strategy?: 'short_term' | 'long_term' | 'flexible' }) => {
-    try {
-      const normalizedTicker = ticker.trim().toUpperCase()
-
-      // Get price
-      const currentPrice = await getRealTimePrice(normalizedTicker)
-
-      if (!currentPrice) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(
-                {
-                  ticker: normalizedTicker,
-                  price: null,
-                  timestamp: new Date().toISOString(),
-                  error: 'Price not available',
-                  message: `Could not fetch price for ${normalizedTicker}`,
-                },
-                null,
-                2
-              ),
-            },
-          ],
-          structuredContent: {
-            ticker: normalizedTicker,
-            price: null,
-            timestamp: new Date().toISOString(),
-            technical: null,
-            volumeAnalysis: null,
-            multiTimeframe: null,
-            externalData: null,
-            position: null,
-            positionSetup: null,
-            riskManagement: null,
-          },
-        }
-      }
-
-      // Get market data (includes technical, volume, multi-timeframe, external)
-      const { marketDataMap } = await getMarketData([normalizedTicker])
-      const assetData = marketDataMap.get(normalizedTicker)
-      if (!assetData) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: JSON.stringify(
-                {
-                  ticker: normalizedTicker,
-                  price: currentPrice,
-                  timestamp: new Date().toISOString(),
-                  error: 'Market data not available',
-                  message: `Could not fetch market data for ${normalizedTicker}`,
-                },
-                null,
-                2
-              ),
-            },
-          ],
-          structuredContent: {
-            ticker: normalizedTicker,
-            price: currentPrice,
-            timestamp: new Date().toISOString(),
-            technical: null,
-            volumeAnalysis: null,
-            multiTimeframe: null,
-            externalData: null,
-            position: null,
-            positionSetup: null,
-            riskManagement: null,
-          },
-        }
-      }
-
-      // Format technical indicators
-      const technical = formatTechnicalIndicators(assetData, currentPrice)
-
-      // Format volume analysis
-      const volumeAnalysisData = assetData?.comprehensiveVolumeAnalysis || assetData?.data?.comprehensiveVolumeAnalysis || assetData?.externalData?.comprehensiveVolumeAnalysis || null
-      const volumeAnalysis = formatVolumeAnalysis(volumeAnalysisData, currentPrice)
-
-      // Format multi-timeframe
-      const multiTimeframe = formatMultiTimeframe(assetData)
-
-      // Format external data
-      const externalData = formatExternalData(assetData)
-
-      // Calculate advanced analysis tools
-      let fibonacci = null
-      let orderBook = null
-      let volumeProfile = null
-      let liquidationLevels = null
-      let longShortRatio = null
-      let spotFuturesDivergence = null
-
-      try {
-        const historicalData = assetData?.historicalData || assetData?.data?.historicalData || []
-        
-        if (historicalData.length >= 50 && currentPrice) {
-          const highs = historicalData.map((d: any) => d.high || d.close)
-          const lows = historicalData.map((d: any) => d.low || d.close)
-          const closes = historicalData.map((d: any) => d.close)
-
-          // Calculate Fibonacci
-          try {
-            const fibResult = calculateFibonacciRetracement(highs, lows, closes, 50)
-            fibonacci = formatFibonacci(fibResult)
-            // Also update technical.fibonacci if calculation succeeded
-            if (fibResult) {
-              technical.fibonacci = {
-                level: fibResult.currentLevel || null,
-                direction: fibResult.direction || null,
-                range: fibResult.range || null,
-                keyLevels: [
-                  fibResult.level0,
-                  fibResult.level236,
-                  fibResult.level382,
-                  fibResult.level500,
-                  fibResult.level618,
-                  fibResult.level786,
-                  fibResult.level100,
-                  fibResult.level1272,
-                  fibResult.level1618,
-                  fibResult.level2000,
-                ].filter((v: any) => v != null),
-              }
-            }
-          } catch (fibError) {
-            // Fibonacci calculation failed
-          }
-
-          // Calculate Candlestick Patterns
-          try {
-            if (historicalData.length >= 5) {
-              const patterns = detectCandlestickPatterns(historicalData, 5)
-              const formattedPatterns = formatCandlestickPatterns(patterns)
-              // Get latest pattern from patterns array
-              if (patterns && patterns.patterns && patterns.patterns.length > 0) {
-                const latestPattern = patterns.patterns[patterns.patterns.length - 1]
-                technical.candlestick = latestPattern?.type || null
-              } else if (formattedPatterns && typeof formattedPatterns === 'string') {
-                technical.candlestick = formattedPatterns
-              }
-            }
-          } catch (candleError) {
-            // Candlestick calculation failed
-          }
-
-          // Calculate Divergence
-          try {
-            if (historicalData.length >= 20) {
-              const prices = historicalData.map((d: any) => d.close || d.price)
-              const rsiValues = prices.map((_p: number, i: number) => {
-                if (i < 14) return null
-                const slice = prices.slice(i - 14, i + 1)
-                return calculateRSI(slice, 14)
-              }).filter((v: any) => v != null) as number[]
-              
-              if (rsiValues.length >= 20) {
-                const divergence = detectDivergence(prices.slice(-rsiValues.length), rsiValues, 20)
-                if (divergence && divergence.divergence) {
-                  technical.rsiDivergence = String(divergence.divergence)
-                }
-              }
-            }
-          } catch (divError) {
-            // Divergence calculation failed
-          }
-
-          // Calculate Market Structure (already in technical, but keep for consistency)
-          // Market structure is already included in technical.marketStructure
-        }
-
-        // Calculate Order Book Depth
-        try {
-          const orderBookDepth = assetData?.externalData?.orderBook || assetData?.data?.externalData?.orderBook || null
-          if (orderBookDepth) {
-            orderBook = formatOrderBookDepth(orderBookDepth)
-          }
-        } catch (obError) {
-          // Order book calculation failed
-        }
-
-        // Calculate Volume Profile
-        try {
-          const volumeProfileData = assetData?.externalData?.volumeProfile || assetData?.data?.externalData?.volumeProfile || null
-          volumeProfile = formatVolumeProfile(
-            volumeProfileData?.session || null,
-            volumeProfileData?.composite || null
-          )
-        } catch (vpError) {
-          // Volume profile calculation failed
-        }
-
-        // Calculate Liquidation Levels
-        try {
-          const futuresData = assetData?.externalData?.futures || assetData?.data?.externalData?.futures || null
-          const liquidationData = futuresData?.liquidation || null
-          if (liquidationData && currentPrice) {
-            const liquidationResult = calculateLiquidationIndicators(liquidationData, currentPrice)
-            liquidationLevels = formatLiquidationLevels(liquidationResult)
-          }
-        } catch (liqError) {
-          // Liquidation calculation failed
-        }
-
-        // Calculate Long/Short Ratio
-        try {
-          const futuresData = assetData?.externalData?.futures || assetData?.data?.externalData?.futures || null
-          const longShortRatioData = futuresData?.longShortRatio || null
-          if (longShortRatioData) {
-            const ratioResult = calculateLongShortRatioIndicators(longShortRatioData)
-            longShortRatio = formatLongShortRatio(ratioResult)
-          }
-        } catch (ratioError) {
-          // Long/short ratio calculation failed
-        }
-
-        // Calculate Spot-Futures Divergence
-        try {
-          const futuresData = assetData?.externalData?.futures || assetData?.data?.externalData?.futures || null
-          const premiumIndexData = futuresData?.premiumIndex || null
-          if (premiumIndexData) {
-            const divergenceResult = calculateSpotFuturesDivergenceIndicators(premiumIndexData)
-            spotFuturesDivergence = formatSpotFuturesDivergence(divergenceResult)
-          }
-        } catch (sfError) {
-          // Spot-futures divergence calculation failed
-        }
-      } catch (advancedError) {
-        // Advanced analysis calculation failed, continue
-      }
-
-      // Get position
-      let position = null
-      try {
-        const positions = getActivePositions(null)
-        const assetPosition = positions.get(normalizedTicker) || null
-        if (assetPosition && currentPrice) {
-          const historicalDataArray = assetData?.historicalData || assetData?.data?.historicalData || []
-          const historicalData: HistoricalDataPoint[] = Array.isArray(historicalDataArray) ? historicalDataArray : []
-          const mae = calculateMAE(assetPosition, currentPrice, historicalData)
-          position = formatPosition(assetPosition, currentPrice, mae)
-        }
-      } catch (posError) {
-        // Position not available, continue
-      }
-
-      // Calculate position setup
-      let positionSetup = null
-      try {
-        const indicators = assetData?.indicators || {}
-        const externalDataForSetup = assetData?.externalData || {}
-        const maxLeverage = assetData.maxLeverage || externalDataForSetup?.hyperliquid?.maxLeverage || 10
-
-        // Determine side from technical indicators (simplified logic)
-        let side: 'LONG' | 'SHORT' = 'LONG'
-        const rsi14 = indicators.rsi14
-        const macd = indicators.macd
-        if (rsi14 && rsi14 > 50 && macd && macd.macd < macd.signal) {
-          side = 'SHORT'
-        } else if (rsi14 && rsi14 < 50 && macd && macd.macd > macd.signal) {
-          side = 'LONG'
-        }
-
-        const mockSignal = {
-          coin: normalizedTicker,
-          signal: side === 'LONG' ? 'buy_to_enter' : 'sell_to_enter',
-          confidence: 50,
-          entry_price: currentPrice,
-        } as any
-
-        const positionSizeResult = calculatePositionSize(
-          mockSignal,
-          {
-            strategy: strategy as any,
-            totalCapital: capital,
-            maxPositionSizePct: 20,
-            reserveCapitalPct: 10,
-            topNRanking: 1,
-          },
-          0
-        )
-
-        const positionSizeUsd = positionSizeResult.sizeUsd || capital * 0.1
-        const leverage = calculateDynamicLeverage(indicators, externalDataForSetup, mockSignal, currentPrice, maxLeverage)
-        const marginPercent = calculateDynamicMarginPercentage(indicators, externalDataForSetup, mockSignal, currentPrice)
-
-        positionSetup = formatPositionSetup(
-          normalizedTicker,
-          currentPrice,
-          side,
-          positionSizeUsd,
-          leverage,
-          marginPercent,
-          capital,
-          riskPct
-        )
-      } catch (setupError) {
-        // Position setup calculation failed, continue
-      }
-
-      // Calculate risk management
-      let riskManagement = null
-      try {
-        if (positionSetup && currentPrice) {
-          const side = positionSetup.side || 'LONG'
-          const entryPrice = currentPrice
-          const stopLossPct = riskPct * 1.8 // Default 1.8% for fixed SL
-          const takeProfitPct = riskPct * 4.5 // Default 4.5% for TP
-          const positionSizeUsd = positionSetup.positionSizeUsd || capital * 0.1
-
-          riskManagement = formatRiskManagement(
-            entryPrice,
-            side,
-            stopLossPct,
-            takeProfitPct,
-            positionSizeUsd
-          )
-        }
-      } catch (riskError) {
-        // Risk management calculation failed, continue
-      }
-
-      const result = {
-        ticker: normalizedTicker,
-        price: currentPrice,
-        timestamp: new Date().toISOString(),
-        technical,
-        volumeAnalysis,
-        multiTimeframe,
-        externalData,
-        fibonacci,
-        orderBook,
-        volumeProfile,
-        liquidationLevels,
-        longShortRatio,
-        spotFuturesDivergence,
-        position,
-        positionSetup,
-        riskManagement,
-      }
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(result, null, 2),
-          },
-        ],
-        structuredContent: result,
-      }
-    } catch (error) {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                ticker: ticker.trim().toUpperCase(),
-                price: null,
-                timestamp: new Date().toISOString(),
-                error: error instanceof Error ? error.message : String(error),
-                message: 'Failed to get comprehensive analysis',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: {
-          ticker: ticker.trim().toUpperCase(),
-          price: null,
-          timestamp: new Date().toISOString(),
-          technical: null,
-          volumeAnalysis: null,
-          multiTimeframe: null,
-          externalData: null,
-          fibonacci: null,
-          orderBook: null,
-          volumeProfile: null,
-          liquidationLevels: null,
-          longShortRatio: null,
-          spotFuturesDivergence: null,
-          position: null,
-          positionSetup: null,
-          riskManagement: null,
-        },
-      }
-    }
-  }
-)
-
-// Register analisis_multiple_crypto tool (multiple tickers)
-server.registerTool(
-  'analisis_multiple_crypto',
-  {
-    title: 'Comprehensive Crypto Analysis (Multiple)',
     description: 'Get comprehensive trading analysis for multiple crypto assets at once. This tool aggregates all available data for complete market analysis across multiple tickers.',
     inputSchema: {
       tickers: z.array(z.string()).min(1).describe('Array of asset ticker symbols (e.g., ["BTC", "ETH", "SOL"])'),
@@ -8249,7 +3849,7 @@ server.registerTool(
 
             // Calculate Fibonacci
             try {
-              const fibResult = calculateFibonacciRetracement(highs, lows, closes, 50)
+              const fibResult = calculateFibonacciRetracement(closes, 50)
               fibonacci = formatFibonacci(fibResult)
               // Also update technical.fibonacci if calculation succeeded
               if (fibResult) {
@@ -8407,19 +4007,7 @@ server.registerTool(
             entry_price: currentPrice,
           } as any
 
-          const positionSizeResult = calculatePositionSize(
-            mockSignal,
-            {
-              strategy: strategy as any,
-              totalCapital: capital,
-              maxPositionSizePct: 20,
-              reserveCapitalPct: 10,
-              topNRanking: tickers.length,
-            },
-            0
-          )
-
-          const positionSizeUsd = positionSizeResult.sizeUsd || capital * 0.1
+          const positionSizeUsd = capital * 0.1
           const leverage = calculateDynamicLeverage(indicators, externalDataForSetup, mockSignal, currentPrice, maxLeverage)
           const marginPercent = calculateDynamicMarginPercentage(indicators, externalDataForSetup, mockSignal, currentPrice)
 
@@ -8531,1082 +4119,2415 @@ server.registerTool(
   }
 )
 
-// ============================================================================
-// TESTNET EXECUTION TOOLS (Paper Trading Simulation)
-// ============================================================================
-// NOTE: Hyperliquid doesn't have a testnet. These tools use paper trading
-// simulation to provide safe testing environment without real money.
-// ============================================================================
-
-// Register get_execution_spot_testnet tool
+// Register ma_envelope tool
 server.registerTool(
-  'get_execution_spot_testnet',
+  'ma_envelope',
   {
-    title: 'Get Spot Execution (Testnet/Paper)',
-    description: 'Execute spot trade in testnet mode (paper trading simulation, no real money). Safe for testing strategies.',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        ticker: z.string().describe('Asset ticker symbol (e.g., "BTC", "ETH", "SOL")'),
-        side: z.enum(['LONG', 'SHORT']).describe('Trade side: LONG (buy) or SHORT (sell)'),
-        quantity: z.number().positive().describe('Quantity to trade (in base asset units)'),
-        price: z.number().positive().optional().describe('Limit price (optional, if not provided, uses current market price)'),
-        orderType: z.enum(['MARKET', 'LIMIT']).default('MARKET').describe('Order type: MARKET or LIMIT'),
-      },
-      required: ['ticker', 'side', 'quantity'],
-    } as any,
+    title: 'Moving Average Envelope Indicator',
+    description: 'Calculate moving average envelopes for volatility-based support/resistance and overbought/oversold signals.',
+    inputSchema: z.object({
+      prices: z.array(z.number()).min(5).describe('Array of price data'),
+      period: z.number().int().min(2).max(200).default(20).describe('Moving average period (default: 20)'),
+      percentage: z.number().min(0.1).max(20).default(2.5).describe('Envelope percentage (default: 2.5)'),
+      maType: z.enum(['sma', 'ema']).default('sma').describe('Moving average type (default: sma)'),
+    }),
+    outputSchema: z.object({
+      ma: z.number().describe('Moving average value'),
+      upperBand: z.number().describe('Upper envelope band'),
+      lowerBand: z.number().describe('Lower envelope band'),
+      percentage: z.number().describe('Envelope percentage'),
+      position: z.enum(['above_upper', 'above_ma', 'below_ma', 'below_lower']).describe('Current price position'),
+      signal: z.enum(['overbought', 'oversold', 'neutral']).describe('Envelope signal'),
+      distanceFromUpper: z.number().describe('Distance from upper band (%)'),
+      distanceFromLower: z.number().describe('Distance from lower band (%)'),
+      bandWidth: z.number().describe('Width of the envelope band (%)'),
+    }),
   },
-  async ({ ticker, side, quantity, price, orderType = 'MARKET' }: { ticker: string; side: 'LONG' | 'SHORT'; quantity: number; price?: number; orderType?: 'MARKET' | 'LIMIT' }) => {
+  async ({ prices, period = 20, percentage = 2.5, maType = 'sma' as 'sma' | 'ema' }) => {
     try {
-      const normalizedTicker = ticker.toUpperCase().replace(/USDT?$/, '')
-      
-      // Get current price
-      const priceData = await getRealTimePrice(normalizedTicker)
-      const currentPrice = price || priceData.price
-      
-      if (!currentPrice) {
-        return {
-          content: [{ type: 'text', text: JSON.stringify({ error: `Failed to get price for ${normalizedTicker}` }, null, 2) }],
-          structuredContent: { execution: null, timestamp: new Date().toISOString() },
-        }
+      const result = calculateMAEnvelope(prices, period, percentage, maType)
+      if (!result) {
+        throw new Error(`Insufficient data: need at least ${period} prices, got ${prices.length}`)
       }
-      
-      // Create signal for paper execution
-      const signal = createSignalFromExecution(normalizedTicker, side, quantity, currentPrice, 1) // leverage=1 for spot
-      
-      // Use paper executor (testnet simulation)
-      const paperExecutor = new PaperExecutor({
-        paperCapital: parseFloat(process.env.PAPER_CAPITAL || '10000'),
-        tradesFile: './trades/testnet-spot-trades.json',
-        simulateSlippage: true,
-        slippagePct: 0.05, // 0.05% slippage
-      })
-      
-      const order = await paperExecutor.executeEntry(signal, currentPrice)
-      const execution = formatExecutionFromOrder(order, false)
-      
-      // Add testnet flag
-      execution.mode = 'TESTNET (Paper Trading)'
-      execution.realMoney = false
-      execution.note = 'This is a simulated trade. No real money involved.'
-      
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                ticker: normalizedTicker,
-                side,
-                quantity,
-                orderType,
-                execution,
-                timestamp: new Date().toISOString(),
-                mode: 'TESTNET',
-                warning: '⚠️ Testnet mode - No real money involved. This is paper trading simulation.',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: {
-          ticker: normalizedTicker,
-          side,
-          quantity,
-          orderType,
-          execution,
-          timestamp: new Date().toISOString(),
-          mode: 'TESTNET',
-        },
-      }
+      return result
     } catch (error: any) {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                error: 'Testnet spot execution failed',
-                message: error.message || error.toString(),
-                ticker,
-                side,
-                quantity,
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        isError: true,
-      }
+      throw new Error(`MA Envelope calculation failed: ${error.message}`)
     }
   }
 )
 
-// Register get_multiple_execution_spot_testnet tool
+// Register vwma tool
 server.registerTool(
-  'get_multiple_execution_spot_testnet',
+  'vwma',
   {
-    title: 'Get Multiple Spot Executions (Testnet/Paper)',
-    description: 'Execute multiple spot trades in testnet mode (paper trading simulation). Safe for testing portfolio strategies.',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        executions: z.array(
-          z.object({
-            ticker: z.string().describe('Asset ticker symbol'),
-            side: z.enum(['LONG', 'SHORT']).describe('Trade side'),
-            quantity: z.number().positive().describe('Quantity to trade'),
-            price: z.number().positive().optional().describe('Limit price (optional)'),
-            orderType: z.enum(['MARKET', 'LIMIT']).default('MARKET').describe('Order type'),
-          })
-        ).describe('Array of execution requests'),
-      },
-      required: ['executions'],
-    } as any,
+    title: 'Volume Weighted Moving Average (VWMA)',
+    description: 'Calculate volume-weighted moving average that gives more weight to periods with higher volume.',
+    inputSchema: z.object({
+      prices: z.array(z.number()).min(5).describe('Array of closing prices'),
+      volumes: z.array(z.number()).min(5).describe('Array of volume data (must match prices length)'),
+      period: z.number().int().min(2).max(200).default(20).describe('Period for VWMA calculation (default: 20)'),
+    }),
+    outputSchema: z.object({
+      vwma: z.number().describe('Volume-weighted moving average value'),
+      priceVsVwma: z.number().describe('Price vs VWMA (%)'),
+      position: z.enum(['above', 'below', 'equal']).describe('Current price position relative to VWMA'),
+      trend: z.enum(['bullish', 'bearish', 'neutral']).describe('Trend direction based on VWMA slope'),
+      avgVolume: z.number().describe('Average volume over the period'),
+      volumeEfficiency: z.number().describe('Volume efficiency ratio (current volume / average volume)'),
+      strength: z.number().describe('Trend strength (0-100)'),
+    }),
   },
-  async ({ executions }: { executions: Array<{ ticker: string; side: 'LONG' | 'SHORT'; quantity: number; price?: number; orderType?: 'MARKET' | 'LIMIT' }> }) => {
+  async ({ prices, volumes, period = 20 }) => {
     try {
-      const paperExecutor = new PaperExecutor({
-        paperCapital: parseFloat(process.env.PAPER_CAPITAL || '10000'),
-        tradesFile: './trades/testnet-spot-trades.json',
-        simulateSlippage: true,
-        slippagePct: 0.05,
-      })
-      
-      const results = []
-      let successCount = 0
-      let failedCount = 0
-      
-      for (const exec of executions) {
-        try {
-          const normalizedTicker = exec.ticker.toUpperCase().replace(/USDT?$/, '')
-          const priceData = await getRealTimePrice(normalizedTicker)
-          const currentPrice = exec.price || priceData.price
-          
-          if (!currentPrice) {
-            results.push({
-              ticker: normalizedTicker,
-              side: exec.side,
-              quantity: exec.quantity,
-              execution: null,
-              error: `Failed to get price for ${normalizedTicker}`,
-              mode: 'TESTNET',
-            })
-            failedCount++
-            continue
-          }
-          
-          const signal = createSignalFromExecution(normalizedTicker, exec.side, exec.quantity, currentPrice, 1)
-          const order = await paperExecutor.executeEntry(signal, currentPrice)
-          const execution = formatExecutionFromOrder(order, false)
-          
-          execution.mode = 'TESTNET (Paper Trading)'
-          execution.realMoney = false
-          
-          results.push({
-            ticker: normalizedTicker,
-            side: exec.side,
-            quantity: exec.quantity,
-            orderType: exec.orderType || 'MARKET',
-            execution,
-            mode: 'TESTNET',
-          })
-          successCount++
-        } catch (error: any) {
-          results.push({
-            ticker: exec.ticker,
-            side: exec.side,
-            quantity: exec.quantity,
-            execution: null,
-            error: error.message || error.toString(),
-            mode: 'TESTNET',
-          })
-          failedCount++
-        }
+      if (prices.length !== volumes.length) {
+        throw new Error('Prices and volumes arrays must have the same length')
       }
-      
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                results,
-                summary: {
-                  total: executions.length,
-                  success: successCount,
-                  failed: failedCount,
-                },
-                mode: 'TESTNET',
-                warning: '⚠️ Testnet mode - No real money involved. This is paper trading simulation.',
-                timestamp: new Date().toISOString(),
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: {
-          results,
-          summary: { total: executions.length, success: successCount, failed: failedCount },
-          mode: 'TESTNET',
-          timestamp: new Date().toISOString(),
-        },
+      const result = calculateVWMA(prices, volumes, period)
+      if (!result) {
+        throw new Error(`Insufficient data: need at least ${period} data points, got ${prices.length}`)
       }
+      return result
     } catch (error: any) {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                error: 'Multiple testnet spot executions failed',
-                message: error.message || error.toString(),
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        isError: true,
-      }
+      throw new Error(`VWMA calculation failed: ${error.message}`)
     }
   }
 )
 
-// Register get_execution_futures_testnet tool
+// Register price_channel tool
 server.registerTool(
-  'get_execution_futures_testnet',
+  'price_channel',
   {
-    title: 'Get Futures Execution (Testnet/Paper)',
-    description: 'Execute futures trade with leverage in testnet mode (paper trading simulation, no real money). Safe for testing leveraged strategies.',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        ticker: z.string().describe('Asset ticker symbol (e.g., "BTC", "ETH", "SOL")'),
-        side: z.enum(['LONG', 'SHORT']).describe('Trade side: LONG (buy) or SHORT (sell)'),
-        quantity: z.number().positive().describe('Quantity to trade (in base asset units)'),
-        leverage: z.number().min(1).max(50).default(10).describe('Leverage multiplier (1-50x, default: 10x)'),
-        price: z.number().positive().optional().describe('Limit price (optional, if not provided, uses current market price)'),
-        orderType: z.enum(['MARKET', 'LIMIT']).default('MARKET').describe('Order type: MARKET or LIMIT'),
-      },
-      required: ['ticker', 'side', 'quantity'],
-    } as any,
+    title: 'Price Channel Indicator',
+    description: 'Calculate price channels using highest high and lowest low for support/resistance and breakout signals.',
+    inputSchema: z.object({
+      highs: z.array(z.number()).min(5).describe('Array of high prices'),
+      lows: z.array(z.number()).min(5).describe('Array of low prices'),
+      closes: z.array(z.number()).min(5).describe('Array of closing prices'),
+      period: z.number().int().min(2).max(200).default(20).describe('Period for channel calculation (default: 20)'),
+    }),
+    outputSchema: z.object({
+      upperChannel: z.number().describe('Upper channel boundary (highest high)'),
+      lowerChannel: z.number().describe('Lower channel boundary (lowest low)'),
+      middleChannel: z.number().describe('Middle channel (midpoint)'),
+      channelWidth: z.number().describe('Channel width (%)'),
+      channelHeight: z.number().describe('Absolute channel height'),
+      position: z.enum(['upper_third', 'middle_third', 'lower_third', 'above_channel', 'below_channel']).describe('Current price position within channel'),
+      distanceFromUpper: z.number().describe('Distance from upper channel (%)'),
+      distanceFromLower: z.number().describe('Distance from lower channel (%)'),
+      trend: z.enum(['uptrend', 'downtrend', 'sideways']).describe('Channel trend direction'),
+      upperBreakout: z.boolean().describe('Price broke above upper channel'),
+      lowerBreakout: z.boolean().describe('Price broke below lower channel'),
+      upperStrength: z.number().describe('Upper channel strength (0-100)'),
+      lowerStrength: z.number().describe('Lower channel strength (0-100)'),
+    }),
   },
-  async ({ ticker, side, quantity, leverage = 10, price, orderType = 'MARKET' }: { ticker: string; side: 'LONG' | 'SHORT'; quantity: number; leverage?: number; price?: number; orderType?: 'MARKET' | 'LIMIT' }) => {
+  async ({ highs, lows, closes, period = 20 }) => {
     try {
-      const normalizedTicker = ticker.toUpperCase().replace(/USDT?$/, '')
-      
-      // Get current price
-      const priceData = await getRealTimePrice(normalizedTicker)
-      const currentPrice = price || priceData.price
-      
-      if (!currentPrice) {
-        return {
-          content: [{ type: 'text', text: JSON.stringify({ error: `Failed to get price for ${normalizedTicker}` }, null, 2) }],
-          structuredContent: { execution: null, timestamp: new Date().toISOString() },
-        }
+      if (highs.length !== lows.length || highs.length !== closes.length) {
+        throw new Error('Highs, lows, and closes arrays must have the same length')
       }
-      
-      // Create signal for paper execution with leverage
-      const signal = createSignalFromExecution(normalizedTicker, side, quantity, currentPrice, leverage)
-      
-      // Use paper executor (testnet simulation)
-      const paperExecutor = new PaperExecutor({
-        paperCapital: parseFloat(process.env.PAPER_CAPITAL || '10000'),
-        tradesFile: './trades/testnet-futures-trades.json',
-        simulateSlippage: true,
-        slippagePct: 0.1, // 0.1% slippage for futures
-      })
-      
-      const order = await paperExecutor.executeEntry(signal, currentPrice)
-      const execution = formatExecutionFromOrder(order, false)
-      
-      // Add testnet flag
-      execution.mode = 'TESTNET (Paper Trading)'
-      execution.realMoney = false
-      execution.leverage = leverage
-      execution.note = 'This is a simulated leveraged trade. No real money involved.'
-      
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                ticker: normalizedTicker,
-                side,
-                quantity,
-                leverage,
-                orderType,
-                execution,
-                timestamp: new Date().toISOString(),
-                mode: 'TESTNET',
-                warning: '⚠️ Testnet mode - No real money involved. This is paper trading simulation with leverage.',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: {
-          ticker: normalizedTicker,
-          side,
-          quantity,
-          leverage,
-          orderType,
-          execution,
-          timestamp: new Date().toISOString(),
-          mode: 'TESTNET',
-        },
+      const result = calculatePriceChannel(highs, lows, closes, period)
+      if (!result) {
+        throw new Error(`Insufficient data: need at least ${period} data points, got ${highs.length}`)
       }
+      return result
     } catch (error: any) {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                error: 'Testnet futures execution failed',
-                message: error.message || error.toString(),
-                ticker,
-                side,
-                quantity,
-                leverage,
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        isError: true,
-      }
+      throw new Error(`Price Channel calculation failed: ${error.message}`)
     }
   }
 )
 
-// Register get_multiple_execution_futures_testnet tool
+// Register mcginley_dynamic tool
 server.registerTool(
-  'get_multiple_execution_futures_testnet',
+  'mcginley_dynamic',
   {
-    title: 'Get Multiple Futures Executions (Testnet/Paper)',
-    description: 'Execute multiple futures trades with leverage in testnet mode (paper trading simulation). Safe for testing complex leveraged portfolio strategies.',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        executions: z.array(
-          z.object({
-            ticker: z.string().describe('Asset ticker symbol'),
-            side: z.enum(['LONG', 'SHORT']).describe('Trade side'),
-            quantity: z.number().positive().describe('Quantity to trade'),
-            leverage: z.number().min(1).max(50).default(10).describe('Leverage multiplier (1-50x)'),
-            price: z.number().positive().optional().describe('Limit price (optional)'),
-            orderType: z.enum(['MARKET', 'LIMIT']).default('MARKET').describe('Order type'),
-          })
-        ).describe('Array of execution requests'),
-      },
-      required: ['executions'],
-    } as any,
+    title: 'McGinley Dynamic Indicator',
+    description: 'Calculate adaptive moving average that adjusts to market volatility and reduces lag compared to traditional MAs.',
+    inputSchema: z.object({
+      prices: z.array(z.number()).min(5).describe('Array of closing prices'),
+      period: z.number().int().min(2).max(200).default(20).describe('Period for McGinley Dynamic calculation (default: 20)'),
+    }),
+    outputSchema: z.object({
+      mcgDyn: z.number().describe('McGinley Dynamic value'),
+      trend: z.enum(['bullish', 'bearish', 'neutral']).describe('Trend direction'),
+      priceVsMcgDyn: z.number().describe('Price vs McGinley Dynamic (%)'),
+      position: z.enum(['above', 'below', 'equal']).describe('Current price position relative to McGinley Dynamic'),
+      adaptationRate: z.number().describe('Current adaptation rate (K factor)'),
+      volatilityFactor: z.number().describe('Market volatility factor'),
+      strength: z.number().describe('Trend strength (0-100)'),
+      lagReduction: z.number().describe('Lag reduction effectiveness vs SMA (%)'),
+    }),
   },
-  async ({ executions }: { executions: Array<{ ticker: string; side: 'LONG' | 'SHORT'; quantity: number; leverage?: number; price?: number; orderType?: 'MARKET' | 'LIMIT' }> }) => {
+  async ({ prices, period = 20 }) => {
     try {
-      const paperExecutor = new PaperExecutor({
-        paperCapital: parseFloat(process.env.PAPER_CAPITAL || '10000'),
-        tradesFile: './trades/testnet-futures-trades.json',
-        simulateSlippage: true,
-        slippagePct: 0.1,
-      })
-      
-      const results = []
-      let successCount = 0
-      let failedCount = 0
-      
-      for (const exec of executions) {
-        try {
-          const normalizedTicker = exec.ticker.toUpperCase().replace(/USDT?$/, '')
-          const priceData = await getRealTimePrice(normalizedTicker)
-          const currentPrice = exec.price || priceData.price
-          const leverage = exec.leverage || 10
-          
-          if (!currentPrice) {
-            results.push({
-              ticker: normalizedTicker,
-              side: exec.side,
-              quantity: exec.quantity,
-              leverage,
-              execution: null,
-              error: `Failed to get price for ${normalizedTicker}`,
-              mode: 'TESTNET',
-            })
-            failedCount++
-            continue
-          }
-          
-          const signal = createSignalFromExecution(normalizedTicker, exec.side, exec.quantity, currentPrice, leverage)
-          const order = await paperExecutor.executeEntry(signal, currentPrice)
-          const execution = formatExecutionFromOrder(order, false)
-          
-          execution.mode = 'TESTNET (Paper Trading)'
-          execution.realMoney = false
-          execution.leverage = leverage
-          
-          results.push({
-            ticker: normalizedTicker,
-            side: exec.side,
-            quantity: exec.quantity,
-            leverage,
-            orderType: exec.orderType || 'MARKET',
-            execution,
-            mode: 'TESTNET',
-          })
-          successCount++
-        } catch (error: any) {
-          results.push({
-            ticker: exec.ticker,
-            side: exec.side,
-            quantity: exec.quantity,
-            leverage: exec.leverage || 10,
-            execution: null,
-            error: error.message || error.toString(),
-            mode: 'TESTNET',
-          })
-          failedCount++
-        }
+      const result = calculateMcGinleyDynamic(prices, period)
+      if (!result) {
+        throw new Error(`Insufficient data: need at least ${period} prices, got ${prices.length}`)
       }
-      
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                results,
-                summary: {
-                  total: executions.length,
-                  success: successCount,
-                  failed: failedCount,
-                },
-                mode: 'TESTNET',
-                warning: '⚠️ Testnet mode - No real money involved. This is paper trading simulation with leverage.',
-                timestamp: new Date().toISOString(),
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: {
-          results,
-          summary: { total: executions.length, success: successCount, failed: failedCount },
-          mode: 'TESTNET',
-          timestamp: new Date().toISOString(),
-        },
-      }
+      return result
     } catch (error: any) {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                error: 'Multiple testnet futures executions failed',
-                message: error.message || error.toString(),
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        isError: true,
-      }
+      throw new Error(`McGinley Dynamic calculation failed: ${error.message}`)
     }
   }
 )
 
-// ============================================================================
-// CLOSE POSITION TOOLS
-// ============================================================================
-
-// Register close_position_testnet tool
+// Register rainbow_ma tool
 server.registerTool(
-  'close_position_testnet',
+  'rainbow_ma',
   {
-    title: 'Close Position (Testnet/Paper)',
-    description: 'Close an open position in testnet mode (paper trading). Auto-detects position side and closes it safely.',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        ticker: z.string().describe('Asset ticker symbol (e.g., "BTC", "ETH", "SOL")'),
-        quantity: z.number().positive().optional().describe('Quantity to close (optional, default: close all)'),
-        exitReason: z.enum(['TAKE_PROFIT', 'STOP_LOSS', 'MANUAL', 'STRATEGY_EXIT']).default('MANUAL').describe('Reason for closing position'),
-      },
-      required: ['ticker'],
-    } as any,
+    title: 'Rainbow Moving Average Indicator',
+    description: 'Calculate multiple moving averages with different periods for comprehensive trend visualization and alignment analysis.',
+    inputSchema: z.object({
+      prices: z.array(z.number()).min(10).describe('Array of closing prices'),
+      periods: z.array(z.number()).min(8).max(12).default([2, 3, 4, 5, 6, 7, 8, 9]).describe('Periods for each MA in rainbow (default: [2,3,4,5,6,7,8,9])'),
+    }),
+    outputSchema: z.object({
+      ma2: z.number().describe('Fastest MA (period 2)'),
+      ma3: z.number().describe('MA period 3'),
+      ma4: z.number().describe('MA period 4'),
+      ma5: z.number().describe('MA period 5'),
+      ma6: z.number().describe('MA period 6'),
+      ma7: z.number().describe('MA period 7'),
+      ma8: z.number().describe('MA period 8'),
+      ma9: z.number().describe('Slowest MA (period 9)'),
+      trend: z.enum(['strong_bullish', 'bullish', 'neutral', 'bearish', 'strong_bearish']).describe('Overall trend direction'),
+      alignment: z.enum(['bullish_alignment', 'bearish_alignment', 'mixed']).describe('MA alignment pattern'),
+      position: z.enum(['above_rainbow', 'in_rainbow', 'below_rainbow']).describe('Price position vs rainbow'),
+      strength: z.number().describe('Trend strength (0-100)'),
+      spread: z.number().describe('Spread between fastest and slowest MA (%)'),
+      compression: z.boolean().describe('Whether rainbow is compressing (potential breakout)'),
+    }),
   },
-  async ({ ticker, quantity, exitReason = 'MANUAL' }: { ticker: string; quantity?: number; exitReason?: 'TAKE_PROFIT' | 'STOP_LOSS' | 'MANUAL' | 'STRATEGY_EXIT' }) => {
+  async ({ prices, periods = [2, 3, 4, 5, 6, 7, 8, 9] }) => {
     try {
-      const normalizedTicker = ticker.toUpperCase().replace(/USDT?$/, '')
-      
-      // Get current position
-      const paperExecutor = new PaperExecutor({
-        paperCapital: parseFloat(process.env.PAPER_CAPITAL || '10000'),
-        tradesFile: './trades/testnet-positions.json',
-        simulateSlippage: true,
-        slippagePct: 0.1,
-      })
-      
-      // Check if position exists (we need to track positions in executor)
-      // For now, we'll simulate it by checking get_position
-      const priceData = await getRealTimePrice(normalizedTicker)
-      const currentPrice = priceData.price
-      
-      if (!currentPrice) {
-        return {
-          content: [{ type: 'text', text: JSON.stringify({ error: `Failed to get price for ${normalizedTicker}` }, null, 2) }],
-          structuredContent: { execution: null, timestamp: new Date().toISOString() },
-        }
+      const result = calculateRainbowMA(prices, periods)
+      if (!result) {
+        const maxPeriod = Math.max(...periods)
+        throw new Error(`Insufficient data: need at least ${maxPeriod} prices, got ${prices.length}`)
       }
-      
-      // Create a mock position (in production, this should come from real position tracking)
-      const mockPosition = {
-        symbol: normalizedTicker,
-        coin: normalizedTicker,
-        side: 'LONG' as const,
-        quantity: quantity || 0.01,
-        entryPrice: currentPrice * 0.99, // Mock entry price
-        leverage: 1,
-      }
-      
-      // Calculate exit size (100% if no quantity specified)
-      const exitSize = quantity ? (quantity / mockPosition.quantity) * 100 : 100
-      
-      const order = await paperExecutor.executeExit(mockPosition, exitSize, exitReason, currentPrice)
-      const execution = formatExecutionFromOrder(order, false)
-      
-      execution.mode = 'TESTNET (Paper Trading)'
-      execution.realMoney = false
-      execution.action = 'CLOSE'
-      execution.exitReason = exitReason
-      
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                ticker: normalizedTicker,
-                action: 'CLOSE',
-                quantity: order.quantity,
-                price: order.filledPrice,
-                exitReason,
-                execution,
-                timestamp: new Date().toISOString(),
-                mode: 'TESTNET',
-                warning: '⚠️ Testnet mode - This is a simulated position close.',
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: {
-          ticker: normalizedTicker,
-          action: 'CLOSE',
-          quantity: order.quantity,
-          exitReason,
-          execution,
-          timestamp: new Date().toISOString(),
-          mode: 'TESTNET',
-        },
-      }
+      return result
     } catch (error: any) {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                error: 'Testnet position close failed',
-                message: error.message || error.toString(),
-                ticker,
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        isError: true,
-      }
+      throw new Error(`Rainbow MA calculation failed: ${error.message}`)
     }
   }
 )
 
-// Register close_all_positions_testnet tool
+// Register kaufman_adaptive_ma tool
 server.registerTool(
-  'close_all_positions_testnet',
+  'kaufman_adaptive_ma',
   {
-    title: 'Close All Positions (Testnet/Paper)',
-    description: 'Close all open positions in testnet mode (paper trading). Safe for testing portfolio exit strategies.',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        exitReason: z.enum(['TAKE_PROFIT', 'STOP_LOSS', 'MANUAL', 'STRATEGY_EXIT', 'EMERGENCY']).default('MANUAL').describe('Reason for closing all positions'),
-      },
-      required: [],
-    } as any,
+    title: 'Kaufman Adaptive Moving Average (KAMA)',
+    description: 'Calculate adaptive moving average that adjusts smoothing based on market efficiency and volatility.',
+    inputSchema: z.object({
+      closes: z.array(z.number()).min(40).describe('Array of closing prices'),
+      efficiencyPeriod: z.number().int().min(2).max(50).default(10).describe('Period for efficiency ratio calculation (default: 10)'),
+      fastPeriod: z.number().int().min(2).max(20).default(2).describe('Fast EMA period (default: 2)'),
+      slowPeriod: z.number().int().min(10).max(100).default(30).describe('Slow EMA period (default: 30)'),
+    }),
+    outputSchema: z.object({
+      kama: z.number().describe('Kaufman Adaptive Moving Average value'),
+      efficiencyRatio: z.number().describe('Market efficiency ratio (0-1)'),
+      smoothingConstant: z.number().describe('Current smoothing constant (alpha)'),
+      trend: z.enum(['bullish', 'bearish', 'neutral']).describe('Trend direction'),
+      priceVsKama: z.number().describe('Price vs KAMA (%)'),
+      position: z.enum(['above', 'below', 'equal']).describe('Current price position relative to KAMA'),
+      strength: z.number().describe('Signal strength (0-100)'),
+      marketCondition: z.enum(['trending', 'ranging', 'neutral']).describe('Market condition assessment'),
+      responsiveness: z.enum(['high', 'moderate', 'low']).describe('MA responsiveness level'),
+      signal: z.enum(['buy', 'sell', 'neutral']).describe('Trading signal'),
+    }),
   },
-  async ({ exitReason = 'MANUAL' }: { exitReason?: 'TAKE_PROFIT' | 'STOP_LOSS' | 'MANUAL' | 'STRATEGY_EXIT' | 'EMERGENCY' }) => {
+  async ({ closes, efficiencyPeriod = 10, fastPeriod = 2, slowPeriod = 30 }) => {
     try {
-      const paperExecutor = new PaperExecutor({
-        paperCapital: parseFloat(process.env.PAPER_CAPITAL || '10000'),
-        tradesFile: './trades/testnet-positions.json',
-        simulateSlippage: true,
-        slippagePct: 0.1,
-      })
-      
-      // In production, get actual open positions from executor
-      // For now, mock with common tickers
-      const mockPositions = [
-        { ticker: 'BTC', quantity: 0.01, side: 'LONG' as const },
-        { ticker: 'ETH', quantity: 0.1, side: 'LONG' as const },
-      ]
-      
-      const results = []
-      let successCount = 0
-      let failedCount = 0
-      
-      for (const position of mockPositions) {
-        try {
-          const priceData = await getRealTimePrice(position.ticker)
-          const currentPrice = priceData.price
-          
-          if (!currentPrice) {
-            results.push({
-              ticker: position.ticker,
-              action: 'CLOSE',
-              error: `Failed to get price for ${position.ticker}`,
-              mode: 'TESTNET',
-            })
-            failedCount++
-            continue
-          }
-          
-          const mockPos = {
-            symbol: position.ticker,
-            coin: position.ticker,
-            side: position.side,
-            quantity: position.quantity,
-            entryPrice: currentPrice * 0.99,
-            leverage: 1,
-          }
-          
-          const order = await paperExecutor.executeExit(mockPos, 100, exitReason, currentPrice)
-          const execution = formatExecutionFromOrder(order, false)
-          
-          execution.mode = 'TESTNET (Paper Trading)'
-          execution.realMoney = false
-          execution.action = 'CLOSE'
-          
-          results.push({
-            ticker: position.ticker,
-            action: 'CLOSE',
-            quantity: order.quantity,
-            price: order.filledPrice,
-            exitReason,
-            execution,
-            mode: 'TESTNET',
-          })
-          successCount++
-        } catch (error: any) {
-          results.push({
-            ticker: position.ticker,
-            action: 'CLOSE',
-            error: error.message || error.toString(),
-            mode: 'TESTNET',
-          })
-          failedCount++
-        }
+      const result = calculateKaufmanAdaptiveMA(closes, efficiencyPeriod, fastPeriod, slowPeriod)
+      if (!result) {
+        throw new Error(`Insufficient data: need at least ${slowPeriod + efficiencyPeriod} prices, got ${closes.length}`)
       }
-      
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                action: 'CLOSE_ALL',
-                results,
-                summary: {
-                  total: mockPositions.length,
-                  success: successCount,
-                  failed: failedCount,
-                },
-                exitReason,
-                mode: 'TESTNET',
-                warning: '⚠️ Testnet mode - All positions closed in paper trading simulation.',
-                timestamp: new Date().toISOString(),
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: {
-          action: 'CLOSE_ALL',
-          results,
-          summary: { total: mockPositions.length, success: successCount, failed: failedCount },
-          exitReason,
-          mode: 'TESTNET',
-          timestamp: new Date().toISOString(),
-        },
-      }
+      return result
     } catch (error: any) {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                error: 'Close all positions testnet failed',
-                message: error.message || error.toString(),
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        isError: true,
-      }
+      throw new Error(`Kaufman Adaptive MA calculation failed: ${error.message}`)
     }
   }
 )
 
-// Register close_position tool (mainnet/paper)
+// Register detrended_price_oscillator tool
 server.registerTool(
-  'close_position',
+  'detrended_price_oscillator',
   {
-    title: 'Close Position',
-    description: 'Close an open position (paper trading by default, or live with credentials). Auto-detects position side and closes it.',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        ticker: z.string().describe('Asset ticker symbol (e.g., "BTC", "ETH", "SOL")'),
-        quantity: z.number().positive().optional().describe('Quantity to close (optional, default: close all)'),
-        exitReason: z.enum(['TAKE_PROFIT', 'STOP_LOSS', 'MANUAL', 'STRATEGY_EXIT']).default('MANUAL').describe('Reason for closing position'),
-        useLiveExecutor: z.boolean().default(false).describe('Use live executor (requires credentials, default: false for paper trading)'),
-        walletApiKey: z.string().optional().describe('Hyperliquid wallet API key (optional, uses environment variable if not provided)'),
-        accountAddress: z.string().optional().describe('Hyperliquid account address (optional, uses environment variable if not provided)'),
-      },
-      required: ['ticker'],
-    } as any,
+    title: 'Detrended Price Oscillator (DPO)',
+    description: 'Calculate detrended price oscillator that removes trend from price data to identify cycles and overbought/oversold conditions.',
+    inputSchema: z.object({
+      prices: z.array(z.number()).min(40).describe('Array of closing prices'),
+      period: z.number().int().min(5).max(100).default(20).describe('Period for moving average calculation (default: 20)'),
+    }),
+    outputSchema: z.object({
+      dpo: z.number().describe('Detrended Price Oscillator value'),
+      ma: z.number().describe('Moving average used for detrending'),
+      cyclePosition: z.enum(['peak', 'trough', 'rising', 'falling', 'neutral']).describe('Current position in cycle'),
+      overbought: z.boolean().describe('Whether DPO indicates overbought condition'),
+      oversold: z.boolean().describe('Whether DPO indicates oversold condition'),
+      zeroCross: z.enum(['bullish', 'bearish', 'none']).describe('Zero line crossover signal'),
+      detrendedStrength: z.number().describe('Strength of detrended movement'),
+      signal: z.enum(['buy', 'sell', 'neutral']).describe('Trading signal'),
+      estimatedCycleLength: z.number().nullable().describe('Estimated cycle length in periods'),
+    }),
   },
-  async ({ ticker, quantity, exitReason = 'MANUAL', useLiveExecutor = false, walletApiKey, accountAddress }: { ticker: string; quantity?: number; exitReason?: 'TAKE_PROFIT' | 'STOP_LOSS' | 'MANUAL' | 'STRATEGY_EXIT'; useLiveExecutor?: boolean; walletApiKey?: string; accountAddress?: string }) => {
+  async ({ prices, period = 20 }) => {
     try {
-      const normalizedTicker = ticker.toUpperCase().replace(/USDT?$/, '')
-      
-      const priceData = await getRealTimePrice(normalizedTicker)
-      const currentPrice = priceData.price
-      
-      if (!currentPrice) {
-        return {
-          content: [{ type: 'text', text: JSON.stringify({ error: `Failed to get price for ${normalizedTicker}` }, null, 2) }],
-          structuredContent: { execution: null, timestamp: new Date().toISOString() },
-        }
+      const result = calculateDetrendedPrice(prices, period)
+      if (!result) {
+        throw new Error(`Insufficient data: need at least ${period * 2} prices, got ${prices.length}`)
       }
-      
-      let execution: any
-      
-      if (useLiveExecutor) {
-        const finalWalletApiKey = walletApiKey || getHyperliquidWalletApiKey()
-        const finalAccountAddress = accountAddress || getHyperliquidAccountAddress()
-        
-        if (!finalWalletApiKey || !finalAccountAddress) {
-          return {
-            content: [
-              {
-                type: 'text',
-                text: JSON.stringify(
-                  {
-                    error: 'Live executor requires walletApiKey and accountAddress',
-                    message: 'Please provide credentials or configure environment variables',
-                  },
-                  null,
-                  2
-                ),
-              },
-            ],
-            structuredContent: { execution: null, timestamp: new Date().toISOString() },
-          }
-        }
-        
-        const liveExecutor = new LiveExecutor({
-          tradesFile: './trades/live-trades.json',
-          orderFillTimeoutMs: 30000,
-          retryOnTimeout: false,
-          maxRetries: 3,
-          walletApiKey: finalWalletApiKey,
-          accountAddress: finalAccountAddress,
-        })
-        
-        const mockPosition = {
-          symbol: normalizedTicker,
-          coin: normalizedTicker,
-          side: 'LONG' as const,
-          quantity: quantity || 0.01,
-          entryPrice: currentPrice * 0.99,
-          leverage: 1,
-        }
-        
-        const order = await liveExecutor.executeExit(mockPosition, 100, exitReason, currentPrice)
-        execution = formatExecutionFromOrder(order, true)
-      } else {
-        const paperExecutor = new PaperExecutor({
-          paperCapital: parseFloat(process.env.PAPER_CAPITAL || '10000'),
-          tradesFile: './trades/paper-trades.json',
-          simulateSlippage: true,
-          slippagePct: 0.1,
-        })
-        
-        const mockPosition = {
-          symbol: normalizedTicker,
-          coin: normalizedTicker,
-          side: 'LONG' as const,
-          quantity: quantity || 0.01,
-          entryPrice: currentPrice * 0.99,
-          leverage: 1,
-        }
-        
-        const order = await paperExecutor.executeExit(mockPosition, 100, exitReason, currentPrice)
-        execution = formatExecutionFromOrder(order, false)
-      }
-      
-      execution.action = 'CLOSE'
-      execution.exitReason = exitReason
-      
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                ticker: normalizedTicker,
-                action: 'CLOSE',
-                quantity: execution.quantity,
-                price: execution.price,
-                exitReason,
-                execution,
-                mode: useLiveExecutor ? 'LIVE' : 'PAPER',
-                timestamp: new Date().toISOString(),
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: {
-          ticker: normalizedTicker,
-          action: 'CLOSE',
-          quantity: execution.quantity,
-          exitReason,
-          execution,
-          mode: useLiveExecutor ? 'LIVE' : 'PAPER',
-          timestamp: new Date().toISOString(),
-        },
-      }
+      return result
     } catch (error: any) {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                error: 'Position close failed',
-                message: error.message || error.toString(),
-                ticker,
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        isError: true,
-      }
+      throw new Error(`Detrended Price Oscillator calculation failed: ${error.message}`)
     }
   }
 )
 
-// Register close_all_positions tool (mainnet/paper)
+// Register relative_vigor_index tool
 server.registerTool(
-  'close_all_positions',
+  'relative_vigor_index',
   {
-    title: 'Close All Positions',
-    description: 'Close all open positions (paper trading by default, or live with credentials). Emergency exit for entire portfolio.',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        exitReason: z.enum(['TAKE_PROFIT', 'STOP_LOSS', 'MANUAL', 'STRATEGY_EXIT', 'EMERGENCY']).default('MANUAL').describe('Reason for closing all positions'),
-        useLiveExecutor: z.boolean().default(false).describe('Use live executor (requires credentials, default: false for paper trading)'),
-        walletApiKey: z.string().optional().describe('Hyperliquid wallet API key (optional)'),
-        accountAddress: z.string().optional().describe('Hyperliquid account address (optional)'),
-      },
-      required: [],
-    } as any,
+    title: 'Relative Vigor Index (RVI)',
+    description: 'Calculate Relative Vigor Index that compares close vs open momentum to identify trend strength and reversals.',
+    inputSchema: z.object({
+      opens: z.array(z.number()).min(10).describe('Array of opening prices'),
+      highs: z.array(z.number()).min(10).describe('Array of high prices'),
+      lows: z.array(z.number()).min(10).describe('Array of low prices'),
+      closes: z.array(z.number()).min(10).describe('Array of closing prices'),
+    }),
+    outputSchema: z.object({
+      rvi: z.number().describe('Relative Vigor Index value'),
+      signal: z.string().nullable().optional().describe('Trading signal (buy/sell/neutral)'),
+      trend: z.string().describe('Trend direction'),
+      strength: z.number().describe('Signal strength (0-100)'),
+      divergence: z.string().nullable().optional().describe('Divergence signal if detected'),
+    }),
   },
-  async ({ exitReason = 'MANUAL', useLiveExecutor = false, walletApiKey, accountAddress }: { exitReason?: 'TAKE_PROFIT' | 'STOP_LOSS' | 'MANUAL' | 'STRATEGY_EXIT' | 'EMERGENCY'; useLiveExecutor?: boolean; walletApiKey?: string; accountAddress?: string }) => {
+  async ({ opens, highs, lows, closes }) => {
     try {
-      const mockPositions = [
-        { ticker: 'BTC', quantity: 0.01, side: 'LONG' as const },
-        { ticker: 'ETH', quantity: 0.1, side: 'LONG' as const },
-      ]
-      
-      const results = []
-      let successCount = 0
-      let failedCount = 0
-      
-      let executor: any
-      
-      if (useLiveExecutor) {
-        const finalWalletApiKey = walletApiKey || getHyperliquidWalletApiKey()
-        const finalAccountAddress = accountAddress || getHyperliquidAccountAddress()
-        
-        if (!finalWalletApiKey || !finalAccountAddress) {
-          return {
-            content: [
-              {
-                type: 'text',
-                text: JSON.stringify(
-                  {
-                    error: 'Live executor requires credentials',
-                    message: 'Please provide walletApiKey and accountAddress',
-                  },
-                  null,
-                  2
-                ),
-              },
-            ],
-            structuredContent: { execution: null, timestamp: new Date().toISOString() },
-          }
-        }
-        
-        executor = new LiveExecutor({
-          tradesFile: './trades/live-trades.json',
-          orderFillTimeoutMs: 30000,
-          retryOnTimeout: false,
-          maxRetries: 3,
-          walletApiKey: finalWalletApiKey,
-          accountAddress: finalAccountAddress,
-        })
-      } else {
-        executor = new PaperExecutor({
-          paperCapital: parseFloat(process.env.PAPER_CAPITAL || '10000'),
-          tradesFile: './trades/paper-trades.json',
-          simulateSlippage: true,
-          slippagePct: 0.1,
-        })
+      if (opens.length !== highs.length || opens.length !== lows.length || opens.length !== closes.length) {
+        throw new Error('All price arrays must have the same length')
       }
-      
-      for (const position of mockPositions) {
-        try {
-          const priceData = await getRealTimePrice(position.ticker)
-          const currentPrice = priceData.price
-          
-          if (!currentPrice) {
-            results.push({
-              ticker: position.ticker,
-              action: 'CLOSE',
-              error: `Failed to get price for ${position.ticker}`,
-              mode: useLiveExecutor ? 'LIVE' : 'PAPER',
-            })
-            failedCount++
-            continue
-          }
-          
-          const mockPos = {
-            symbol: position.ticker,
-            coin: position.ticker,
-            side: position.side,
-            quantity: position.quantity,
-            entryPrice: currentPrice * 0.99,
-            leverage: 1,
-          }
-          
-          const order = await executor.executeExit(mockPos, 100, exitReason, currentPrice)
-          const execution = formatExecutionFromOrder(order, useLiveExecutor)
-          
-          execution.action = 'CLOSE'
-          
-          results.push({
-            ticker: position.ticker,
-            action: 'CLOSE',
-            quantity: order.quantity,
-            price: order.filledPrice,
-            exitReason,
-            execution,
-            mode: useLiveExecutor ? 'LIVE' : 'PAPER',
-          })
-          successCount++
-        } catch (error: any) {
-          results.push({
-            ticker: position.ticker,
-            action: 'CLOSE',
-            error: error.message || error.toString(),
-            mode: useLiveExecutor ? 'LIVE' : 'PAPER',
-          })
-          failedCount++
-        }
+      const result = calculateRelativeVigorIndex(opens, highs, lows, closes)
+      if (!result) {
+        throw new Error(`Insufficient data: need at least 10 price points, got ${opens.length}`)
       }
-      
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                action: 'CLOSE_ALL',
-                results,
-                summary: {
-                  total: mockPositions.length,
-                  success: successCount,
-                  failed: failedCount,
-                },
-                exitReason,
-                mode: useLiveExecutor ? 'LIVE' : 'PAPER',
-                warning: useLiveExecutor ? '⚠️ LIVE MODE - Real positions closed!' : 'Paper trading mode - Simulated close',
-                timestamp: new Date().toISOString(),
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        structuredContent: {
-          action: 'CLOSE_ALL',
-          results,
-          summary: { total: mockPositions.length, success: successCount, failed: failedCount },
-          exitReason,
-          mode: useLiveExecutor ? 'LIVE' : 'PAPER',
-          timestamp: new Date().toISOString(),
-        },
-      }
+      return result
     } catch (error: any) {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                error: 'Close all positions failed',
-                message: error.message || error.toString(),
-              },
-              null,
-              2
-            ),
-          },
-        ],
-        isError: true,
+      throw new Error(`Relative Vigor Index calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register gator_oscillator tool
+server.registerTool(
+  'gator_oscillator',
+  {
+    title: 'Gator Oscillator',
+    description: 'Calculate Gator Oscillator that shows convergence/divergence of Alligator lines and identifies trend strength.',
+    inputSchema: z.object({
+      closes: z.array(z.number()).min(20).describe('Array of closing prices'),
+    }),
+    outputSchema: z.object({
+      upperHistogram: z.number().describe('Upper histogram (Jaw - Teeth)'),
+      lowerHistogram: z.number().describe('Lower histogram (Teeth - Lips)'),
+      trend: z.string().describe('Trend direction'),
+      strength: z.number().describe('Trend strength (0-100)'),
+      convergence: z.boolean().describe('Whether Alligator lines are converging'),
+      divergence: z.boolean().describe('Whether Alligator lines are diverging'),
+      signal: z.string().describe('Trading signal'),
+    }),
+  },
+  async ({ closes }) => {
+    try {
+      const result = calculateGatorOscillator(closes)
+      if (!result) {
+        throw new Error(`Insufficient data: need at least 20 prices, got ${closes.length}`)
       }
+      return result
+    } catch (error: any) {
+      throw new Error(`Gator Oscillator calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register elder_ray tool
+server.registerTool(
+  'elder_ray',
+  {
+    title: 'Elder-Ray Index',
+    description: 'Calculate Elder-Ray Index that measures buying and selling pressure using Bull Power and Bear Power.',
+    inputSchema: z.object({
+      highs: z.array(z.number()).min(13).describe('Array of high prices'),
+      lows: z.array(z.number()).min(13).describe('Array of low prices'),
+      closes: z.array(z.number()).min(13).describe('Array of closing prices'),
+      period: z.number().int().min(5).max(50).default(13).describe('EMA period (default: 13 as recommended by Elder)'),
+    }),
+    outputSchema: z.object({
+      bullPower: z.number().describe('Bull Power (High - EMA)'),
+      bearPower: z.number().describe('Bear Power (Low - EMA)'),
+      totalPower: z.number().describe('Total power (Bull + Bear Power)'),
+      trend: z.enum(['bullish', 'bearish', 'neutral']).describe('Trend direction based on power balance'),
+      powerBalance: z.number().describe('Power balance ratio (Bull Power / |Bear Power|)'),
+      strength: z.number().describe('Signal strength (0-100)'),
+      bullishDivergence: z.boolean().describe('Bullish divergence detected'),
+      bearishDivergence: z.boolean().describe('Bearish divergence detected'),
+      pressure: z.enum(['buying', 'selling', 'balanced']).describe('Current market pressure'),
+    }),
+  },
+  async ({ highs, lows, closes, period = 13 }) => {
+    try {
+      if (highs.length !== lows.length || highs.length !== closes.length) {
+        throw new Error('All price arrays must have the same length')
+      }
+      const result = calculateElderRay(highs, lows, closes, period)
+      if (!result) {
+        throw new Error(`Insufficient data: need at least ${period} price points, got ${highs.length}`)
+      }
+      return result
+    } catch (error: any) {
+      throw new Error(`Elder-Ray Index calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register fisher_transform tool
+server.registerTool(
+  'fisher_transform',
+  {
+    title: 'Fisher Transform',
+    description: 'Calculate Fisher Transform that normalizes price data using Gaussian distribution for sharp reversal signals.',
+    inputSchema: z.object({
+      highs: z.array(z.number()).min(10).describe('Array of high prices'),
+      lows: z.array(z.number()).min(10).describe('Array of low prices'),
+      period: z.number().int().min(5).max(50).default(10).describe('Period for highest/lowest calculation (default: 10)'),
+      triggerPeriod: z.number().int().min(2).max(20).default(5).describe('Period for trigger line EMA (default: 5)'),
+    }),
+    outputSchema: z.object({
+      fisher: z.number().describe('Fisher Transform value (-5 to +5 range)'),
+      trigger: z.number().describe('Trigger line (EMA of Fisher)'),
+      trend: z.enum(['bullish', 'bearish', 'neutral']).describe('Current trend direction'),
+      strength: z.number().describe('Signal strength (0-100)'),
+      overbought: z.boolean().describe('Overbought condition (Fisher > 4.0)'),
+      oversold: z.boolean().describe('Oversold condition (Fisher < -4.0)'),
+      bullishCrossover: z.boolean().describe('Bullish crossover (Fisher crosses above trigger)'),
+      bearishCrossover: z.boolean().describe('Bearish crossover (Fisher crosses below trigger)'),
+      bullishReversal: z.boolean().describe('Bullish reversal from oversold'),
+      bearishReversal: z.boolean().describe('Bearish reversal from overbought'),
+      divergence: z.enum(['bullish', 'bearish', 'none']).describe('Divergence signal'),
+    }),
+  },
+  async ({ highs, lows, period = 10, triggerPeriod = 5 }) => {
+    try {
+      if (highs.length !== lows.length) {
+        throw new Error('Highs and lows arrays must have the same length')
+      }
+      const result = calculateFisherTransform(highs, lows, period, triggerPeriod)
+      if (!result) {
+        throw new Error(`Insufficient data: need at least ${period} price points, got ${highs.length}`)
+      }
+      return result
+    } catch (error: any) {
+      throw new Error(`Fisher Transform calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register know_sure_thing tool
+server.registerTool(
+  'know_sure_thing',
+  {
+    title: 'Know Sure Thing (KST)',
+    description: 'Calculate Know Sure Thing oscillator that combines multiple timeframe ROC calculations for momentum analysis.',
+    inputSchema: z.object({
+      prices: z.array(z.number()).min(45).describe('Array of closing prices'),
+    }),
+    outputSchema: z.object({
+      kst: z.number().describe('Know Sure Thing value'),
+      signal: z.number().describe('Signal line (9-period MA of KST)'),
+      roc1: z.number().describe('ROC1 component (10-period ROC smoothed with 10-period MA)'),
+      roc2: z.number().describe('ROC2 component (15-period ROC smoothed with 10-period MA)'),
+      roc3: z.number().describe('ROC3 component (20-period ROC smoothed with 10-period MA)'),
+      roc4: z.number().describe('ROC4 component (30-period ROC smoothed with 15-period MA)'),
+      trend: z.enum(['bullish', 'bearish', 'neutral']).describe('Trend direction'),
+      strength: z.number().describe('Signal strength (0-100)'),
+      bullishCrossover: z.boolean().describe('Bullish crossover (KST crosses above signal)'),
+      bearishCrossover: z.boolean().describe('Bearish crossover (KST crosses below signal)'),
+      overbought: z.boolean().describe('Overbought condition (KST > 20)'),
+      oversold: z.boolean().describe('Oversold condition (KST < -20)'),
+      divergence: z.enum(['bullish', 'bearish', 'none']).describe('Momentum divergence'),
+    }),
+  },
+  async ({ prices }) => {
+    try {
+      const result = calculateKST(prices)
+      if (!result) {
+        throw new Error(`Insufficient data: need at least 45 prices, got ${prices.length}`)
+      }
+      return result
+    } catch (error: any) {
+      throw new Error(`Know Sure Thing calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register chande_momentum_oscillator tool
+server.registerTool(
+  'chande_momentum_oscillator',
+  {
+    title: 'Chande Momentum Oscillator',
+    description: 'Calculate Chande Momentum Oscillator that measures momentum on both up and down moves with range of -100 to +100.',
+    inputSchema: z.object({
+      prices: z.array(z.number()).min(15).describe('Array of closing prices'),
+      period: z.number().int().min(5).max(50).default(14).describe('Period for calculation (default: 14)'),
+    }),
+    outputSchema: z.object({
+      cmo: z.number().describe('Chande Momentum Oscillator value (-100 to +100)'),
+      sumUp: z.number().describe('Sum of up moves over period'),
+      sumDown: z.number().describe('Sum of down moves over period'),
+      trend: z.enum(['bullish', 'bearish', 'neutral']).describe('Trend direction'),
+      overbought: z.boolean().describe('Overbought condition (CMO > 50)'),
+      oversold: z.boolean().describe('Oversold condition (CMO < -50)'),
+      strength: z.number().describe('Signal strength (0-100)'),
+      divergence: z.enum(['bullish', 'bearish', 'none']).describe('Divergence detection'),
+      signal: z.enum(['buy', 'sell', 'neutral']).describe('Trading signal'),
+    }),
+  },
+  async ({ prices, period = 14 }) => {
+    try {
+      const result = calculateChandeMomentum(prices, period)
+      if (!result) {
+        throw new Error(`Insufficient data: need at least ${period + 1} prices, got ${prices.length}`)
+      }
+      return result
+    } catch (error: any) {
+      throw new Error(`Chande Momentum Oscillator calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register bull_bear_power tool
+server.registerTool(
+  'bull_bear_power',
+  {
+    title: 'Bull Bear Power',
+    description: 'Calculate Bull Bear Power that measures the strength of bulls vs bears using price action and volume.',
+    inputSchema: z.object({
+      highs: z.array(z.number()).min(2).describe('Array of high prices'),
+      lows: z.array(z.number()).min(2).describe('Array of low prices'),
+      closes: z.array(z.number()).min(2).describe('Array of closing prices'),
+      volumes: z.array(z.number()).optional().describe('Array of volume data (optional for confirmation)'),
+    }),
+    outputSchema: z.object({
+      bullPower: z.number().describe('Bull Power percentage'),
+      bearPower: z.number().describe('Bear Power percentage'),
+      netPower: z.number().describe('Net Power (Bull - Bear Power)'),
+      powerRatio: z.number().describe('Power Ratio (Bull / |Bear|)'),
+      trend: z.enum(['bullish', 'bearish', 'neutral']).describe('Trend direction'),
+      strength: z.number().describe('Strength of dominant force (0-100)'),
+      pressure: z.enum(['strong_bull', 'bull', 'balanced', 'bear', 'strong_bear']).describe('Current market pressure'),
+      volumeConfirmed: z.boolean().describe('Volume confirmation of price action'),
+      signal: z.enum(['buy', 'sell', 'neutral']).describe('Trading signal'),
+    }),
+  },
+  async ({ highs, lows, closes, volumes }) => {
+    try {
+      if (highs.length !== lows.length || highs.length !== closes.length) {
+        throw new Error('Highs, lows, and closes arrays must have the same length')
+      }
+      if (volumes && volumes.length !== highs.length) {
+        throw new Error('Volumes array must have the same length as price arrays')
+      }
+      const result = calculateBullBearPower(highs, lows, closes, volumes)
+      if (!result) {
+        throw new Error('Insufficient data: need at least 2 price points')
+      }
+      return result
+    } catch (error: any) {
+      throw new Error(`Bull Bear Power calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register true_strength_index tool
+server.registerTool(
+  'true_strength_index',
+  {
+    title: 'True Strength Index (TSI)',
+    description: 'Calculate True Strength Index that uses double-smoothed momentum to reduce noise and provide clearer signals.',
+    inputSchema: z.object({
+      closes: z.array(z.number()).min(40).describe('Array of closing prices'),
+      shortPeriod: z.number().int().min(5).max(50).default(25).describe('Short EMA period (default: 25)'),
+      longPeriod: z.number().int().min(5).max(50).default(13).describe('Long EMA period (default: 13)'),
+      signalPeriod: z.number().int().min(5).max(30).default(13).describe('Signal line period (default: 13)'),
+    }),
+    outputSchema: z.object({
+      tsi: z.number().describe('True Strength Index value (-100 to +100)'),
+      signalLine: z.number().describe('Signal line (EMA of TSI)'),
+      priceChange: z.number().describe('Current price change'),
+      smoothedMomentum: z.number().describe('Single-smoothed momentum'),
+      doubleSmoothedMomentum: z.number().describe('Double-smoothed momentum'),
+      trend: z.enum(['bullish', 'bearish', 'neutral']).describe('Trend direction'),
+      strength: z.number().describe('Signal strength (0-100)'),
+      bullishCrossover: z.boolean().describe('Bullish crossover (TSI crosses above signal)'),
+      bearishCrossover: z.boolean().describe('Bearish crossover (TSI crosses below signal)'),
+      overbought: z.boolean().describe('Overbought condition (TSI > 25)'),
+      oversold: z.boolean().describe('Oversold condition (TSI < -25)'),
+      bullishZeroCross: z.boolean().describe('Bullish zero line cross'),
+      bearishZeroCross: z.boolean().describe('Bearish zero line cross'),
+      tradingSignal: z.enum(['buy', 'sell', 'neutral']).describe('Trading signal'),
+      momentumPhase: z.enum(['accelerating', 'decelerating', 'stable']).describe('Momentum phase'),
+    }),
+  },
+  async ({ closes, shortPeriod = 25, longPeriod = 13, signalPeriod = 13 }) => {
+    try {
+      const result = calculateTrueStrengthIndex(closes, shortPeriod, longPeriod, signalPeriod)
+      if (!result) {
+        throw new Error(`Insufficient data: need at least ${Math.max(shortPeriod, longPeriod, signalPeriod) * 2} prices, got ${closes.length}`)
+      }
+      return result
+    } catch (error: any) {
+      throw new Error(`True Strength Index calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register percentage_price_oscillator tool
+server.registerTool(
+  'percentage_price_oscillator',
+  {
+    title: 'Percentage Price Oscillator (PPO)',
+    description: 'Calculate Percentage Price Oscillator that expresses MACD as a percentage for better cross-asset comparability.',
+    inputSchema: z.object({
+      closes: z.array(z.number()).min(35).describe('Array of closing prices'),
+      fastPeriod: z.number().int().min(5).max(50).default(12).describe('Fast EMA period (default: 12)'),
+      slowPeriod: z.number().int().min(10).max(100).default(26).describe('Slow EMA period (default: 26)'),
+      signalPeriod: z.number().int().min(5).max(30).default(9).describe('Signal line period (default: 9)'),
+    }),
+    outputSchema: z.object({
+      ppo: z.number().describe('Percentage Price Oscillator value (%)'),
+      signalLine: z.number().describe('Signal line (EMA of PPO)'),
+      histogram: z.number().describe('PPO histogram (PPO - signal line)'),
+      trend: z.enum(['bullish', 'bearish', 'neutral']).describe('Trend direction'),
+      strength: z.number().describe('Signal strength (0-100)'),
+      bullishCrossover: z.boolean().describe('Bullish crossover (PPO crosses above signal)'),
+      bearishCrossover: z.boolean().describe('Bearish crossover (PPO crosses below signal)'),
+      bullishZeroCross: z.boolean().describe('Bullish zero line cross'),
+      bearishZeroCross: z.boolean().describe('Bearish zero line cross'),
+      divergence: z.enum(['bullish', 'bearish', 'none']).describe('Divergence detection'),
+      tradingSignal: z.enum(['buy', 'sell', 'neutral']).describe('Trading signal'),
+    }),
+  },
+  async ({ closes, fastPeriod = 12, slowPeriod = 26, signalPeriod = 9 }) => {
+    try {
+      const result = calculatePercentagePriceOscillator(closes, fastPeriod, slowPeriod, signalPeriod)
+      if (!result) {
+        throw new Error(`Insufficient data: need at least ${slowPeriod + signalPeriod} prices, got ${closes.length}`)
+      }
+      return result
+    } catch (error: any) {
+      throw new Error(`Percentage Price Oscillator calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register accelerator_oscillator tool
+server.registerTool(
+  'accelerator_oscillator',
+  {
+    title: 'Accelerator Oscillator (AC)',
+    description: 'Calculate Accelerator Oscillator from Bill Williams trading system that measures acceleration/deceleration of momentum.',
+    inputSchema: z.object({
+      highs: z.array(z.number()).min(10).describe('Array of high prices'),
+      lows: z.array(z.number()).min(10).describe('Array of low prices'),
+      closes: z.array(z.number()).min(10).describe('Array of closing prices'),
+    }),
+    outputSchema: z.object({
+      ac: z.number().describe('Accelerator Oscillator value'),
+      trend: z.enum(['bullish', 'bearish', 'neutral']).describe('Trend direction'),
+      strength: z.number().describe('Signal strength (0-100)'),
+      bullishZeroCross: z.boolean().describe('Bullish zero line cross'),
+      bearishZeroCross: z.boolean().describe('Bearish zero line cross'),
+      histogramColor: z.enum(['green', 'red', 'gray']).describe('Histogram color for visualization'),
+      acceleration: z.enum(['accelerating', 'decelerating', 'neutral']).describe('Acceleration phase'),
+      potentialReversal: z.boolean().describe('Potential reversal signal'),
+      signal: z.enum(['buy', 'sell', 'neutral']).describe('Trading signal'),
+    }),
+  },
+  async ({ highs, lows, closes }) => {
+    try {
+      if (highs.length !== lows.length || highs.length !== closes.length) {
+        throw new Error('All price arrays must have the same length')
+      }
+      const result = calculateAcceleratorOscillator(highs, lows, closes)
+      if (!result) {
+        throw new Error('Insufficient data: need at least 10 price points')
+      }
+      return result
+    } catch (error: any) {
+      throw new Error(`Accelerator Oscillator calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register schaff_trend_cycle tool
+server.registerTool(
+  'schaff_trend_cycle',
+  {
+    title: 'Schaff Trend Cycle (STC)',
+    description: 'Calculate Schaff Trend Cycle that combines MACD with Stochastic oscillator and double smoothing for early trend signals.',
+    inputSchema: z.object({
+      highs: z.array(z.number()).min(80).describe('Array of high prices'),
+      lows: z.array(z.number()).min(80).describe('Array of low prices'),
+      closes: z.array(z.number()).min(80).describe('Array of closing prices'),
+      cycleLength: z.number().int().min(10).max(50).default(23).describe('Cycle length for MACD (default: 23)'),
+      fastLength: z.number().int().min(10).max(50).default(23).describe('Fast EMA length (default: 23)'),
+      slowLength: z.number().int().min(20).max(100).default(50).describe('Slow EMA length (default: 50)'),
+      kPeriod: z.number().int().min(5).max(20).default(10).describe('Stochastic K period (default: 10)'),
+      dPeriod: z.number().int().min(2).max(10).default(3).describe('Stochastic D period (default: 3)'),
+    }),
+    outputSchema: z.object({
+      stc: z.number().describe('Schaff Trend Cycle value (0-100)'),
+      macd: z.number().describe('MACD component'),
+      macdSignal: z.number().describe('MACD signal component'),
+      histogram: z.number().describe('MACD histogram'),
+      cyclePosition: z.enum(['bottom', 'rising', 'top', 'falling', 'middle']).describe('Cycle position'),
+      trend: z.enum(['bullish', 'bearish', 'neutral']).describe('Trend direction'),
+      overbought: z.boolean().describe('Overbought condition (STC > 75)'),
+      oversold: z.boolean().describe('Oversold condition (STC < 25)'),
+      strength: z.number().describe('Signal strength (0-100)'),
+      bullishCycleSignal: z.boolean().describe('Bullish cycle signal (STC crosses above 25)'),
+      bearishCycleSignal: z.boolean().describe('Bearish cycle signal (STC crosses below 75)'),
+      tradingSignal: z.enum(['buy', 'sell', 'neutral']).describe('Trading signal'),
+      estimatedCycleLength: z.number().nullable().describe('Estimated cycle length'),
+    }),
+  },
+  async ({ highs, lows, closes, cycleLength = 23, fastLength = 23, slowLength = 50, kPeriod = 10, dPeriod = 3 }) => {
+    try {
+      if (highs.length !== lows.length || highs.length !== closes.length) {
+        throw new Error('All price arrays must have the same length')
+      }
+      const result = calculateSchaffTrendCycle(highs, lows, closes, cycleLength, fastLength, slowLength, kPeriod, dPeriod)
+      if (!result) {
+        throw new Error(`Insufficient data: need at least ${slowLength + kPeriod + dPeriod} prices, got ${highs.length}`)
+      }
+      return result
+    } catch (error: any) {
+      throw new Error(`Schaff Trend Cycle calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register coppock_curve tool
+server.registerTool(
+  'coppock_curve',
+  {
+    title: 'Coppock Curve',
+    description: 'Calculate Coppock Curve that combines two ROC periods for identifying major market bottoms and long-term momentum.',
+    inputSchema: z.object({
+      closes: z.array(z.number()).min(35).describe('Array of closing prices'),
+      roc1Period: z.number().int().min(10).max(20).default(14).describe('First ROC period (default: 14)'),
+      roc2Period: z.number().int().min(8).max(15).default(11).describe('Second ROC period (default: 11)'),
+      wmaPeriod: z.number().int().min(5).max(20).default(10).describe('WMA period (default: 10)'),
+    }),
+    outputSchema: z.object({
+      coppock: z.number().describe('Coppock Curve value'),
+      roc14: z.number().describe('14-period ROC component'),
+      roc11: z.number().describe('11-period ROC component'),
+      wma: z.number().describe('WMA of ROC sum'),
+      trend: z.enum(['bullish', 'bearish', 'neutral']).describe('Trend direction'),
+      strength: z.number().describe('Signal strength (0-100)'),
+      bullishSignal: z.boolean().describe('Bullish signal (crosses above 0)'),
+      bearishSignal: z.boolean().describe('Bearish signal (crosses below 0)'),
+      majorBottomSignal: z.boolean().describe('Major bottom signal detected'),
+      marketPhase: z.enum(['recovery', 'expansion', 'contraction', 'crisis']).describe('Market phase assessment'),
+      signal: z.enum(['buy', 'sell', 'neutral']).describe('Trading signal'),
+    }),
+  },
+  async ({ closes, roc1Period = 14, roc2Period = 11, wmaPeriod = 10 }) => {
+    try {
+      const result = calculateCoppockCurve(closes, roc1Period, roc2Period, wmaPeriod)
+      if (!result) {
+        throw new Error(`Insufficient data: need at least ${Math.max(roc1Period, roc2Period) + wmaPeriod} prices, got ${closes.length}`)
+      }
+      return result
+    } catch (error: any) {
+      throw new Error(`Coppock Curve calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register klinger_oscillator tool
+server.registerTool(
+  'klinger_oscillator',
+  {
+    title: 'Klinger Volume Oscillator',
+    description: 'Calculate Klinger Volume Oscillator that combines volume and price action for volume-based trend analysis.',
+    inputSchema: z.object({
+      highs: z.array(z.number()).min(50).describe('Array of high prices'),
+      lows: z.array(z.number()).min(50).describe('Array of low prices'),
+      closes: z.array(z.number()).min(50).describe('Array of closing prices'),
+      volumes: z.array(z.number()).min(50).describe('Array of volume data'),
+      fastPeriod: z.number().int().min(5).max(20).default(13).describe('Fast EMA period (default: 13)'),
+      slowPeriod: z.number().int().min(20).max(40).default(34).describe('Slow EMA period (default: 34)'),
+      signalPeriod: z.number().int().min(5).max(15).default(13).describe('Signal line period (default: 13)'),
+    }),
+    outputSchema: z.object({
+      kvo: z.number().describe('Klinger Volume Oscillator value'),
+      signal: z.number().describe('Signal line'),
+      trend: z.string().describe('Trend direction'),
+      volumeForce: z.number().describe('Volume force value'),
+      divergence: z.string().describe('Divergence signal'),
+      signalStrength: z.number().describe('Signal strength (0-100)'),
+      tradingSignal: z.string().describe('Trading signal'),
+    }),
+  },
+  async ({ highs, lows, closes, volumes, fastPeriod = 13, slowPeriod = 34, signalPeriod = 13 }) => {
+    try {
+      if (highs.length !== lows.length || highs.length !== closes.length || highs.length !== volumes.length) {
+        throw new Error('All arrays must have the same length')
+      }
+      const result = calculateKlingerOscillator(highs, lows, closes, volumes)
+      if (!result) {
+        throw new Error(`Insufficient data: need at least ${Math.max(fastPeriod, slowPeriod, signalPeriod)} prices, got ${highs.length}`)
+      }
+      return result
+    } catch (error: any) {
+      throw new Error(`Klinger Oscillator calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register volume_oscillator tool
+server.registerTool(
+  'volume_oscillator',
+  {
+    title: 'Volume Oscillator',
+    description: 'Calculate Volume Oscillator that compares short-term and long-term volume moving averages to identify volume trends.',
+    inputSchema: z.object({
+      volumes: z.array(z.number()).min(28).describe('Array of volume data'),
+      shortPeriod: z.number().int().min(5).max(20).default(14).describe('Short-term MA period (default: 14)'),
+      longPeriod: z.number().int().min(20).max(50).default(28).describe('Long-term MA period (default: 28)'),
+    }),
+    outputSchema: z.object({
+      oscillator: z.number().describe('Volume Oscillator value (%)'),
+      shortMA: z.number().describe('Short-term volume MA'),
+      longMA: z.number().describe('Long-term volume MA'),
+      trend: z.enum(['increasing', 'decreasing', 'stable']).describe('Volume trend direction'),
+      strength: z.number().describe('Signal strength (0-100)'),
+      overbought: z.boolean().describe('Overbought condition (VO > 10%)'),
+      oversold: z.boolean().describe('Oversold condition (VO < -10%)'),
+      bullishSignal: z.boolean().describe('Bullish signal (VO crosses above 0)'),
+      bearishSignal: z.boolean().describe('Bearish signal (VO crosses below 0)'),
+      signal: z.enum(['buy', 'sell', 'neutral']).describe('Trading signal'),
+      momentum: z.enum(['strong', 'moderate', 'weak']).describe('Volume momentum'),
+    }),
+  },
+  async ({ volumes, shortPeriod = 14, longPeriod = 28 }) => {
+    try {
+      const result = calculateVolumeOscillator(volumes, shortPeriod, longPeriod)
+      if (!result) {
+        throw new Error(`Insufficient data: need at least ${longPeriod} volume points, got ${volumes.length}`)
+      }
+      return result
+    } catch (error: any) {
+      throw new Error(`Volume Oscillator calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register get__ease_of_movement tool
+server.registerTool(
+  'ease_of_movement',
+  {
+    title: 'Ease of Movement (EMV)',
+    description: 'Calculate Ease of Movement that measures how easily price moves by combining price change and volume.',
+    inputSchema: z.object({
+      highs: z.array(z.number()).min(15).describe('Array of high prices'),
+      lows: z.array(z.number()).min(15).describe('Array of low prices'),
+      volumes: z.array(z.number()).min(15).describe('Array of volume data'),
+      smoothingPeriod: z.number().int().min(5).max(30).default(14).describe('Period for EMV smoothing (default: 14)'),
+    }),
+    outputSchema: z.object({
+      emv: z.number().describe('Ease of Movement value'),
+      smoothedEMV: z.number().describe('Smoothed EMV (MA)'),
+      distanceMoved: z.number().describe('Distance moved (midpoint change)'),
+      boxRatio: z.number().describe('Box ratio (volume efficiency)'),
+      trend: z.enum(['bullish', 'bearish', 'neutral']).describe('Trend direction'),
+      strength: z.number().describe('Signal strength (0-100)'),
+      bullishSignal: z.boolean().describe('Bullish signal (EMV crosses above 0)'),
+      bearishSignal: z.boolean().describe('Bearish signal (EMV crosses below 0)'),
+      signal: z.enum(['buy', 'sell', 'neutral']).describe('Trading signal'),
+      efficiency: z.enum(['high', 'moderate', 'low']).describe('Movement efficiency'),
+    }),
+  },
+  async ({ highs, lows, volumes, smoothingPeriod = 14 }) => {
+    try {
+      if (highs.length !== lows.length || highs.length !== volumes.length) {
+        throw new Error('All arrays must have the same length')
+      }
+      const result = calculateEaseOfMovement(highs, lows, volumes, smoothingPeriod)
+      if (!result) {
+        throw new Error(`Insufficient data: need at least ${smoothingPeriod + 1} data points, got ${highs.length}`)
+      }
+      return result
+    } catch (error: any) {
+      throw new Error(`Ease of Movement calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register price_volume_trend tool
+server.registerTool(
+  'price_volume_trend',
+  {
+    title: 'Price Volume Trend (PVT)',
+    description: 'Calculate Price Volume Trend that accumulates volume based on price percentage changes.',
+    inputSchema: z.object({
+      closes: z.array(z.number()).min(2).describe('Array of closing prices'),
+      volumes: z.array(z.number()).min(2).describe('Array of volume data (must match closes length)'),
+    }),
+    outputSchema: z.object({
+      pvt: z.number().describe('Price Volume Trend value'),
+      priceChange: z.number().describe('Current price change (%)'),
+      volumeTrend: z.enum(['increasing', 'decreasing', 'stable']).describe('Volume trend direction'),
+      trend: z.enum(['bullish', 'bearish', 'neutral']).describe('Trend direction'),
+      strength: z.number().describe('Signal strength (0-100)'),
+      bullishSignal: z.boolean().describe('Bullish signal (PVT crosses above 0)'),
+      bearishSignal: z.boolean().describe('Bearish signal (PVT crosses below 0)'),
+      signal: z.enum(['buy', 'sell', 'neutral']).describe('Trading signal'),
+      momentum: z.enum(['strong', 'moderate', 'weak']).describe('Momentum strength'),
+      volumeConfirmed: z.boolean().describe('Volume confirmation of price trend'),
+    }),
+  },
+  async ({ closes, volumes }) => {
+    try {
+      if (closes.length !== volumes.length) {
+        throw new Error('Closes and volumes arrays must have the same length')
+      }
+      const result = calculatePriceVolumeTrend(closes, volumes)
+      if (!result) {
+        throw new Error('Insufficient data: need at least 2 data points')
+      }
+      return result
+    } catch (error: any) {
+      throw new Error(`Price Volume Trend calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register positive_volume_index tool
+server.registerTool(
+  'positive_volume_index',
+  {
+    title: 'Positive Volume Index (PVI)',
+    description: 'Calculate Positive Volume Index that accumulates price changes on days when volume increases from the previous day.',
+    inputSchema: z.object({
+      closes: z.array(z.number()).min(2).describe('Array of closing prices'),
+      volumes: z.array(z.number()).min(2).describe('Array of volume data (must match closes length)'),
+      initialPVI: z.number().min(100).max(10000).default(1000).describe('Initial PVI value (default: 1000)'),
+    }),
+    outputSchema: z.object({
+      pvi: z.number().describe('Positive Volume Index value'),
+      volumeChange: z.number().describe('Current volume change (%)'),
+      priceChange: z.number().describe('Price change on positive volume day'),
+      trend: z.enum(['bullish', 'bearish', 'neutral']).describe('Trend direction'),
+      strength: z.number().describe('Signal strength (0-100)'),
+      slope: z.number().describe('PVI slope (rate of change)'),
+      signal: z.enum(['buy', 'sell', 'neutral']).describe('Trading signal'),
+      volumeIncreasing: z.boolean().describe('Volume is increasing from previous period'),
+    }),
+  },
+  async ({ closes, volumes, initialPVI = 1000 }) => {
+    try {
+      if (closes.length !== volumes.length) {
+        throw new Error('Closes and volumes arrays must have the same length')
+      }
+      const result = calculatePositiveVolumeIndex(closes, volumes, initialPVI)
+      if (!result) {
+        throw new Error('Insufficient data: need at least 2 data points')
+      }
+      return result
+    } catch (error: any) {
+      throw new Error(`Positive Volume Index calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register volume_roc tool
+server.registerTool(
+  'volume_roc',
+  {
+    title: 'Volume Rate of Change (ROC)',
+    description: 'Calculate Volume Rate of Change that measures the percentage change in volume over a specified period.',
+    inputSchema: z.object({
+      volumes: z.array(z.number()).min(13).describe('Array of volume data'),
+      period: z.number().int().min(5).max(50).default(12).describe('Period for ROC calculation (default: 12)'),
+    }),
+    outputSchema: z.object({
+      roc: z.number().describe('Volume ROC value (%)'),
+      currentVolume: z.number().describe('Current volume'),
+      previousVolume: z.number().describe('Previous volume (n periods ago)'),
+      period: z.number().describe('Period used for calculation'),
+      trend: z.enum(['increasing', 'decreasing', 'stable']).describe('Volume trend direction'),
+      strength: z.number().describe('Signal strength (0-100)'),
+      overbought: z.boolean().describe('Overbought condition (ROC > 50%)'),
+      oversold: z.boolean().describe('Oversold condition (ROC < -50%)'),
+      bullishSignal: z.boolean().describe('Bullish signal (ROC crosses above 0)'),
+      bearishSignal: z.boolean().describe('Bearish signal (ROC crosses below 0)'),
+      signal: z.enum(['buy', 'sell', 'neutral']).describe('Trading signal'),
+      momentum: z.enum(['strong', 'moderate', 'weak']).describe('Volume momentum'),
+    }),
+  },
+  async ({ volumes, period = 12 }) => {
+    try {
+      const result = calculateVolumeROC(volumes, period)
+      if (!result) {
+        throw new Error(`Insufficient data: need at least ${period + 1} volume points, got ${volumes.length}`)
+      }
+      return result
+    } catch (error: any) {
+      throw new Error(`Volume ROC calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register anchored_vwap tool
+server.registerTool(
+  'anchored_vwap',
+  {
+    title: 'Anchored VWAP',
+    description: 'Calculate Anchored VWAP that computes volume-weighted average price from a specific anchor point instead of session start.',
+    inputSchema: z.object({
+      highs: z.array(z.number()).min(5).describe('Array of high prices'),
+      lows: z.array(z.number()).min(5).describe('Array of low prices'),
+      closes: z.array(z.number()).min(5).describe('Array of closing prices'),
+      volumes: z.array(z.number()).min(5).describe('Array of volume data'),
+      anchorIndex: z.number().int().min(0).describe('Index to anchor VWAP from (0 = start of data)'),
+      standardDeviations: z.number().min(0.5).max(3).default(1).describe('Number of SD for bands (default: 1)'),
+    }),
+    outputSchema: z.object({
+      anchoredVWAP: z.number().describe('Anchored VWAP value'),
+      anchorPrice: z.number().describe('Price at anchor point'),
+      anchorIndex: z.number().describe('Anchor index'),
+      priceVsVWAP: z.number().describe('Price vs VWAP (%)'),
+      position: z.enum(['above', 'below', 'equal']).describe('Current price position vs VWAP'),
+      trend: z.enum(['bullish', 'bearish', 'neutral']).describe('Trend based on position vs VWAP'),
+      upperBand: z.number().describe('Upper band (VWAP + n SD)'),
+      lowerBand: z.number().describe('Lower band (VWAP - n SD)'),
+      bandPosition: z.enum(['above_upper', 'between_bands', 'below_lower', 'at_vwap']).describe('Position relative to bands'),
+      strength: z.number().describe('Signal strength (0-100)'),
+      signal: z.enum(['buy', 'sell', 'neutral']).describe('Trading signal'),
+      institutionalBias: z.enum(['bullish', 'bearish', 'neutral']).describe('Institutional bias assessment'),
+    }),
+  },
+  async ({ highs, lows, closes, volumes, anchorIndex, standardDeviations = 1 }) => {
+    try {
+      if (highs.length !== lows.length || highs.length !== closes.length || highs.length !== volumes.length) {
+        throw new Error('All arrays must have the same length')
+      }
+      if (anchorIndex >= highs.length) {
+        throw new Error(`Anchor index ${anchorIndex} is beyond data length ${highs.length}`)
+      }
+      const result = calculateAnchoredVWAP(highs, lows, closes, volumes, anchorIndex, standardDeviations)
+      if (!result) {
+        throw new Error('Insufficient data for Anchored VWAP calculation')
+      }
+      return result
+    } catch (error: any) {
+      throw new Error(`Anchored VWAP calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register chaikin_money_flow tool
+server.registerTool(
+  'chaikin_money_flow',
+  {
+    title: 'Chaikin Money Flow (CMF)',
+    description: 'Calculate Chaikin Money Flow that provides volume-weighted measure of accumulation/distribution over a specified period.',
+    inputSchema: z.object({
+      highs: z.array(z.number()).min(21).describe('Array of high prices'),
+      lows: z.array(z.number()).min(21).describe('Array of low prices'),
+      closes: z.array(z.number()).min(21).describe('Array of closing prices'),
+      volumes: z.array(z.number()).min(21).describe('Array of volume data'),
+      period: z.number().int().min(10).max(50).default(21).describe('Period for CMF calculation (default: 21)'),
+    }),
+    outputSchema: z.object({
+      cmf: z.number().nullable().describe('Chaikin Money Flow value'),
+      signal: z.enum(['accumulation', 'distribution', 'neutral']).nullable().describe('Money flow signal'),
+    }),
+  },
+  async ({ highs, lows, closes, volumes, period = 21 }) => {
+    try {
+      if (highs.length !== lows.length || highs.length !== closes.length || highs.length !== volumes.length) {
+        throw new Error('All arrays must have the same length')
+      }
+      const result = calculateChaikinMF(highs, lows, closes, volumes, period)
+      return result
+    } catch (error: any) {
+      throw new Error(`Chaikin Money Flow calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register volume_zone_oscillator tool
+server.registerTool(
+  'volume_zone_oscillator',
+  {
+    title: 'Volume Zone Oscillator',
+    description: 'Calculate Volume Zone Oscillator that analyzes volume distribution across price zones to identify accumulation/distribution patterns.',
+    inputSchema: z.object({
+      closes: z.array(z.number()).min(15).describe('Array of closing prices'),
+      volumes: z.array(z.number()).min(15).describe('Array of volume data (must match closes length)'),
+      period: z.number().int().min(10).max(30).default(14).describe('Period for volume flow calculation (default: 14)'),
+    }),
+    outputSchema: z.object({
+      vzo: z.number().describe('Volume Zone Oscillator value'),
+      volumeFlow: z.number().describe('Volume flow direction'),
+      buyingPressure: z.number().describe('Buying pressure'),
+      sellingPressure: z.number().describe('Selling pressure'),
+      trend: z.enum(['accumulation', 'distribution', 'neutral']).describe('Volume trend direction'),
+      strength: z.number().describe('Signal strength (0-100)'),
+      overbought: z.boolean().describe('Overbought condition (VZO > 60)'),
+      oversold: z.boolean().describe('Oversold condition (VZO < -60)'),
+      bullishSignal: z.boolean().describe('Bullish signal (VZO crosses above 0)'),
+      bearishSignal: z.boolean().describe('Bearish signal (VZO crosses below 0)'),
+      accumulationZone: z.boolean().describe('Price in accumulation zone'),
+      distributionZone: z.boolean().describe('Price in distribution zone'),
+      signal: z.enum(['buy', 'sell', 'neutral']).describe('Trading signal'),
+      marketCondition: z.enum(['bullish', 'bearish', 'sideways']).describe('Market condition assessment'),
+    }),
+  },
+  async ({ closes, volumes, period = 14 }) => {
+    try {
+      if (closes.length !== volumes.length) {
+        throw new Error('Closes and volumes arrays must have the same length')
+      }
+      const result = calculateVolumeZoneOscillator(closes, volumes, period)
+      if (!result) {
+        throw new Error(`Insufficient data: need at least ${period + 1} data points, got ${closes.length}`)
+      }
+      return result
+    } catch (error: any) {
+      throw new Error(`Volume Zone Oscillator calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register chaikin_volatility tool
+server.registerTool(
+  'chaikin_volatility',
+  {
+    title: 'Chaikin Volatility',
+    description: 'Calculate Chaikin Volatility that measures the rate of change of the trading range over a specified period.',
+    inputSchema: z.object({
+      highs: z.array(z.number()).min(15).describe('Array of high prices'),
+      lows: z.array(z.number()).min(15).describe('Array of low prices'),
+      period: z.number().int().min(5).max(30).default(10).describe('Period for volatility calculation (default: 10)'),
+      rocPeriod: z.number().int().min(5).max(20).default(12).describe('Period for ROC calculation (default: 12)'),
+    }),
+    outputSchema: z.object({
+      volatility: z.number().describe('Chaikin Volatility value'),
+      currentRange: z.number().describe('Current trading range'),
+      rocValue: z.number().describe('Rate of change of range'),
+      trend: z.string().describe('Volatility trend'),
+      signal: z.string().describe('Volatility signal'),
+      strength: z.number().describe('Signal strength (0-100)'),
+    }),
+  },
+  async ({ highs, lows, period = 10, rocPeriod = 12 }) => {
+    try {
+      if (highs.length !== lows.length) {
+        throw new Error('Highs and lows arrays must have the same length')
+      }
+      const result = calculateChaikinVolatility(highs, lows, period, rocPeriod)
+      if (!result) {
+        throw new Error(`Insufficient data: need at least ${period + rocPeriod} price points, got ${highs.length}`)
+      }
+      return result
+    } catch (error: any) {
+      throw new Error(`Chaikin Volatility calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register mass_index tool
+server.registerTool(
+  'mass_index',
+  {
+    title: 'Mass Index',
+    description: 'Calculate Mass Index that uses EMA of High-Low range to identify potential reversals when the index exceeds 27.',
+    inputSchema: z.object({
+      highs: z.array(z.number()).min(35).describe('Array of high prices'),
+      lows: z.array(z.number()).min(35).describe('Array of low prices'),
+      emaPeriod: z.number().int().min(5).max(15).default(9).describe('EMA period for range calculation (default: 9)'),
+      sumPeriod: z.number().int().min(15).max(35).default(25).describe('Period for summing EMA ratios (default: 25)'),
+    }),
+    outputSchema: z.object({
+      massIndex: z.number().describe('Mass Index value'),
+      singleEMA: z.number().describe('Single EMA of range'),
+      doubleEMA: z.number().describe('Double EMA of range'),
+      currentRange: z.number().describe('Current High-Low range'),
+      emaRatio: z.number().describe('Ratio of single to double EMA'),
+      reversalSignal: z.boolean().describe('Reversal signal (Mass Index > 27)'),
+      overbought: z.boolean().describe('Overbought level (Mass Index > 27)'),
+      trend: z.enum(['rising', 'falling', 'stable']).describe('Trend direction'),
+      strength: z.number().describe('Signal strength (0-100)'),
+      signal: z.enum(['buy', 'sell', 'neutral']).describe('Trading signal'),
+      reversalProbability: z.enum(['high', 'moderate', 'low']).describe('Reversal probability'),
+    }),
+  },
+  async ({ highs, lows, emaPeriod = 9, sumPeriod = 25 }) => {
+    try {
+      if (highs.length !== lows.length) {
+        throw new Error('Highs and lows arrays must have the same length')
+      }
+      const result = calculateMassIndex(highs, lows, emaPeriod, sumPeriod)
+      if (!result) {
+        throw new Error(`Insufficient data: need at least ${sumPeriod + emaPeriod} price points, got ${highs.length}`)
+      }
+      return result
+    } catch (error: any) {
+      throw new Error(`Mass Index calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register ulcer_index tool
+server.registerTool(
+  'ulcer_index',
+  {
+    title: 'Ulcer Index',
+    description: 'Calculate Ulcer Index that measures downside volatility and risk by focusing on drawdowns from recent highs.',
+    inputSchema: z.object({
+      closes: z.array(z.number()).min(14).describe('Array of closing prices'),
+      period: z.number().int().min(5).max(50).default(14).describe('Period for calculation (default: 14)'),
+    }),
+    outputSchema: z.object({
+      ulcerIndex: z.number().describe('Ulcer Index value'),
+      currentDrawdown: z.number().describe('Current drawdown (%)'),
+      maxDrawdown: z.number().describe('Maximum drawdown in period (%)'),
+      period: z.number().describe('Number of periods analyzed'),
+      riskLevel: z.enum(['low', 'moderate', 'high', 'extreme']).describe('Risk level assessment'),
+      trend: z.enum(['improving', 'deteriorating', 'stable']).describe('Trend direction'),
+      strength: z.number().describe('Signal strength (0-100)'),
+      riskAdjustedReturn: z.number().nullable().describe('Risk-adjusted return potential'),
+      signal: z.enum(['buy', 'sell', 'neutral']).describe('Trading signal based on risk levels'),
+      marketStress: z.enum(['low', 'moderate', 'high', 'crisis']).describe('Market stress indicator'),
+    }),
+  },
+  async ({ closes, period = 14 }) => {
+    try {
+      const result = calculateUlcerIndex(closes, period)
+      if (!result) {
+        throw new Error(`Insufficient data: need at least ${period} prices, got ${closes.length}`)
+      }
+      return result
+    } catch (error: any) {
+      throw new Error(`Ulcer Index calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register bollinger_percent_b tool
+server.registerTool(
+  'bollinger_percent_b',
+  {
+    title: 'Bollinger %B Indicator',
+    description: 'Calculate Bollinger %B that shows where the price is relative to the Bollinger Bands.',
+    inputSchema: z.object({
+      closes: z.array(z.number()).min(20).describe('Array of closing prices'),
+      period: z.number().int().min(1).max(50).default(20).describe('Period for Bollinger Bands calculation (default: 20)'),
+      stdDev: z.number().min(0.1).max(3).default(2).describe('Standard deviation multiplier (default: 2)'),
+    }),
+    outputSchema: z.object({
+      percentB: z.number().nullable().describe('Bollinger %B value (0-1 range)'),
+      position: z.string().nullable().describe('Price position relative to bands'),
+      signal: z.string().nullable().describe('Trading signal based on %B'),
+    }),
+  },
+  async ({ closes, period = 20, stdDev = 2 }) => {
+    try {
+      const result = calculateBBPercentB(closes, period, stdDev)
+      return result
+    } catch (error: any) {
+      throw new Error(`Bollinger %B calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register bollinger_band_width tool
+server.registerTool(
+  'bollinger_band_width',
+  {
+    title: 'Bollinger Band Width',
+    description: 'Calculate Bollinger Band Width that measures the distance between the upper and lower bands.',
+    inputSchema: z.object({
+      closes: z.array(z.number()).min(20).describe('Array of closing prices'),
+      period: z.number().int().min(1).max(50).default(20).describe('Period for calculation (default: 20)'),
+      stdDev: z.number().min(0.1).max(3).default(2).describe('Standard deviation multiplier (default: 2)'),
+    }),
+    outputSchema: z.object({
+      bandwidth: z.number().nullable().describe('Bollinger Band Width'),
+      trend: z.string().nullable().describe('Bandwidth trend'),
+      volatility: z.string().nullable().describe('Volatility assessment'),
+      signal: z.string().nullable().describe('Trading signal based on bandwidth'),
+    }),
+  },
+  async ({ closes, period = 20, stdDev = 2 }) => {
+    try {
+      const result = calculateBBWidth(closes, period, stdDev)
+      return result
+    } catch (error: any) {
+      throw new Error(`Bollinger Band Width calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register historical_volatility tool
+server.registerTool(
+  'historical_volatility',
+  {
+    title: 'Historical Volatility',
+    description: 'Calculate Historical Volatility that measures the standard deviation of price changes over a specified period.',
+    inputSchema: z.object({
+      closes: z.array(z.number()).min(30).describe('Array of closing prices'),
+      period: z.number().int().min(10).max(100).default(20).describe('Period for volatility calculation (default: 20)'),
+      annualizationFactor: z.number().min(1).max(365).default(365).describe('Annualization factor (default: 365 for daily data)'),
+    }),
+    outputSchema: z.object({
+      volatility: z.number().describe('Historical volatility value'),
+      annualizedVolatility: z.number().describe('Annualized volatility (%)'),
+      dailyVolatility: z.number().describe('Daily volatility (%)'),
+      trend: z.string().describe('Volatility trend'),
+      riskLevel: z.string().describe('Risk level assessment'),
+      signal: z.string().describe('Trading signal based on volatility'),
+    }),
+  },
+  async ({ closes, period = 20, annualizationFactor = 365 }) => {
+    try {
+      const result = calculateHistoricalVolatility(closes, period, annualizationFactor)
+      if (!result) {
+        throw new Error(`Insufficient data: need at least ${period + 1} prices, got ${closes.length}`)
+      }
+      return result
+    } catch (error: any) {
+      throw new Error(`Historical Volatility calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register trix tool
+server.registerTool(
+  'trix',
+  {
+    title: 'TRIX Indicator',
+    description: 'Calculate TRIX (Triple Exponential Average) oscillator that shows the rate of change of a triple exponentially smoothed moving average.',
+    inputSchema: z.object({
+      closes: z.array(z.number()).min(30).describe('Array of closing prices'),
+      period: z.number().int().min(5).max(50).default(15).describe('Period for TRIX calculation (default: 15)'),
+      signalPeriod: z.number().int().min(3).max(20).default(9).describe('Signal line period (default: 9)'),
+    }),
+    outputSchema: z.object({
+      trix: z.number().describe('TRIX value'),
+      signalLine: z.number().describe('TRIX signal line'),
+      trend: z.string().describe('Trend direction'),
+      strength: z.number().describe('Signal strength (0-100)'),
+      bullishSignal: z.boolean().describe('Bullish crossover signal'),
+      bearishSignal: z.boolean().describe('Bearish crossover signal'),
+      overbought: z.boolean().describe('Overbought condition'),
+      oversold: z.boolean().describe('Oversold condition'),
+      signal: z.string().describe('Trading signal'),
+    }),
+  },
+  async ({ closes, period = 15, signalPeriod = 9 }) => {
+    try {
+      const result = calculateTRIX(closes, period, signalPeriod)
+      if (!result) {
+        throw new Error(`Insufficient data: need at least ${period * 3 + signalPeriod} prices, got ${closes.length}`)
+      }
+      return result
+    } catch (error: any) {
+      throw new Error(`TRIX calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register vortex tool
+server.registerTool(
+  'vortex',
+  {
+    title: 'Vortex Indicator',
+    description: 'Calculate Vortex Indicator that identifies the start of a new trend by comparing upward and downward price movements.',
+    inputSchema: z.object({
+      highs: z.array(z.number()).min(15).describe('Array of high prices'),
+      lows: z.array(z.number()).min(15).describe('Array of low prices'),
+      closes: z.array(z.number()).min(15).describe('Array of closing prices'),
+      period: z.number().int().min(2).max(50).default(14).describe('Period for Vortex calculation (default: 14)'),
+    }),
+    outputSchema: z.object({
+      vortexPositive: z.number().describe('VI+ (upward trend strength)'),
+      vortexNegative: z.number().describe('VI- (downward trend strength)'),
+      trend: z.string().describe('Dominant trend direction'),
+      strength: z.number().describe('Trend strength (0-100)'),
+      bullishSignal: z.boolean().describe('Bullish trend signal'),
+      bearishSignal: z.boolean().describe('Bearish trend signal'),
+      signal: z.string().describe('Trading signal'),
+    }),
+  },
+  async ({ highs, lows, closes, period = 14 }) => {
+    try {
+      if (highs.length !== lows.length || highs.length !== closes.length) {
+        throw new Error('All price arrays must have the same length')
+      }
+      const result = calculateVortex(highs, lows, closes, period)
+      if (!result) {
+        throw new Error(`Insufficient data: need at least ${period + 1} price points, got ${highs.length}`)
+      }
+      return result
+    } catch (error: any) {
+      throw new Error(`Vortex calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register center_of_gravity tool
+server.registerTool(
+  'center_of_gravity',
+  {
+    title: 'Center of Gravity (COG)',
+    description: 'Calculate Center of Gravity oscillator that identifies potential reversal points based on weighted moving averages.',
+    inputSchema: z.object({
+      closes: z.array(z.number()).min(10).describe('Array of closing prices'),
+      period: z.number().int().min(3).max(20).default(10).describe('Period for COG calculation (default: 10)'),
+    }),
+    outputSchema: z.object({
+      cog: z.number().describe('Center of Gravity value'),
+      trend: z.string().describe('Trend direction'),
+      strength: z.number().describe('Signal strength (0-100)'),
+      bullishSignal: z.boolean().describe('Bullish reversal signal'),
+      bearishSignal: z.boolean().describe('Bearish reversal signal'),
+      overbought: z.boolean().describe('Overbought condition'),
+      oversold: z.boolean().describe('Oversold condition'),
+      signal: z.string().describe('Trading signal'),
+    }),
+  },
+  async ({ closes, period = 10 }) => {
+    try {
+      const result = calculateCOG(closes, period)
+      if (!result) {
+        throw new Error(`Insufficient data: need at least ${period} prices, got ${closes.length}`)
+      }
+      return result
+    } catch (error: any) {
+      throw new Error(`Center of Gravity calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register chaikin_oscillator tool
+server.registerTool(
+  'chaikin_oscillator',
+  {
+    title: 'Chaikin Oscillator',
+    description: 'Calculate Chaikin Oscillator that combines accumulation/distribution with exponential moving averages.',
+    inputSchema: z.object({
+      highs: z.array(z.number()).min(25).describe('Array of high prices'),
+      lows: z.array(z.number()).min(25).describe('Array of low prices'),
+      closes: z.array(z.number()).min(25).describe('Array of closing prices'),
+      volumes: z.array(z.number()).min(25).describe('Array of volume data'),
+      fastPeriod: z.number().int().min(3).max(20).default(3).describe('Fast EMA period (default: 3)'),
+      slowPeriod: z.number().int().min(10).max(30).default(10).describe('Slow EMA period (default: 10)'),
+    }),
+    outputSchema: z.object({
+      oscillator: z.number().describe('Chaikin Oscillator value'),
+      fastEMA: z.number().describe('Fast EMA of accumulation/distribution'),
+      slowEMA: z.number().describe('Slow EMA of accumulation/distribution'),
+      trend: z.string().describe('Trend direction'),
+      strength: z.number().describe('Signal strength (0-100)'),
+      bullishSignal: z.boolean().describe('Bullish divergence signal'),
+      bearishSignal: z.boolean().describe('Bearish divergence signal'),
+      signal: z.string().describe('Trading signal'),
+    }),
+  },
+  async ({ highs, lows, closes, volumes, fastPeriod = 3, slowPeriod = 10 }) => {
+    try {
+      if (highs.length !== lows.length || highs.length !== closes.length || highs.length !== volumes.length) {
+        throw new Error('All arrays must have the same length')
+      }
+      const result = calculateChaikinOscillator(highs, lows, closes, volumes, fastPeriod, slowPeriod)
+      if (!result) {
+        throw new Error(`Insufficient data: need at least ${slowPeriod} price points, got ${highs.length}`)
+      }
+      return result
+    } catch (error: any) {
+      throw new Error(`Chaikin Oscillator calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register stochastic_rsi tool
+server.registerTool(
+  'stochastic_rsi',
+  {
+    title: 'Stochastic RSI',
+    description: 'Calculate Stochastic RSI that applies stochastic oscillator formula to RSI values.',
+    inputSchema: z.object({
+      closes: z.array(z.number()).min(20).describe('Array of closing prices'),
+      rsiPeriod: z.number().int().min(5).max(30).default(14).describe('RSI period (default: 14)'),
+      stochPeriod: z.number().int().min(5).max(20).default(14).describe('Stochastic period (default: 14)'),
+      kPeriod: z.number().int().min(3).max(10).default(3).describe('K smoothing period (default: 3)'),
+      dPeriod: z.number().int().min(3).max(10).default(3).describe('D smoothing period (default: 3)'),
+    }),
+    outputSchema: z.object({
+      stochRSI: z.number().describe('Stochastic RSI %K value'),
+      signalLine: z.number().describe('Stochastic RSI %D value'),
+      rsi: z.number().describe('Underlying RSI value'),
+      trend: z.string().describe('Trend direction'),
+      strength: z.number().describe('Signal strength (0-100)'),
+      overbought: z.boolean().describe('Overbought condition (>80)'),
+      oversold: z.boolean().describe('Oversold condition (<20)'),
+      bullishSignal: z.boolean().describe('Bullish crossover signal'),
+      bearishSignal: z.boolean().describe('Bearish crossover signal'),
+      signal: z.string().describe('Trading signal'),
+    }),
+  },
+  async ({ closes, rsiPeriod = 14, stochPeriod = 14, kPeriod = 3, dPeriod = 3 }) => {
+    try {
+      const result = calculateStochasticRSI(closes, rsiPeriod, stochPeriod, kPeriod)
+      if (!result) {
+        throw new Error(`Insufficient data: need at least ${rsiPeriod + stochPeriod + Math.max(kPeriod, dPeriod)} prices, got ${closes.length}`)
+      }
+      return result
+    } catch (error: any) {
+      throw new Error(`Stochastic RSI calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register money_flow_index tool
+server.registerTool(
+  'money_flow_index',
+  {
+    title: 'Money Flow Index (MFI)',
+    description: 'Calculate Money Flow Index that uses price and volume to measure buying and selling pressure.',
+    inputSchema: z.object({
+      highs: z.array(z.number()).min(15).describe('Array of high prices'),
+      lows: z.array(z.number()).min(15).describe('Array of low prices'),
+      closes: z.array(z.number()).min(15).describe('Array of closing prices'),
+      volumes: z.array(z.number()).min(15).describe('Array of volume data'),
+      period: z.number().int().min(2).max(50).default(14).describe('Period for MFI calculation (default: 14)'),
+    }),
+    outputSchema: z.object({
+      mfi: z.number().describe('Money Flow Index value (0-100)'),
+      positiveMoneyFlow: z.number().describe('Positive money flow'),
+      negativeMoneyFlow: z.number().describe('Negative money flow'),
+      moneyFlowRatio: z.number().describe('Money flow ratio'),
+      trend: z.string().describe('Trend direction'),
+      strength: z.number().describe('Signal strength (0-100)'),
+      overbought: z.boolean().describe('Overbought condition (>80)'),
+      oversold: z.boolean().describe('Oversold condition (<20)'),
+      bullishSignal: z.boolean().describe('Bullish signal'),
+      bearishSignal: z.boolean().describe('Bearish signal'),
+      signal: z.string().describe('Trading signal'),
+    }),
+  },
+  async ({ highs, lows, closes, volumes, period = 14 }) => {
+    try {
+      if (highs.length !== lows.length || highs.length !== closes.length || highs.length !== volumes.length) {
+        throw new Error('All arrays must have the same length')
+      }
+      const result = calculateMFI(highs, lows, closes, volumes, period)
+      if (!result) {
+        throw new Error(`Insufficient data: need at least ${period + 1} data points, got ${highs.length}`)
+      }
+      return result
+    } catch (error: any) {
+      throw new Error(`Money Flow Index calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register ultimate_oscillator tool
+server.registerTool(
+  'ultimate_oscillator',
+  {
+    title: 'Ultimate Oscillator',
+    description: 'Calculate Ultimate Oscillator that combines three different timeframes to reduce false signals.',
+    inputSchema: z.object({
+      highs: z.array(z.number()).min(30).describe('Array of high prices'),
+      lows: z.array(z.number()).min(30).describe('Array of low prices'),
+      closes: z.array(z.number()).min(30).describe('Array of closing prices'),
+      shortPeriod: z.number().int().min(5).max(15).default(7).describe('Short period (default: 7)'),
+      mediumPeriod: z.number().int().min(10).max(20).default(14).describe('Medium period (default: 14)'),
+      longPeriod: z.number().int().min(20).max(30).default(28).describe('Long period (default: 28)'),
+    }),
+    outputSchema: z.object({
+      ultimateOscillator: z.number().describe('Ultimate Oscillator value (0-100)'),
+      shortBP: z.number().describe('Short-term buying pressure'),
+      mediumBP: z.number().describe('Medium-term buying pressure'),
+      longBP: z.number().describe('Long-term buying pressure'),
+      trend: z.string().describe('Trend direction'),
+      strength: z.number().describe('Signal strength (0-100)'),
+      overbought: z.boolean().describe('Overbought condition (>70)'),
+      oversold: z.boolean().describe('Oversold condition (<30)'),
+      bullishSignal: z.boolean().describe('Bullish divergence signal'),
+      bearishSignal: z.boolean().describe('Bearish divergence signal'),
+      signal: z.string().describe('Trading signal'),
+    }),
+  },
+  async ({ highs, lows, closes, shortPeriod = 7, mediumPeriod = 14, longPeriod = 28 }) => {
+    try {
+      if (highs.length !== lows.length || highs.length !== closes.length) {
+        throw new Error('All price arrays must have the same length')
+      }
+      const result = calculateUltimateOscillator(highs, lows, closes, shortPeriod, mediumPeriod, longPeriod)
+      if (!result) {
+        throw new Error(`Insufficient data: need at least ${longPeriod + 1} data points, got ${highs.length}`)
+      }
+      return result
+    } catch (error: any) {
+      throw new Error(`Ultimate Oscillator calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register balance_of_power tool
+server.registerTool(
+  'balance_of_power',
+  {
+    title: 'Balance of Power',
+    description: 'Calculate Balance of Power that measures the strength of buyers vs sellers by analyzing the relationship between price close and range.',
+    inputSchema: z.object({
+      opens: z.array(z.number()).min(5).describe('Array of opening prices'),
+      highs: z.array(z.number()).min(5).describe('Array of high prices'),
+      lows: z.array(z.number()).min(5).describe('Array of low prices'),
+      closes: z.array(z.number()).min(5).describe('Array of closing prices'),
+    }),
+    outputSchema: z.object({
+      bop: z.number().describe('Balance of Power value'),
+      trend: z.string().describe('Trend direction'),
+      strength: z.number().describe('Signal strength (0-100)'),
+      bullishPressure: z.boolean().describe('Bullish pressure dominant'),
+      bearishPressure: z.boolean().describe('Bearish pressure dominant'),
+      signal: z.string().describe('Trading signal'),
+    }),
+  },
+  async ({ opens, highs, lows, closes }) => {
+    try {
+      if (opens.length !== highs.length || opens.length !== lows.length || opens.length !== closes.length) {
+        throw new Error('All price arrays must have the same length')
+      }
+      const result = calculateBOP(opens, highs, lows, closes)
+      if (!result) {
+        throw new Error('Insufficient data: need at least 5 price points')
+      }
+      return result
+    } catch (error: any) {
+      throw new Error(`Balance of Power calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register advance_decline_line tool
+server.registerTool(
+  'advance_decline_line',
+  {
+    title: 'Advance Decline Line',
+    description: 'Calculate Advance Decline Line that measures market breadth by comparing advancing vs declining assets.',
+    inputSchema: z.object({
+      advances: z.array(z.number()).min(5).describe('Array of advancing asset counts'),
+      declines: z.array(z.number()).min(5).describe('Array of declining asset counts'),
+    }),
+    outputSchema: z.object({
+      adl: z.number().describe('Advance Decline Line value'),
+      netAdvances: z.number().describe('Net advances (advances - declines)'),
+      breadthRatio: z.number().describe('Breadth ratio (advances/declines)'),
+      trend: z.string().describe('Market breadth trend'),
+      strength: z.number().describe('Breadth strength (0-100)'),
+      bullishBreadth: z.boolean().describe('Bullish breadth signal'),
+      bearishBreadth: z.boolean().describe('Bearish breadth signal'),
+      signal: z.string().describe('Market breadth signal'),
+    }),
+  },
+  async ({ advances, declines }) => {
+    try {
+      if (advances.length !== declines.length) {
+        throw new Error('Advances and declines arrays must have the same length')
+      }
+      const result = calculateAdvanceDeclineLine(advances, declines)
+      if (!result) {
+        throw new Error('Insufficient data: need at least 5 data points')
+      }
+      return result
+    } catch (error: any) {
+      throw new Error(`Advance Decline Line calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register fractals tool
+server.registerTool(
+  'fractals',
+  {
+    title: 'Bill Williams Fractals',
+    description: 'Calculate Bill Williams Fractals that identify potential reversal points in price action.',
+    inputSchema: z.object({
+      highs: z.array(z.number()).min(5).describe('Array of high prices'),
+      lows: z.array(z.number()).min(5).describe('Array of low prices'),
+    }),
+    outputSchema: z.object({
+      bullishFractal: z.boolean().describe('Bullish fractal detected'),
+      bearishFractal: z.boolean().describe('Bearish fractal detected'),
+      fractalHigh: z.number().nullable().describe('Fractal resistance level'),
+      fractalLow: z.number().nullable().describe('Fractal support level'),
+      signal: z.string().describe('Fractal signal'),
+      strength: z.number().describe('Signal strength (0-100)'),
+    }),
+  },
+  async ({ highs, lows }) => {
+    try {
+      if (highs.length !== lows.length) {
+        throw new Error('Highs and lows arrays must have the same length')
+      }
+      const result = calculateFractals(highs, lows)
+      if (!result) {
+        throw new Error('Insufficient data: need at least 5 price points')
+      }
+      return result
+    } catch (error: any) {
+      throw new Error(`Fractals calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register zigzag_indicator tool
+server.registerTool(
+  'zigzag_indicator',
+  {
+    title: 'ZigZag Indicator',
+    description: 'Calculate ZigZag indicator that filters out market noise and shows significant price swings.',
+    inputSchema: z.object({
+      closes: z.array(z.number()).min(10).describe('Array of closing prices'),
+      deviation: z.number().min(0.1).max(10).default(5).describe('Minimum price deviation percentage (default: 5%)'),
+    }),
+    outputSchema: z.object({
+      zigzag: z.array(z.number()).describe('ZigZag filtered prices'),
+      direction: z.string().describe('Current trend direction'),
+      swingPoints: z.array(z.number()).describe('Significant swing points'),
+      lastSwing: z.string().describe('Last swing type (high/low)'),
+      trend: z.string().describe('Overall trend'),
+      signal: z.string().describe('Trading signal based on swings'),
+    }),
+  },
+  async ({ closes, deviation = 5 }) => {
+    try {
+      const result = calculateZigZag(closes, deviation)
+      if (!result) {
+        throw new Error('Insufficient data: need at least 10 price points')
+      }
+      return result
+    } catch (error: any) {
+      throw new Error(`ZigZag calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register trend_detection tool
+server.registerTool(
+  'trend_detection',
+  {
+    title: 'Trend Detection & Change of Character',
+    description: 'Detect market trends and change of character points using advanced market structure analysis.',
+    inputSchema: z.object({
+      historicalData: z.array(z.object({
+        time: z.number(),
+        open: z.number(),
+        high: z.number(),
+        low: z.number(),
+        close: z.number(),
+        volume: z.number(),
+      })).min(20).describe('Array of historical price data'),
+      currentPrice: z.number().describe('Current price for analysis'),
+    }),
+    outputSchema: z.object({
+      structure: z.string().describe('Market structure type'),
+      coc: z.boolean().describe('Change of character detected'),
+      lastSwingHigh: z.number().nullable().describe('Last significant swing high'),
+      lastSwingLow: z.number().nullable().describe('Last significant swing low'),
+      structureStrength: z.number().describe('Structure strength (0-100)'),
+      reversalSignal: z.boolean().describe('Potential reversal signal'),
+      swingHighs: z.array(z.number()).describe('Recent swing highs'),
+      swingLows: z.array(z.number()).describe('Recent swing lows'),
+      timestamp: z.number().describe('Analysis timestamp'),
+    }),
+  },
+  async ({ historicalData, currentPrice }) => {
+    try {
+      const result = detectChangeOfCharacter(historicalData, currentPrice)
+      return result
+    } catch (error: any) {
+      throw new Error(`Trend Detection calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register hull_moving_average tool
+server.registerTool(
+  'hull_moving_average',
+  {
+    title: 'Hull Moving Average (HMA)',
+    description: 'Calculate Hull Moving Average that reduces lag while maintaining smoothness for better trend identification.',
+    inputSchema: z.object({
+      prices: z.array(z.number()).min(10).describe('Array of price data'),
+      period: z.number().int().min(2).max(50).default(16).describe('Period for HMA calculation (default: 16)'),
+    }),
+    outputSchema: z.object({
+      hma: z.number().describe('Hull Moving Average value'),
+      trend: z.string().describe('Trend direction'),
+      strength: z.number().describe('Signal strength (0-100)'),
+      signal: z.string().describe('Trading signal'),
+    }),
+  },
+  async ({ prices, period = 16 }) => {
+    try {
+      const result = calculateHMA(prices, period)
+      if (!result) {
+        throw new Error(`Insufficient data: need at least ${period} prices, got ${prices.length}`)
+      }
+      return result
+    } catch (error: any) {
+      throw new Error(`Hull Moving Average calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register weighted_moving_average tool
+server.registerTool(
+  'weighted_moving_average',
+  {
+    title: 'Weighted Moving Average (WMA)',
+    description: 'Calculate Weighted Moving Average that gives more weight to recent prices for responsive trend analysis.',
+    inputSchema: z.object({
+      prices: z.array(z.number()).min(5).describe('Array of price data'),
+      period: z.number().int().min(2).max(50).default(14).describe('Period for WMA calculation (default: 14)'),
+    }),
+    outputSchema: z.object({
+      wma: z.number().describe('Weighted Moving Average value'),
+      trend: z.string().describe('Trend direction'),
+      strength: z.number().describe('Signal strength (0-100)'),
+      signal: z.string().describe('Trading signal'),
+    }),
+  },
+  async ({ prices, period = 14 }) => {
+    try {
+      const result = calculateWMA(prices, period)
+      if (!result) {
+        throw new Error(`Insufficient data: need at least ${period} prices, got ${prices.length}`)
+      }
+      return result
+    } catch (error: any) {
+      throw new Error(`Weighted Moving Average calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register smoothed_moving_average tool
+server.registerTool(
+  'smoothed_moving_average',
+  {
+    title: 'Smoothed Moving Average (SMMA)',
+    description: 'Calculate Smoothed Moving Average that provides smooth trend following with reduced noise.',
+    inputSchema: z.object({
+      prices: z.array(z.number()).min(5).describe('Array of price data'),
+      period: z.number().int().min(2).max(50).default(14).describe('Period for SMMA calculation (default: 14)'),
+    }),
+    outputSchema: z.object({
+      smma: z.number().describe('Smoothed Moving Average value'),
+      trend: z.string().describe('Trend direction'),
+      strength: z.number().describe('Signal strength (0-100)'),
+      signal: z.string().describe('Trading signal'),
+    }),
+  },
+  async ({ prices, period = 14 }) => {
+    try {
+      const result = calculateSMMA(prices, period)
+      if (!result) {
+        throw new Error(`Insufficient data: need at least ${period} prices, got ${prices.length}`)
+      }
+      return result
+    } catch (error: any) {
+      throw new Error(`Smoothed Moving Average calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register double_exponential_moving_average tool
+server.registerTool(
+  'double_exponential_moving_average',
+  {
+    title: 'Double Exponential Moving Average (DEMA)',
+    description: 'Calculate Double Exponential Moving Average that reduces lag compared to traditional EMA.',
+    inputSchema: z.object({
+      prices: z.array(z.number()).min(5).describe('Array of price data'),
+      period: z.number().int().min(2).max(50).default(20).describe('Period for DEMA calculation (default: 20)'),
+    }),
+    outputSchema: z.object({
+      dema: z.number().describe('Double Exponential Moving Average value'),
+      trend: z.string().describe('Trend direction'),
+      strength: z.number().describe('Signal strength (0-100)'),
+      signal: z.string().describe('Trading signal'),
+    }),
+  },
+  async ({ prices, period = 20 }) => {
+    try {
+      const result = calculateDEMA(prices, period)
+      if (!result) {
+        throw new Error(`Insufficient data: need at least ${period} prices, got ${prices.length}`)
+      }
+      return result
+    } catch (error: any) {
+      throw new Error(`Double Exponential Moving Average calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register triple_exponential_moving_average tool
+server.registerTool(
+  'triple_exponential_moving_average',
+  {
+    title: 'Triple Exponential Moving Average (TEMA)',
+    description: 'Calculate Triple Exponential Moving Average that further reduces lag and provides smooth trend signals.',
+    inputSchema: z.object({
+      prices: z.array(z.number()).min(5).describe('Array of price data'),
+      period: z.number().int().min(2).max(50).default(14).describe('Period for TEMA calculation (default: 14)'),
+    }),
+    outputSchema: z.object({
+      tema: z.number().describe('Triple Exponential Moving Average value'),
+      trend: z.string().describe('Trend direction'),
+      strength: z.number().describe('Signal strength (0-100)'),
+      signal: z.string().describe('Trading signal'),
+    }),
+  },
+  async ({ prices, period = 14 }) => {
+    try {
+      const result = calculateTEMA(prices, period)
+      if (!result) {
+        throw new Error(`Insufficient data: need at least ${period} prices, got ${prices.length}`)
+      }
+      return result
+    } catch (error: any) {
+      throw new Error(`Triple Exponential Moving Average calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register pivot_camarilla tool
+server.registerTool(
+  'pivot_camarilla',
+  {
+    title: 'Camarilla Pivot Points',
+    description: 'Calculate Camarilla Pivot Points for advanced support and resistance levels.',
+    inputSchema: z.object({
+      high: z.number().describe('Previous period high price'),
+      low: z.number().describe('Previous period low price'),
+      close: z.number().describe('Previous period close price'),
+    }),
+    outputSchema: z.object({
+      pivotPoint: z.number().describe('Main pivot point'),
+      resistance1: z.number().describe('Resistance level 1'),
+      resistance2: z.number().describe('Resistance level 2'),
+      resistance3: z.number().describe('Resistance level 3'),
+      resistance4: z.number().describe('Resistance level 4'),
+      support1: z.number().describe('Support level 1'),
+      support2: z.number().describe('Support level 2'),
+      support3: z.number().describe('Support level 3'),
+      support4: z.number().describe('Support level 4'),
+      l3: z.number().describe('Long target 3'),
+      l4: z.number().describe('Long target 4'),
+      h3: z.number().describe('Short target 3'),
+      h4: z.number().describe('Short target 4'),
+    }),
+  },
+  async ({ high, low, close }) => {
+    try {
+      const result = calculateCamarillaPivots(high, low, close)
+      return result
+    } catch (error: any) {
+      throw new Error(`Camarilla Pivots calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register fibonacci_retracement tool
+server.registerTool(
+  'fibonacci_retracement',
+  {
+    title: 'Fibonacci Retracement',
+    description: 'Calculate Fibonacci retracement levels for potential support and resistance zones.',
+    inputSchema: z.object({
+      closes: z.array(z.number()).min(10).describe('Array of closing prices'),
+      lookbackPeriod: z.number().int().min(5).max(200).default(50).describe('Lookback period to find swing points (default: 50)'),
+    }),
+    outputSchema: z.object({
+      retracement236: z.number().nullable().describe('23.6% retracement level'),
+      retracement382: z.number().nullable().describe('38.2% retracement level'),
+      retracement500: z.number().nullable().describe('50.0% retracement level'),
+      retracement618: z.number().nullable().describe('61.8% retracement level'),
+      retracement786: z.number().nullable().describe('78.6% retracement level'),
+      swingHigh: z.number().nullable().describe('Swing high point'),
+      swingLow: z.number().nullable().describe('Swing low point'),
+      currentLevel: z.string().nullable().describe('Current price level relative to retracements'),
+      signal: z.string().nullable().describe('Trading signal based on retracement levels'),
+    }),
+  },
+  async ({ closes, lookbackPeriod = 50 }) => {
+    try {
+      const result = calculateFibonacciRetracement(closes, lookbackPeriod)
+      return result
+    } catch (error: any) {
+      throw new Error(`Fibonacci Retracement calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register standard_pivot_points tool
+server.registerTool(
+  'standard_pivot_points',
+  {
+    title: 'Standard Pivot Points',
+    description: 'Calculate Standard Pivot Points for traditional support and resistance levels.',
+    inputSchema: z.object({
+      high: z.number().describe('Previous period high price'),
+      low: z.number().describe('Previous period low price'),
+      close: z.number().describe('Previous period close price'),
+    }),
+    outputSchema: z.object({
+      pivotPoint: z.number().describe('Main pivot point'),
+      resistance1: z.number().describe('Resistance level 1'),
+      resistance2: z.number().describe('Resistance level 2'),
+      resistance3: z.number().describe('Resistance level 3'),
+      support1: z.number().describe('Support level 1'),
+      support2: z.number().describe('Support level 2'),
+      support3: z.number().describe('Support level 3'),
+    }),
+  },
+  async ({ high, low, close }) => {
+    try {
+      const result = calculatePivotPoints(high, low, close)
+      return result
+    } catch (error: any) {
+      throw new Error(`Standard Pivot Points calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register keltner_channels tool
+server.registerTool(
+  'keltner_channels',
+  {
+    title: 'Keltner Channels',
+    description: 'Calculate Keltner Channels that combine moving averages with ATR for volatility-based support and resistance.',
+    inputSchema: z.object({
+      highs: z.array(z.number()).min(15).describe('Array of high prices'),
+      lows: z.array(z.number()).min(15).describe('Array of low prices'),
+      closes: z.array(z.number()).min(15).describe('Array of closing prices'),
+      period: z.number().int().min(5).max(50).default(20).describe('Period for moving average (default: 20)'),
+      atrPeriod: z.number().int().min(5).max(30).default(10).describe('Period for ATR calculation (default: 10)'),
+      multiplier: z.number().min(0.5).max(3).default(2).describe('ATR multiplier (default: 2)'),
+    }),
+    outputSchema: z.object({
+      middle: z.number().describe('Middle line (EMA)'),
+      upper: z.number().describe('Upper channel'),
+      lower: z.number().describe('Lower channel'),
+      atr: z.number().describe('Average True Range'),
+      position: z.string().describe('Current price position'),
+      trend: z.string().describe('Channel trend'),
+      signal: z.string().describe('Trading signal'),
+    }),
+  },
+  async ({ highs, lows, closes, period = 20, atrPeriod = 10, multiplier = 2 }) => {
+    try {
+      if (highs.length !== lows.length || highs.length !== closes.length) {
+        throw new Error('All price arrays must have the same length')
+      }
+      const result = calculateKeltnerChannels(highs, lows, closes, period, atrPeriod, multiplier)
+      if (!result) {
+        throw new Error(`Insufficient data: need at least ${Math.max(period, atrPeriod)} prices, got ${highs.length}`)
+      }
+      return result
+    } catch (error: any) {
+      throw new Error(`Keltner Channels calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register donchian_channels tool
+server.registerTool(
+  'donchian_channels',
+  {
+    title: 'Donchian Channels',
+    description: 'Calculate Donchian Channels using highest high and lowest low over a specified period.',
+    inputSchema: z.object({
+      highs: z.array(z.number()).min(5).describe('Array of high prices'),
+      lows: z.array(z.number()).min(5).describe('Array of low prices'),
+      period: z.number().int().min(2).max(100).default(20).describe('Period for channel calculation (default: 20)'),
+    }),
+    outputSchema: z.object({
+      upper: z.number().describe('Upper channel (highest high)'),
+      lower: z.number().describe('Lower channel (lowest low)'),
+      middle: z.number().describe('Middle channel (midpoint)'),
+      range: z.number().describe('Channel range'),
+      position: z.string().describe('Current price position'),
+      trend: z.string().describe('Channel trend'),
+      signal: z.string().describe('Trading signal'),
+    }),
+  },
+  async ({ highs, lows, period = 20 }) => {
+    try {
+      if (highs.length !== lows.length) {
+        throw new Error('Highs and lows arrays must have the same length')
+      }
+      const result = calculateDonchianChannels(highs, lows, period)
+      if (!result) {
+        throw new Error(`Insufficient data: need at least ${period} prices, got ${highs.length}`)
+      }
+      return result
+    } catch (error: any) {
+      throw new Error(`Donchian Channels calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register alligator tool
+server.registerTool(
+  'alligator',
+  {
+    title: 'Alligator Indicator',
+    description: 'Calculate Alligator Indicator from Bill Williams trading system using three smoothed moving averages.',
+    inputSchema: z.object({
+      closes: z.array(z.number()).min(25).describe('Array of closing prices'),
+      jawPeriod: z.number().int().min(5).max(30).default(13).describe('Jaw period (default: 13)'),
+      teethPeriod: z.number().int().min(5).max(20).default(8).describe('Teeth period (default: 8)'),
+      lipsPeriod: z.number().int().min(3).max(15).default(5).describe('Lips period (default: 5)'),
+      jawOffset: z.number().int().min(5).max(15).default(8).describe('Jaw offset (default: 8)'),
+      teethOffset: z.number().int().min(3).max(10).default(5).describe('Teeth offset (default: 5)'),
+      lipsOffset: z.number().int().min(2).max(8).default(3).describe('Lips offset (default: 3)'),
+    }),
+    outputSchema: z.object({
+      jaw: z.number().describe('Alligator Jaw (blue line)'),
+      teeth: z.number().describe('Alligator Teeth (red line)'),
+      lips: z.number().describe('Alligator Lips (green line)'),
+      trend: z.string().describe('Alligator trend state'),
+      signal: z.string().describe('Trading signal'),
+      convergence: z.boolean().describe('Lines are converging'),
+      divergence: z.boolean().describe('Lines are diverging'),
+    }),
+  },
+  async ({ closes, jawPeriod = 13, teethPeriod = 8, lipsPeriod = 5, jawOffset = 8, teethOffset = 5, lipsOffset = 3 }) => {
+    try {
+      const result = calculateAlligator(closes, jawPeriod, teethPeriod, lipsPeriod, jawOffset, teethOffset, lipsOffset)
+      if (!result) {
+        throw new Error(`Insufficient data: need at least ${Math.max(jawPeriod + jawOffset, teethPeriod + teethOffset, lipsPeriod + lipsOffset)} prices, got ${closes.length}`)
+      }
+      return result
+    } catch (error: any) {
+      throw new Error(`Alligator calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register awesome_oscillator tool
+server.registerTool(
+  'awesome_oscillator',
+  {
+    title: 'Awesome Oscillator',
+    description: 'Calculate Awesome Oscillator that shows momentum changes using simple moving averages of the median price.',
+    inputSchema: z.object({
+      highs: z.array(z.number()).min(35).describe('Array of high prices'),
+      lows: z.array(z.number()).min(35).describe('Array of low prices'),
+      fastPeriod: z.number().int().min(5).max(15).default(5).describe('Fast SMA period (default: 5)'),
+      slowPeriod: z.number().int().min(25).max(40).default(34).describe('Slow SMA period (default: 34)'),
+    }),
+    outputSchema: z.object({
+      ao: z.number().describe('Awesome Oscillator value'),
+      histogram: z.string().describe('Histogram color (green/red)'),
+      trend: z.string().describe('AO trend'),
+      signal: z.string().describe('Trading signal'),
+      saucerSignal: z.boolean().describe('Saucer signal detected'),
+      twinPeaksSignal: z.boolean().describe('Twin peaks signal detected'),
+    }),
+  },
+  async ({ highs, lows, fastPeriod = 5, slowPeriod = 34 }) => {
+    try {
+      if (highs.length !== lows.length) {
+        throw new Error('Highs and lows arrays must have the same length')
+      }
+      const result = calculateAwesomeOscillator(highs, lows, fastPeriod, slowPeriod)
+      if (!result) {
+        throw new Error(`Insufficient data: need at least ${slowPeriod + 1} prices, got ${highs.length}`)
+      }
+      return result
+    } catch (error: any) {
+      throw new Error(`Awesome Oscillator calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register ichimoku_cloud tool
+server.registerTool(
+  'ichimoku_cloud',
+  {
+    title: 'Ichimoku Cloud',
+    description: 'Calculate Ichimoku Cloud for comprehensive trend analysis with multiple timeframe support/resistance.',
+    inputSchema: z.object({
+      highs: z.array(z.number()).min(55).describe('Array of high prices'),
+      lows: z.array(z.number()).min(55).describe('Array of low prices'),
+      closes: z.array(z.number()).min(55).describe('Array of closing prices'),
+      tenkanPeriod: z.number().int().min(5).max(15).default(9).describe('Tenkan-sen period (default: 9)'),
+      kijunPeriod: z.number().int().min(20).max(35).default(26).describe('Kijun-sen period (default: 26)'),
+      senkouSpanBPeriod: z.number().int().min(40).max(60).default(52).describe('Senkou Span B period (default: 52)'),
+    }),
+    outputSchema: z.object({
+      tenkanSen: z.number().describe('Tenkan-sen (Conversion Line)'),
+      kijunSen: z.number().describe('Kijun-sen (Base Line)'),
+      senkouSpanA: z.number().describe('Senkou Span A (Leading Span A)'),
+      senkouSpanB: z.number().describe('Senkou Span B (Leading Span B)'),
+      chikouSpan: z.number().describe('Chikou Span (Lagging Span)'),
+      cloudTop: z.number().describe('Cloud top (higher of Span A/B)'),
+      cloudBottom: z.number().describe('Cloud bottom (lower of Span A/B)'),
+      cloudColor: z.string().describe('Cloud color (green/red)'),
+      trend: z.string().describe('Ichimoku trend'),
+      signal: z.string().describe('Trading signal'),
+      tkCross: z.string().describe('Tenkan/Kijun crossover'),
+      priceVsCloud: z.string().describe('Price position vs cloud'),
+    }),
+  },
+  async ({ highs, lows, closes, tenkanPeriod = 9, kijunPeriod = 26, senkouSpanBPeriod = 52 }) => {
+    try {
+      if (highs.length !== lows.length || highs.length !== closes.length) {
+        throw new Error('All price arrays must have the same length')
+      }
+      const result = calculateIchimokuCloud(highs, lows, closes, tenkanPeriod, kijunPeriod, senkouSpanBPeriod)
+      if (!result) {
+        throw new Error(`Insufficient data: need at least ${senkouSpanBPeriod + 26} prices, got ${highs.length}`)
+      }
+      return result
+    } catch (error: any) {
+      throw new Error(`Ichimoku Cloud calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register r_squared tool
+server.registerTool(
+  'r_squared',
+  {
+    title: 'R-Squared Analysis',
+    description: 'Calculate R-squared (coefficient of determination) to measure how well data fits a statistical model.',
+    inputSchema: z.object({
+      prices1: z.array(z.number()).min(5).describe('Array of first price series'),
+      prices2: z.array(z.number()).min(5).describe('Array of second price series'),
+      period: z.number().int().min(2).max(200).default(30).describe('Period for R-squared calculation (default: 30)'),
+    }),
+    outputSchema: z.object({
+      rSquared: z.number().describe('R-squared value (0-1)'),
+      fitQuality: z.string().describe('Model fit quality'),
+      predictability: z.string().describe('Predictability level'),
+      trend: z.string().describe('R-squared trend'),
+      signal: z.string().describe('Trading signal based on fit quality'),
+    }),
+  },
+  async ({ prices1, prices2, period = 30 }) => {
+    try {
+      if (prices1.length !== prices2.length) {
+        throw new Error('Both price arrays must have the same length')
+      }
+      const result = calculateRSquared(prices1, prices2, period)
+      if (!result) {
+        throw new Error(`Insufficient data: need at least ${period} data points, got ${prices1.length}`)
+      }
+      return result
+    } catch (error: any) {
+      throw new Error(`R-Squared calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register momentum_indicator tool
+server.registerTool(
+  'momentum_indicator',
+  {
+    title: 'Momentum Indicator',
+    description: 'Calculate Momentum Indicator that measures the rate of price change over a specified period.',
+    inputSchema: z.object({
+      closes: z.array(z.number()).min(15).describe('Array of closing prices'),
+      period: z.number().int().min(2).max(50).default(14).describe('Period for momentum calculation (default: 14)'),
+    }),
+    outputSchema: z.object({
+      momentum: z.number().describe('Momentum value'),
+      trend: z.string().describe('Momentum trend'),
+      strength: z.number().describe('Momentum strength (0-100)'),
+      signal: z.string().describe('Trading signal'),
+      zeroCross: z.boolean().describe('Zero line crossover'),
+    }),
+  },
+  async ({ closes, period = 14 }) => {
+    try {
+      const result = calculateMomentum(closes, period)
+      if (!result) {
+        throw new Error(`Insufficient data: need at least ${period + 1} prices, got ${closes.length}`)
+      }
+      return result
+    } catch (error: any) {
+      throw new Error(`Momentum Indicator calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register rate_of_change tool
+server.registerTool(
+  'rate_of_change',
+  {
+    title: 'Rate of Change (ROC)',
+    description: 'Calculate Rate of Change that measures the percentage change in price over a specified period.',
+    inputSchema: z.object({
+      closes: z.array(z.number()).min(15).describe('Array of closing prices'),
+      period: z.number().int().min(2).max(50).default(14).describe('Period for ROC calculation (default: 14)'),
+    }),
+    outputSchema: z.object({
+      roc: z.number().describe('Rate of Change (%)'),
+      trend: z.string().describe('ROC trend'),
+      strength: z.number().describe('ROC strength (0-100)'),
+      overbought: z.boolean().describe('Overbought condition (>10%)'),
+      oversold: z.boolean().describe('Oversold condition (<-10%)'),
+      signal: z.string().describe('Trading signal'),
+    }),
+  },
+  async ({ closes, period = 14 }) => {
+    try {
+      const result = calculateROC(closes, period)
+      if (!result) {
+        throw new Error(`Insufficient data: need at least ${period + 1} prices, got ${closes.length}`)
+      }
+      return result
+    } catch (error: any) {
+      throw new Error(`Rate of Change calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register force_index tool
+server.registerTool(
+  'force_index',
+  {
+    title: 'Force Index',
+    description: 'Calculate Force Index that combines price change direction with volume to measure buying/selling pressure.',
+    inputSchema: z.object({
+      closes: z.array(z.number()).min(15).describe('Array of closing prices'),
+      volumes: z.array(z.number()).min(15).describe('Array of volume data (must match closes length)'),
+      period: z.number().int().min(2).max(30).default(13).describe('Period for EMA smoothing (default: 13)'),
+    }),
+    outputSchema: z.object({
+      forceIndex: z.number().describe('Force Index value'),
+      trend: z.string().describe('Force Index trend'),
+      strength: z.number().describe('Force Index strength (0-100)'),
+      bullishPressure: z.boolean().describe('Bullish pressure dominant'),
+      bearishPressure: z.boolean().describe('Bearish pressure dominant'),
+      signal: z.string().describe('Trading signal'),
+    }),
+  },
+  async ({ closes, volumes, period = 13 }) => {
+    try {
+      if (closes.length !== volumes.length) {
+        throw new Error('Closes and volumes arrays must have the same length')
+      }
+      const result = calculateForceIndex(closes, volumes, period)
+      if (!result) {
+        throw new Error(`Insufficient data: need at least ${period + 1} prices, got ${closes.length}`)
+      }
+      return result
+    } catch (error: any) {
+      throw new Error(`Force Index calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register super_trend tool
+server.registerTool(
+  'supertrend',
+  {
+    title: 'SuperTrend',
+    description: 'Calculate SuperTrend indicator that combines ATR and price action for trend-following stop levels.',
+    inputSchema: z.object({
+      highs: z.array(z.number()).min(15).describe('Array of high prices'),
+      lows: z.array(z.number()).min(15).describe('Array of low prices'),
+      closes: z.array(z.number()).min(15).describe('Array of closing prices'),
+      period: z.number().int().min(5).max(30).default(10).describe('ATR period (default: 10)'),
+      multiplier: z.number().min(1).max(5).default(3).describe('ATR multiplier (default: 3)'),
+    }),
+    outputSchema: z.object({
+      superTrend: z.number().describe('SuperTrend value'),
+      trend: z.string().describe('Current trend direction'),
+      signal: z.string().describe('Trading signal'),
+      upperBand: z.number().describe('Upper SuperTrend band'),
+      lowerBand: z.number().describe('Lower SuperTrend band'),
+      atr: z.number().describe('Average True Range'),
+    }),
+  },
+  async ({ highs, lows, closes, period = 10, multiplier = 3 }) => {
+    try {
+      if (highs.length !== lows.length || highs.length !== closes.length) {
+        throw new Error('All price arrays must have the same length')
+      }
+      const result = calculateSuperTrend(highs, lows, closes, period, multiplier)
+      if (!result) {
+        throw new Error(`Insufficient data: need at least ${period + 1} prices, got ${highs.length}`)
+      }
+      return result
+    } catch (error: any) {
+      throw new Error(`SuperTrend calculation failed: ${error.message}`)
+    }
+  }
+)
+
+// Register linear_regression tool
+server.registerTool(
+  'linear_regression',
+  {
+    title: 'Linear Regression Indicator',
+    description: 'Calculate linear regression line, slope, intercept, R-squared, and regression bands for trend analysis.',
+    inputSchema: z.object({
+      prices: z.array(z.number()).min(5).describe('Array of price data (typically closing prices)'),
+      period: z.number().int().min(2).max(200).default(20).describe('Period for regression calculation (default: 20)'),
+    }),
+    outputSchema: z.object({
+      slope: z.number().describe('Slope of the regression line'),
+      intercept: z.number().describe('Y-intercept of the regression line'),
+      regressionLine: z.number().describe('Current regression line value'),
+      rSquared: z.number().describe('R-squared (coefficient of determination)'),
+      standardError: z.number().describe('Standard error of the regression'),
+      correlation: z.number().describe('Correlation coefficient'),
+      trend: z.enum(['bullish', 'bearish', 'neutral']).describe('Trend direction'),
+      strength: z.number().describe('Trend strength (0-100)'),
+      upperBand: z.number().describe('Upper regression band (+2 SD)'),
+      lowerBand: z.number().describe('Lower regression band (-2 SD)'),
+      priceVsRegression: z.number().describe('Price vs regression line (%)'),
+      position: z.enum(['above', 'below', 'on_line']).describe('Current price position relative to regression line'),
+    }),
+  },
+  async ({ prices, period = 20 }) => {
+    try {
+      const result = calculateLinearRegression(prices, period)
+      if (!result) {
+        throw new Error(`Insufficient data: need at least ${period} prices, got ${prices.length}`)
+      }
+      return result
+    } catch (error: any) {
+      throw new Error(`Linear Regression calculation failed: ${error.message}`)
     }
   }
 )
@@ -9635,12 +6556,18 @@ GearTrade MCP Server provides comprehensive tools for crypto trading analysis an
 ## Recommended Workflow
 
 ### 1. Comprehensive Analysis
-Always start with \`analisis_crypto\` or \`analisis_multiple_crypto\` to gather complete market data:
-- Real-time price and technical indicators
-- Volume analysis (buy/sell pressure, CVD, liquidity zones)
-- Multi-timeframe trend alignment
-- External data (funding rate, open interest)
-- Advanced analysis (Fibonacci, Order Book, Volume Profile, etc.)
+Start with systematic data gathering using specialized tools:
+
+**Price & Market Data:**
+- \`get_price\` - Current price, 24h change, market cap
+- \`get_volume_analysis\` - Volume patterns, buy/sell pressure
+- \`get_external_data\` - Funding rates, open interest, market sentiment
+
+**Technical Analysis:**
+- \`get_indicators\` - RSI, MACD, moving averages, momentum
+- \`get_market_structure\` - Trend bias, support/resistance
+- \`get_candlestick_patterns\` - Chart patterns, reversal signals
+- \`get_fibonacci\` - Fibonacci retracements, golden ratio levels
 
 ### 2. Signal Identification
 Look for high-confidence signals:
@@ -9982,7 +6909,7 @@ server.registerResource(
   'tools-overview',
   'geartrade://docs/tools-overview',
   {
-    description: 'Complete overview of all 38+ MCP tools available in GearTrade',
+    description: 'Complete overview of all 84 MCP tools available in GearTrade',
     mimeType: 'text/markdown',
   },
   async () => {
@@ -9993,7 +6920,7 @@ server.registerResource(
           mimeType: 'text/markdown',
           text: `# Tools Overview
 
-## Complete List of 38+ MCP Tools
+## Complete List of 84 MCP Tools
 
 ### Price Tools (2)
 - **\`get_price\`**: Get latest price for single ticker
@@ -10124,12 +7051,49 @@ This guide covers the complete workflow from market analysis to order execution 
 
 ### Step 1: Comprehensive Analysis
 
-Use \`analisis_crypto\` to gather complete market data:
+Gather data systematically using specialized tools:
 
+#### 1.1 Price & Market Data
 \`\`\`json
 {
-  "name": "analisis_crypto",
+  "name": "get_price",
   "arguments": {
+    "ticker": "BTC"
+  }
+}
+\`\`\`
+
+#### 1.2 Technical Indicators
+\`\`\`json
+{
+  "name": "get_indicators",
+  "arguments": {
+    "ticker": "BTC"
+  }
+}
+\`\`\`
+
+#### 1.3 Volume Analysis
+\`\`\`json
+{
+  "name": "get_volume_analysis",
+  "arguments": {
+    "ticker": "BTC"
+  }
+}
+\`\`\`
+
+#### 1.4 Market Structure
+\`\`\`json
+{
+  "name": "get_market_structure",
+  "arguments": {
+    "ticker": "BTC"
+  }
+}
+\`\`\`
+
+### Old Method (for reference):
     "ticker": "BTC",
     "capital": 10000,
     "riskPct": 1.0,
@@ -10138,14 +7102,13 @@ Use \`analisis_crypto\` to gather complete market data:
 }
 \`\`\`
 
-**Output includes:**
-- Real-time price
-- Technical indicators (20+)
-- Volume analysis
-- Multi-timeframe alignment
-- External data (funding rate, OI)
-- Advanced analysis (Fibonacci, Order Book, Volume Profile, etc.)
-- Position setup recommendations
+**Combined Analysis Output:**
+- **get_price**: Current price, 24h change, market data
+- **get_indicators**: RSI, MACD, moving averages, momentum indicators
+- **get_volume_analysis**: Volume patterns, buy/sell pressure, CVD
+- **get_market_structure**: Trend bias, support/resistance levels
+- **get_external_data**: Funding rates, open interest, market sentiment
+- **Position recommendations** via risk management tools
 - Risk management calculations
 
 ### Step 2: Signal Identification
@@ -10379,25 +7342,37 @@ server.registerPrompt(
           role: 'user' as const,
           content: {
             type: 'text' as const,
-            text: `Please analyze ${ticker} using the analisis_crypto tool with capital=${capital} and riskPct=${riskPct}.
+            text: `Please analyze ${ticker} comprehensively using these steps:
 
-After analysis, present a clear summary with:
-1. Current price and 24h change
-2. Technical signal (BUY/SELL/HOLD) with confidence percentage
-3. Entry price, Stop Loss, and Take Profit levels
-4. Risk/Reward ratio
-5. Position size recommendation (quantity, leverage, margin)
-6. Key technical indicators (RSI, trend alignment, volume analysis)
-7. Risk level assessment
+1. **Get Current Price & Basic Info:**
+   - Use get_price tool for current price and market data
 
-Then ask the user: "Mau dieksekusi ke Hyperliquid? (YES/NO)"
+2. **Technical Analysis:**
+   - Use get_indicators for RSI, MACD, moving averages
+   - Use get_volume_analysis for volume patterns
+   - Use get_market_structure for trend bias
+   - Use get_candlestick_patterns for chart patterns
 
-If user confirms YES:
-- First test with paper trading (execute: true, useLiveExecutor: false)
-- Then ask again for live execution confirmation
-- Only execute live if user explicitly confirms again
+3. **Risk Management Setup:**
+   - Use calculate_risk_management with entry price, capital=${capital}, riskPct=${riskPct}
+   - Calculate position size and stop loss levels
 
-Always prioritize safety and never execute without explicit user approval.`,
+4. **Present Analysis Summary:**
+   - Current price and 24h change
+   - Technical signal (BUY/SELL/HOLD) with confidence %
+   - Recommended entry, stop loss, take profit levels
+   - Risk/reward ratio and position sizing
+   - Key supporting indicators
+
+5. **Execution Preparation:**
+   - If user wants to execute: Use get_execution_spot for spot trading
+   - Always start with paper trading first (useLiveExecutor: false)
+   - Only proceed to live execution after explicit confirmation
+
+Ask user: "Mau dieksekusi dengan paper trading dulu? (YES/NO)"
+If YES, show the paper trade result first, then ask for live execution.
+
+Safety first: Never execute live without explicit user approval twice.`,
           },
         },
       ],
@@ -10425,21 +7400,37 @@ server.registerPrompt(
           role: 'user' as const,
           content: {
             type: 'text' as const,
-            text: `Please scan multiple assets using analisis_multiple_crypto with tickers=${JSON.stringify(tickers)} and capital=${capital}.
+            text: `Please scan multiple assets for trading opportunities:
 
-After scanning, rank the assets by:
-1. Signal confidence (highest first)
-2. Risk/Reward ratio (best first)
-3. Trend alignment strength
+**Step-by-Step Analysis for each asset in ${JSON.stringify(tickers)}:**
 
-Present the top 3 opportunities with:
-- Ticker and current price
-- Signal (BUY/SELL/HOLD) and confidence
-- Entry, Stop Loss, Take Profit
-- Risk/Reward ratio
-- Brief technical summary
+1. **Get Price & Volume Data:**
+   - Use get_price for current price and market data
+   - Use get_volume_analysis for volume patterns
 
-Then ask user: "Asset mana yang mau dianalisis lebih detail atau dieksekusi?"
+2. **Technical Analysis:**
+   - Use get_indicators for technical signals
+   - Use get_market_structure for trend bias
+   - Use get_candlestick_patterns for chart patterns
+
+3. **Risk Assessment:**
+   - Use calculate_risk_management with capital=${capital}
+
+4. **Ranking Criteria:**
+   - Signal confidence and strength
+   - Risk/Reward ratio quality
+   - Trend alignment (multi-timeframe)
+   - Volume confirmation
+
+5. **Present Top 3 Opportunities:**
+   - Asset ticker and current price
+   - BUY/SELL/HOLD signal with confidence %
+   - Recommended entry, SL, TP levels
+   - Risk/Reward ratio
+   - Key supporting indicators
+   - Volume confirmation status
+
+Ask user: "Asset mana yang ingin dianalisis lebih detail atau dieksekusi?"
 
 Use the selected asset for further analysis or execution workflow.`,
           },
@@ -13155,18 +10146,128 @@ async function handleMcpMethod(method: string, params: any, id: string | number 
         description: config.description || '',
         inputSchema: {
           type: 'object',
-          properties: Object.fromEntries(
-            Object.entries(config.inputSchema || {}).map(([key, schema]: [string, any]) => [
-              key,
-              {
-                type: schema._def?.typeName === 'ZodNumber' ? 'number' : 
-                      schema._def?.typeName === 'ZodBoolean' ? 'boolean' :
-                      schema._def?.typeName === 'ZodArray' ? 'array' : 'string',
-                description: schema._def?.description || schema.description || ''
+          properties: (() => {
+            try {
+              // Check if inputSchema is a Zod object schema
+              if (config.inputSchema && config.inputSchema._def && config.inputSchema._def.typeName === 'ZodObject') {
+                // Extract shape from Zod object schema
+                const shape = config.inputSchema._def.shape
+                const shapeObj = typeof shape === 'function' ? shape() : shape || {}
+                return Object.fromEntries(
+                  Object.entries(shapeObj).map(([key, schema]: [string, any]) => {
+                    // Safely extract type and description from Zod schema
+                    let type = 'string' // default fallback
+                    let description = ''
+
+                    try {
+                      if (schema && schema._def) {
+                        const typeName = schema._def.typeName
+                        switch (typeName) {
+                          case 'ZodNumber':
+                            type = 'number'
+                            break
+                          case 'ZodBoolean':
+                            type = 'boolean'
+                            break
+                          case 'ZodArray':
+                            type = 'array'
+                            break
+                          case 'ZodEnum':
+                            type = 'string' // enums are strings
+                            break
+                          case 'ZodString':
+                          default:
+                            type = 'string'
+                            break
+                        }
+                        description = schema._def.description || ''
+                      }
+                    } catch (error) {
+                      // If anything fails, use safe defaults
+                      type = 'string'
+                      description = ''
+                    }
+
+                    return [
+                      key,
+                      {
+                        type,
+                        description
+                      }
+                    ]
+                  })
+                )
+              } else {
+                // Fallback for plain objects (old format)
+                return Object.fromEntries(
+                  Object.entries(config.inputSchema || {})
+                    .filter(([key]) => !key.startsWith('~')) // Filter out internal Zod properties
+                    .map(([key, schema]: [string, any]) => {
+                      // Safely extract type and description from Zod schema
+                      let type = 'string' // default fallback
+                      let description = ''
+
+                      try {
+                        if (schema && schema._def) {
+                          const typeName = schema._def.typeName
+                          switch (typeName) {
+                            case 'ZodNumber':
+                              type = 'number'
+                              break
+                            case 'ZodBoolean':
+                              type = 'boolean'
+                              break
+                            case 'ZodArray':
+                              type = 'array'
+                              break
+                            case 'ZodString':
+                            default:
+                              type = 'string'
+                              break
+                          }
+                          description = schema._def.description || ''
+                        } else if (schema && typeof schema === 'object') {
+                          // Fallback for non-Zod objects
+                          type = schema.type || 'string'
+                          description = schema.description || ''
+                        }
+                      } catch (error) {
+                        // If anything fails, use safe defaults
+                        type = 'string'
+                        description = ''
+                      }
+
+                      return [
+                        key,
+                        {
+                          type,
+                          description
+                        }
+                      ]
+                    })
+                )
               }
-            ])
-          ),
-          required: Object.keys(config.inputSchema || {})
+            } catch (error) {
+              // If all else fails, return empty properties
+              return {}
+            }
+          })(),
+          required: (() => {
+            try {
+              // Check if inputSchema is a Zod object schema
+              if (config.inputSchema && config.inputSchema._def && config.inputSchema._def.typeName === 'ZodObject') {
+                // Extract required fields from Zod object schema
+                const shape = config.inputSchema._def.shape
+                const shapeObj = typeof shape === 'function' ? shape() : shape || {}
+                return Object.keys(shapeObj)
+              } else {
+                // Fallback for plain objects
+                return Object.keys(config.inputSchema || {}).filter(key => !key.startsWith('~'))
+              }
+            } catch (error) {
+              return []
+            }
+          })()
         }
       }))
       return jsonRpcResponse(id, { tools })

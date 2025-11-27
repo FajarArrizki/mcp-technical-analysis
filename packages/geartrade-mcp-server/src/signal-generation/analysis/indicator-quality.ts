@@ -312,7 +312,7 @@ export function scoreIndicatorQuality(
   if (indicators.adx !== null && indicators.adx !== undefined) {
     // Handle ADX as object or number
     let adx = 0
-    if (typeof indicators.adx === 'object' && indicators.adx !== null && 'adx' in indicators.adx) {
+    if (typeof indicators.adx === 'object' && indicators.adx !== null && 'adx' in (indicators.adx as any)) {
       const adxObj = (indicators.adx as any).adx
       adx = (typeof adxObj === 'number' && !isNaN(adxObj) && isFinite(adxObj)) ? adxObj : 0
     } else if (typeof indicators.adx === 'number') {

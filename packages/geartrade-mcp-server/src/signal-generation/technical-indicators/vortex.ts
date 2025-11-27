@@ -1,0 +1,112 @@
+/**
+ * Vortex Indicator
+ * Identifies trend direction using positive and negative directional movement
+ */
+
+export interface VortexData {
+  vortexPlus: number | null // VI+ (uptrend indicator)
+  vortexMinus: number | null // VI- (downtrend indicator)
+  trend: 'uptrend' | 'downtrend' | 'neutral' | null
+  strength: 'weak' | 'moderate' | 'strong' | null
+}
+
+export function calculateVortex(
+  highs: number[],
+  lows: number[],
+  closes: number[],
+  period: number = 14
+): VortexData {
+  if (highs.length < period + 1 || lows.length < period + 1 || closes.length < period + 1) {
+    return {
+      vortexPlus: null,
+      vortexMinus: null,
+      trend: null,
+      strength: null,
+    }
+  }
+
+  // Calculate True Range and Directional Movement
+  const trueRanges: number[] = []
+  const plusDMs: number[] = []
+  const minusDMs: number[] = []
+
+  for (let i = 1; i < closes.length; i++) {
+    const currentHigh = highs[i]
+    const currentLow = lows[i]
+    const previousHigh = highs[i - 1]
+    const previousLow = lows[i - 1]
+    const previousClose = closes[i - 1]
+
+    // True Range = max(high - low, |high - prevClose|, |low - prevClose|)
+    const tr1 = currentHigh - currentLow
+    const tr2 = Math.abs(currentHigh - previousClose)
+    const tr3 = Math.abs(currentLow - previousClose)
+    const trueRange = Math.max(tr1, tr2, tr3)
+    trueRanges.push(trueRange)
+
+    // Directional Movement
+    const upMove = currentHigh - previousHigh
+    const downMove = previousLow - currentLow
+
+    let plusDM = 0
+    let minusDM = 0
+
+    if (upMove > downMove && upMove > 0) {
+      plusDM = upMove
+    }
+    if (downMove > upMove && downMove > 0) {
+      minusDM = downMove
+    }
+
+    plusDMs.push(plusDM)
+    minusDMs.push(minusDM)
+  }
+
+  if (trueRanges.length < period) {
+    return {
+      vortexPlus: null,
+      vortexMinus: null,
+      trend: null,
+      strength: null,
+    }
+  }
+
+  // Calculate sums for the period
+  const sumTR = trueRanges.slice(-period).reduce((sum, tr) => sum + tr, 0)
+  const sumPlusDM = plusDMs.slice(-period).reduce((sum, dm) => sum + dm, 0)
+  const sumMinusDM = minusDMs.slice(-period).reduce((sum, dm) => sum + dm, 0)
+
+  if (sumTR === 0) {
+    return {
+      vortexPlus: null,
+      vortexMinus: null,
+      trend: null,
+      strength: null,
+    }
+  }
+
+  // Calculate Vortex Indicators
+  const vortexPlus = sumPlusDM / sumTR
+  const vortexMinus = sumMinusDM / sumTR
+
+  // Determine trend
+  let trend: 'uptrend' | 'downtrend' | 'neutral' | null = null
+  if (vortexPlus > vortexMinus) trend = 'uptrend'
+  else if (vortexMinus > vortexPlus) trend = 'downtrend'
+  else trend = 'neutral'
+
+  // Determine strength
+  let strength: 'weak' | 'moderate' | 'strong' | null = null
+  const difference = Math.abs(vortexPlus - vortexMinus)
+
+  if (difference > 0.15) strength = 'strong'
+  else if (difference > 0.08) strength = 'moderate'
+  else strength = 'weak'
+
+  return {
+    vortexPlus,
+    vortexMinus,
+    trend,
+    strength,
+  }
+}

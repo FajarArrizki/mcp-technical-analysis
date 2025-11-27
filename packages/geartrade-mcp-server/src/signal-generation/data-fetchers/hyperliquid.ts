@@ -8,9 +8,11 @@
  * - Exchange endpoint (/exchange) requires signed messages, not Bearer tokens
  */
 
-const HYPERLIQUID_API_URL = 'https://api.hyperliquid.xyz'
+import { getHyperliquidApiUrl } from '../config'
 
 export async function fetchHyperliquid(endpoint: string, data: any): Promise<any> {
+  const HYPERLIQUID_API_URL = getHyperliquidApiUrl()
+  console.log(`🌐 Hyperliquid API URL: ${HYPERLIQUID_API_URL} (testnet=${process.env.HYPERLIQUID_TESTNET})`)
   const url = new URL(endpoint, HYPERLIQUID_API_URL)
   const postData = JSON.stringify(data)
 
@@ -30,7 +32,9 @@ export async function fetchHyperliquid(endpoint: string, data: any): Promise<any
     })
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
+      const errorBody = await response.text()
+      console.error(`❌ Hyperliquid API Error ${response.status}:`, errorBody)
+      throw new Error(`HTTP error! status: ${response.status}, body: ${errorBody}`)
     }
 
     const result = await response.json()

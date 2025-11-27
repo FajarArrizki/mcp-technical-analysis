@@ -1,9 +1,11 @@
 {
   "mcpServers": {
-    "geartrade-stream": {
-      "type": "stream",
-      "url": "http://localhost:8787/stream",
-      "description": "GearTrade MCP with SSE Streaming"
+    "geartrade": {
+      "command": "bash",
+      "args": [
+        "/root/GEARTRADE/scripts/mcp-auto-start.sh"
+      ],
+      "description": "GearTrade MCP Server - Localhost Only"
     }
   }
 }

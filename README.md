@@ -122,7 +122,7 @@ Dibuat khusus untuk mengatasi masalah *"pas di deployment ga bisa, karna menguna
 **Start the server:**
 ```bash
 cd /root/GEARTRADE
-bash scripts/start-mcp-stream.sh
+bash scripts/mcp-auto-start.sh
 ```
 
 Server runs at `http://localhost:8787` with SSE streaming support!

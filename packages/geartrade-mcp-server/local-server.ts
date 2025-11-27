@@ -11,7 +11,7 @@ import { URL } from 'url'
 import mcpServer from './src/index.js'
 
 const PORT = process.env.PORT || 8787
-const HOST = process.env.HOST || 'localhost'
+const HOST = 'localhost' // Always bind to localhost for security
 
 // Create HTTP server that wraps the Cloudflare Workers fetch handler
 const server = createServer(async (req, res) => {

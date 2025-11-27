@@ -1,0 +1,34 @@
+
+╔════════════════════════════════════════════════════════════════╗
+║                                                                ║
+║   ⚙  GearTrade MCP Server - Local HTTP Streaming Mode         ║
+║                                                                ║
+╚════════════════════════════════════════════════════════════════╝
+
+✅ Server running at: http://localhost:8787
+
+📊 Available Endpoints:
+   • MCP Endpoint:      http://localhost:8787/mcp
+   • SSE Streaming:     http://localhost:8787/stream
+   • Health Check:      http://localhost:8787/health
+   • Server Info:       http://localhost:8787/
+
+🔧 Streaming Features:
+   • GET  /stream       - SSE connection with heartbeat
+   • POST /stream       - Streaming MCP commands
+   • POST /mcp          - Traditional JSON-RPC
+
+🎯 MCP Methods:
+   • initialize, initialized
+   • tools/list, tools/call
+   • resources/list, resources/read
+   • prompts/list, prompts/get
+
+💡 Usage Examples:
+   • curl http://localhost:8787/health
+   • curl http://localhost:8787/stream
+   • curl -X POST http://localhost:8787/mcp -H "Content-Type: application/json" \
+     -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}'
+
+⚙  Press Ctrl+C to stop the server
+

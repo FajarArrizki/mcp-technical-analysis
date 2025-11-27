@@ -1,0 +1,280 @@
+/**
+ * Chaikin Volatility Indicator
+ * Measures the rate of change of the trading range (High - Low)
+ */
+
+export interface ChaikinVolatilityData {
+  // Chaikin Volatility value (%)
+  volatility: number
+
+  // Current trading range
+  currentRange: number
+
+  // Previous trading range (smoothed)
+  previousRange: number
+
+  // Rate of change period
+  rocPeriod: number
+
+  // Trend direction
+  trend: 'increasing' | 'decreasing' | 'stable'
+
+  // Signal strength (0-100)
+  strength: number
+
+  // Breakout signals
+  potentialBreakout: boolean
+
+  // Overbought/oversold levels
+  overbought: boolean  // Volatility > 30%
+  oversold: boolean    // Volatility < -30%
+
+  // Trading signal
+  signal: 'buy' | 'sell' | 'neutral'
+
+  // Volatility phase
+  phase: 'expansion' | 'contraction' | 'stable'
+}
+
+/**
+ * Calculate Chaikin Volatility
+ * @param highs Array of high prices
+ * @param lows Array of low prices
+ * @param rocPeriod Period for rate of change calculation (default 10)
+ * @param smoothingPeriod Period for EMA smoothing of range (default 10)
+ * @returns ChaikinVolatilityData object
+ */
+export function calculateChaikinVolatility(
+  highs: number[],
+  lows: number[],
+  rocPeriod: number = 10,
+  smoothingPeriod: number = 10
+): ChaikinVolatilityData | null {
+  if (highs.length !== lows.length || highs.length < rocPeriod + smoothingPeriod) {
+    return null
+  }
+
+  // Calculate trading ranges (High - Low)
+  const ranges: number[] = []
+  for (let i = 0; i < highs.length; i++) {
+    ranges.push(highs[i] - lows[i])
+  }
+
+  // Smooth the ranges with EMA
+  const smoothedRanges = calculateEMA(ranges, smoothingPeriod)
+  if (smoothedRanges.length < rocPeriod + 1) {
+    return null
+  }
+
+  // Calculate rate of change of smoothed ranges
+  const currentRange = smoothedRanges[smoothedRanges.length - 1]
+  const previousRange = smoothedRanges[smoothedRanges.length - 1 - rocPeriod]
+
+  // Chaikin Volatility = ((Current Range - Previous Range) / Previous Range) * 100
+  const volatility = previousRange > 0 ? ((currentRange - previousRange) / previousRange) * 100 : 0
+
+  // Determine trend
+  let trend: 'increasing' | 'decreasing' | 'stable' = 'stable'
+  if (volatility > 5) {
+    trend = 'increasing'
+  } else if (volatility < -5) {
+    trend = 'decreasing'
+  }
+
+  // Calculate signal strength based on volatility magnitude
+  const strength = Math.min(100, Math.abs(volatility) * 3)
+
+  // Check for potential breakouts (increasing volatility often precedes breakouts)
+  const potentialBreakout = volatility > 15 && trend === 'increasing'
+
+  // Check overbought/oversold levels
+  const overbought = volatility > 30
+  const oversold = volatility < -30
+
+  // Generate trading signal
+  let signal: 'buy' | 'sell' | 'neutral' = 'neutral'
+
+  if (potentialBreakout) {
+    signal = 'buy' // Breakouts can be in either direction
+  } else if (overbought && trend === 'decreasing') {
+    signal = 'sell' // Volatility contraction after expansion
+  } else if (oversold && trend === 'increasing') {
+    signal = 'buy' // Volatility expansion from low levels
+  }
+
+  // Determine volatility phase
+  let phase: 'expansion' | 'contraction' | 'stable' = 'stable'
+  if (volatility > 10) {
+    phase = 'expansion'
+  } else if (volatility < -10) {
+    phase = 'contraction'
+  }
+
+  return {
+    volatility,
+    currentRange,
+    previousRange,
+    rocPeriod,
+    trend,
+    strength,
+    potentialBreakout,
+    overbought,
+    oversold,
+    signal,
+    phase
+  }
+}
+
+/**
+ * Helper function to calculate EMA
+ */
+function calculateEMA(values: number[], period: number): number[] {
+  if (values.length < period) {
+    return values
+  }
+
+  const ema: number[] = []
+  const multiplier = 2 / (period + 1)
+
+  // First EMA value is the simple average
+  let sum = 0
+  for (let i = 0; i < period; i++) {
+    sum += values[i]
+  }
+  ema.push(sum / period)
+
+  // Calculate subsequent EMA values
+  for (let i = period; i < values.length; i++) {
+    const currentEMA = (values[i] - ema[ema.length - 1]) * multiplier + ema[ema.length - 1]
+    ema.push(currentEMA)
+  }
+
+  return ema
+}
+
+/**
+ * Calculate Chaikin Volatility for multiple periods
+ * @param highs Array of high prices
+ * @param lows Array of low prices
+ * @param rocPeriods Array of ROC periods to calculate
+ * @returns Array of ChaikinVolatilityData objects
+ */
+export function calculateMultipleChaikinVolatility(
+  highs: number[],
+  lows: number[],
+  rocPeriods: number[] = [10, 20, 30]
+): ChaikinVolatilityData[] {
+  return rocPeriods
+    .map(period => calculateChaikinVolatility(highs, lows, period))
+    .filter((vol): vol is ChaikinVolatilityData => vol !== null)
+}
+
+/**
+ * Get Chaikin Volatility interpretation
+ * @param vol ChaikinVolatilityData object
+ * @returns Human-readable interpretation
+ */
+export function getChaikinVolatilityInterpretation(vol: ChaikinVolatilityData): string {
+  const { volatility, trend, potentialBreakout, phase, signal } = vol
+
+  let interpretation = `Chaikin Volatility: ${volatility.toFixed(2)}%`
+
+  if (potentialBreakout) {
+    interpretation += ' - Potential breakout signal'
+  } else {
+    interpretation += ` - ${trend} volatility (${phase} phase)`
+  }
+
+  if (signal !== 'neutral') {
+    interpretation += ` - ${signal.toUpperCase()} signal`
+  }
+
+  return interpretation
+}
+
+/**
+ * Analyze volatility trends for breakout prediction
+ * @param highs Array of high prices
+ * @param lows Array of low prices
+ * @param periods Number of periods to analyze
+ * @returns Volatility trend analysis
+ */
+export function analyzeVolatilityTrends(
+  highs: number[],
+  lows: number[],
+  periods: number = 20
+): {
+  overallTrend: 'expansion' | 'contraction' | 'stable'
+  breakoutProbability: number
+  recommendedAction: string
+} {
+  if (highs.length < periods + 20) {
+    return { overallTrend: 'stable', breakoutProbability: 50, recommendedAction: 'Insufficient data' }
+  }
+
+  const volatilityData = calculateMultipleChaikinVolatility(highs, lows, [10, 20, 30])
+
+  if (volatilityData.length === 0) {
+    return { overallTrend: 'stable', breakoutProbability: 50, recommendedAction: 'Insufficient data' }
+  }
+
+  // Analyze overall volatility trend
+  let expansionCount = 0
+  let contractionCount = 0
+  let breakoutSignals = 0
+
+  for (const vol of volatilityData) {
+    if (vol.phase === 'expansion') expansionCount++
+    if (vol.phase === 'contraction') contractionCount++
+    if (vol.potentialBreakout) breakoutSignals++
+  }
+
+  const overallTrend: 'expansion' | 'contraction' | 'stable' =
+    expansionCount > contractionCount ? 'expansion' :
+    contractionCount > expansionCount ? 'contraction' : 'stable'
+
+  // Calculate breakout probability
+  const breakoutProbability = Math.min(100, breakoutSignals / volatilityData.length * 100 + (overallTrend === 'expansion' ? 20 : 0))
+
+  let recommendedAction: string
+  if (breakoutProbability > 70) {
+    recommendedAction = 'High probability of breakout - prepare for volatility'
+  } else if (breakoutProbability > 40) {
+    recommendedAction = 'Moderate breakout probability - monitor closely'
+  } else {
+    recommendedAction = 'Low breakout probability - normal trading conditions'
+  }
+
+  return { overallTrend, breakoutProbability, recommendedAction }
+}
+
+/**
+ * Calculate volatility expansion/contraction ratio
+ * @param vol ChaikinVolatilityData object
+ * @param historicalData Array of historical ChaikinVolatilityData
+ * @returns Volatility analysis
+ */
+export function calculateVolatilityRatio(
+  vol: ChaikinVolatilityData,
+  historicalData: ChaikinVolatilityData[]
+): {
+  expansionRatio: number
+  averageVolatility: number
+  relativeStrength: 'high' | 'moderate' | 'low'
+} {
+  if (historicalData.length === 0) {
+    return { expansionRatio: 1, averageVolatility: vol.volatility, relativeStrength: 'moderate' }
+  }
+
+  const avgVolatility = historicalData.reduce((sum, v) => sum + Math.abs(v.volatility), 0) / historicalData.length
+  const expansionRatio = avgVolatility > 0 ? Math.abs(vol.volatility) / avgVolatility : 1
+
+  let relativeStrength: 'high' | 'moderate' | 'low' = 'moderate'
+  if (expansionRatio > 1.5) {
+    relativeStrength = 'high'
+  } else if (expansionRatio < 0.67) {
+    relativeStrength = 'low'
+  }
+
+  return { expansionRatio, averageVolatility: avgVolatility, relativeStrength }
+}

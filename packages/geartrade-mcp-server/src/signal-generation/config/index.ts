@@ -5,6 +5,8 @@
  */
 
 import { TradingConfig } from '../types'
+import path from 'path'
+import fs from 'fs'
 
 // Note: In Cloudflare Workers, environment variables are provided via the runtime
 // .env file loading is not needed as Workers use environment variables set via deployment
