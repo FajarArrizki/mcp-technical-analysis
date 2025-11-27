@@ -12,15 +12,13 @@ A comprehensive Model Context Protocol (MCP) server that bridges AI assistants w
     <img src="https://img.youtube.com/vi/SVaSJQo2iSk/maxresdefault.jpg" alt="MCP Technical Analysis Server Demo" width="100%">
   </a>
   <br><br>
-  <table style="width: 100%; border: none;">
-    <tr>
-      <td style="text-align: left; border: none; padding: 0;">
-        <a href="https://www.youtube.com/watch?v=SVaSJQo2iSk&autoplay=1">
-          <img src="https://img.shields.io/badge/Coming_Soon-FF0000?style=for-the-badge" alt="Coming Soon">
-        </a>
-      </td>
-    </tr>
-  </table>
+  <div style="position: relative; width: 100%;">
+    <div style="position: absolute; left: 0;">
+      <a href="https://www.youtube.com/watch?v=SVaSJQo2iSk&autoplay=1">
+        <img src="https://img.shields.io/badge/Coming_Soon-FF0000?style=for-the-badge" alt="Coming Soon">
+      </a>
+    </div>
+  </div>
 </div>
 
 
