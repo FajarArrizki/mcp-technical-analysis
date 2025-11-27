@@ -15,7 +15,7 @@ A comprehensive Model Context Protocol (MCP) server that bridges AI assistants w
   <table style="width: 100%; border: none;">
     <tr>
       <td style="text-align: left; border: none; padding: 0;">
-        <img src="https://img.shields.io/badge/▶️_Watch_Demo-FF0000?style=for-the-badge&logo=youtube&logoColor=white" alt="Watch Demo">
+        <img src="https://img.shields.io/badge/▶️_Coming_Soon-FF0000?style=for-the-badge&logo=youtube&logoColor=white" alt="Watch Demo">
       </td>
     </tr>
   </table>
