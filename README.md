@@ -57,8 +57,6 @@ pnpm run terminal
 
 Server runs at `http://localhost:8787` with SSE streaming support for real-time market analysis!
 
-📖 **Full Guide**: See [QUICKSTART.md](./QUICKSTART.md) and [STREAMING_GUIDE.md](./STREAMING_GUIDE.md)
-
 ### Installation:
 ```bash
 # Clone the repository
