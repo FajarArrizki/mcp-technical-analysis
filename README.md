@@ -102,65 +102,34 @@ Server runs at `http://localhost:8787` with SSE streaming support!
         "mcp-remote",
         "http://localhost:8787/mcp"
       ],
-      "env": {
-        "AI_PROVIDER": "openrouter",
-        "MODEL_ID": "openai/gpt-4-turbo",
-        "OPENROUTER_API_KEY": "your_openrouter_api_key_here",
-        "HYPERLIQUID_API_URL": "https://api.hyperliquid.xyz",
-        "CANDLES_COUNT": "100"
-      }
     }
   }
 }
 ```
 
-**Required Environment Variables:**
-- `OPENROUTER_API_KEY` - Get from [OpenRouter](https://openrouter.ai/keys) (Required for AI analysis)
-- `HYPERLIQUID_API_URL` - API endpoint for market data (default provided)
-- `CANDLES_COUNT` - Number of candles for analysis (100 recommended)
+**Note:** Server runs with default configurations for analysis. No additional setup required.
 
-**Note:** This server is configured for analysis-only. No wallet credentials required for full functionality.
+### MCP Client Configuration
 
-### Option 2: Direct Execution
-
-**Claude Desktop** (`~/Library/Application Support/Claude/claude_desktop_config.json`):
+**For Claude Desktop** (`~/Library/Application Support/Claude/claude_desktop_config.json`):
 ```json
 {
   "mcpServers": {
     "geartrade": {
-      "command": "tsx",
-      "args": ["/path/to/GEARTRADE/packages/geartrade-mcp-server/src/index.ts"],
-      "env": {
-        "AI_PROVIDER": "openrouter",
-        "MODEL_ID": "openai/gpt-4-turbo",
-        "OPENROUTER_API_KEY": "your_api_key_here",
-        "HYPERLIQUID_API_URL": "https://api.hyperliquid.xyz",
-        "CANDLES_COUNT": "100"
-      }
+      "command": "npx",
+      "args": ["mcp-remote", "http://localhost:8787/mcp"]
     }
   }
 }
 ```
 
-**Cursor (Alternative)** (`.cursor/mcp.json`):
+**For Cursor IDE** (`.cursor/mcp.json`):
 ```json
 {
   "mcpServers": {
     "geartrade": {
-      "command": "node",
-      "args": [
-        "--loader",
-        "tsx",
-        "/path/to/GEARTRADE/packages/geartrade-mcp-server/src/index.ts"
-      ],
-      "env": {
-        "NODE_OPTIONS": "--loader tsx",
-        "AI_PROVIDER": "openrouter",
-        "MODEL_ID": "openai/gpt-4-turbo",
-        "OPENROUTER_API_KEY": "your_api_key_here",
-        "HYPERLIQUID_API_URL": "https://api.hyperliquid.xyz",
-        "CANDLES_COUNT": "100"
-      }
+      "command": "npx",
+      "args": ["mcp-remote", "http://localhost:8787/mcp"]
     }
   }
 }
