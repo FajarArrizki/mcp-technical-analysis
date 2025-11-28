@@ -13,20 +13,20 @@ import fs from 'fs'
 
 // Read environment variables directly (not cached at module load time)
 // In Cloudflare Workers, these are provided via the worker environment
-function getAIProviderFromEnv(): string {
-  return process.env.AI_PROVIDER || 'openrouter'
-}
-
-function getModelIdFromEnv(): string | undefined {
-  return process.env.MODEL_ID || 'openai/gpt-4-turbo'
-}
-
-function getAIProviderApiKeyFromEnv(): string {
-  return process.env.OPENROUTER_API_KEY || process.env.AI_PROVIDER_API_KEY || ''
-}
 
 function getHyperliquidApiUrlFromEnv(): string {
-  return process.env.HYPERLIQUID_API_URL || 'https://api.hyperliquid.xyz'
+  // Check if custom URL is provided
+  if (process.env.HYPERLIQUID_API_URL) {
+    return process.env.HYPERLIQUID_API_URL
+  }
+
+  // Use testnet or mainnet based on configuration
+  const isTestnet = process.env.HYPERLIQUID_TESTNET === 'true' ||
+                   process.env.HYPERLIQUID_NETWORK === 'testnet'
+
+  return isTestnet
+    ? 'https://api.hyperliquid-testnet.xyz'
+    : 'https://api.hyperliquid.xyz'
 }
 
 function getHyperliquidAccountAddressFromEnv(): string {
@@ -35,6 +35,29 @@ function getHyperliquidAccountAddressFromEnv(): string {
 
 function getHyperliquidWalletApiKeyFromEnv(): string {
   return process.env.HYPERLIQUID_WALLET_API_KEY || ''
+}
+
+function getHyperliquidPrivateKeyFromEnv(): string {
+  return process.env.HYPERLIQUID_PRIVATE_KEY || ''
+}
+
+function getHyperliquidMarketFromEnv(): string {
+  return process.env.HYPERLIQUID_MARKET || 'FUTURES'
+}
+
+function getHyperliquidDefaultLeverageFromEnv(): number {
+  const leverage = parseFloat(process.env.HYPERLIQUID_DEFAULT_LEVERAGE || '5')
+  return isNaN(leverage) ? 5 : leverage
+}
+
+function getHyperliquidMaxPositionSizeFromEnv(): number {
+  const size = parseFloat(process.env.HYPERLIQUID_MAX_POSITION_SIZE || '1000')
+  return isNaN(size) ? 1000 : size
+}
+
+function getHyperliquidRiskPercentageFromEnv(): number {
+  const risk = parseFloat(process.env.HYPERLIQUID_RISK_PERCENTAGE || '1.0')
+  return isNaN(risk) ? 1.0 : risk
 }
 
 // Cache for trading config to avoid reloading
@@ -114,36 +137,6 @@ export function getTradingConfig(): TradingConfig | null {
   return config
 }
 
-/**
- * Get AI provider name
- */
-export function getAIProvider(): string {
-  return getAIProviderFromEnv()
-}
-
-/**
- * Get AI model ID
- */
-export function getAIModel(): string {
-  const modelId = getModelIdFromEnv()
-  if (!modelId) {
-    throw new Error('MODEL_ID not found in environment variables')
-  }
-  return modelId
-}
-
-/**
- * Get AI provider API key
- */
-export function getAIProviderApiKey(): string {
-  const apiKey = getAIProviderApiKeyFromEnv()
-  if (!apiKey) {
-    const provider = getAIProviderFromEnv()
-    const keyName = (provider === 'openrouter' || provider.toLowerCase() === 'openrouter') ? 'OPENROUTER_API_KEY' : 'AI_PROVIDER_API_KEY'
-    throw new Error(`${keyName} is required`)
-  }
-  return apiKey
-}
 
 /**
  * Get Hyperliquid API URL
@@ -164,6 +157,62 @@ export function getHyperliquidAccountAddress(): string {
  */
 export function getHyperliquidWalletApiKey(): string {
   return getHyperliquidWalletApiKeyFromEnv()
+}
+
+/**
+ * Get Hyperliquid private key
+ */
+export function getHyperliquidPrivateKey(): string {
+  return getHyperliquidPrivateKeyFromEnv()
+}
+
+/**
+ * Get Hyperliquid market type (SPOT, FUTURES, or BOTH)
+ */
+export function getHyperliquidMarket(): string {
+  return getHyperliquidMarketFromEnv()
+}
+
+/**
+ * Get Hyperliquid default leverage
+ */
+export function getHyperliquidDefaultLeverage(): number {
+  return getHyperliquidDefaultLeverageFromEnv()
+}
+
+/**
+ * Get Hyperliquid max position size
+ */
+export function getHyperliquidMaxPositionSize(): number {
+  return getHyperliquidMaxPositionSizeFromEnv()
+}
+
+/**
+ * Get Hyperliquid risk percentage
+ */
+export function getHyperliquidRiskPercentage(): number {
+  return getHyperliquidRiskPercentageFromEnv()
+}
+
+/**
+ * Get complete Hyperliquid configuration
+ */
+export function getHyperliquidConfig() {
+  const isTestnet = process.env.HYPERLIQUID_TESTNET === 'true' ||
+                   process.env.HYPERLIQUID_NETWORK === 'testnet'
+
+  return {
+    network: isTestnet ? 'testnet' : 'mainnet',
+    apiUrl: getHyperliquidApiUrl(),
+    market: getHyperliquidMarket(),
+    privateKey: getHyperliquidPrivateKey(),
+    walletApiKey: getHyperliquidWalletApiKey(),
+    accountAddress: getHyperliquidAccountAddress(),
+    defaultLeverage: getHyperliquidDefaultLeverage(),
+    maxPositionSize: getHyperliquidMaxPositionSize(),
+    riskPercentage: getHyperliquidRiskPercentage(),
+    isTestnet
+  }
 }
 
 /**

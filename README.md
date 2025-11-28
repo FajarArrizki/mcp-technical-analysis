@@ -41,12 +41,12 @@ A comprehensive Model Context Protocol (MCP) server that bridges AI assistants w
 
 ## 🌟 **What's Included**
 
-### 📊 **81+ Complete Analysis Tools**
+### 📊 **80 Complete Analysis Tools**
 - **Price Tools** (2): Real-time pricing for single/multiple assets
 - **Technical Analysis** (2): 20+ indicators (RSI, EMA, MACD, Bollinger Bands, ATR, ADX, etc.)
 - **Volume Analysis** (2): Buy/sell pressure, CVD, liquidity zones analysis
 - **Multi-Timeframe** (2): Daily, 4H, 1H trend alignment analysis
-- **Advanced Analysis** (3): Fibonacci, Order Book Depth, Liquidation Levels
+- **Advanced Analysis** (4): Fibonacci, Order Book Depth, Liquidation Levels, Market Regime
 - **Market Analysis** (8): Volume Profile, Market Structure, Candlestick Patterns, Divergence, Long/Short Ratio, Spot-Futures Divergence, External Data
 - **Risk Management** (2): Position sizing, stop loss, take profit calculations
 - **Comprehensive Analysis** (2): Complete crypto analysis with position setup
@@ -208,7 +208,7 @@ nameserver 1.0.0.1
 
 ## 📦 MCP Capabilities
 
-### 🔧 Tools (81+)
+### 🔧 Tools (80)
 
 | Tool Name | Description |
 |-----------|-------------|
@@ -223,6 +223,7 @@ nameserver 1.0.0.1
 | `get_volume_profile` | Get volume profile analysis for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"]) |
 | **Market Structure & Patterns** | |
 | `get_market_structure` | Get market structure analysis for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"]) |
+| `get_market_regime` | Get market regime analysis (trending/choppy/volatile) for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"]) |
 | `get_candlestick_patterns` | Get candlestick pattern detection for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"]) |
 | `get_divergence` | Get RSI divergence detection for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"]) |
 | `get_liquidation_levels` | Get liquidation level analysis for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"]) |
@@ -374,7 +375,7 @@ nameserver 1.0.0.1
 
 ```
 ╔═══════════════════════════════════════════════════════════════════════╗
-║                     MCP Technical Analysis Server                      ║
+║                     MCP Technical Analysis Server                     ║
 ║                  AI-Powered Cryptocurrency Analysis                   ║
 ╠═══════════════════════════════════════════════════════════════════════╣
 ║                                                                       ║
@@ -389,7 +390,7 @@ nameserver 1.0.0.1
 ║                                       │                               ║
 ║                                       ▼                               ║
 ║  ┌─────────────────────────────────────────────────────────────────┐  ║
-║  │                  Core MCP Server (81 Tools)                     │  ║
+║  │                  Core MCP Server (80 Tools)                     │  ║
 ║  │  ┌───────────────────────┐  ┌───────────────────────────────┐   │  ║
 ║  │  │   Analysis Engine     │  │       Resources (20)          │   │  ║
 ║  │  │  ┌───────────────────┐│  │  ┌─────────────────────────┐  │   │  ║
@@ -413,13 +414,13 @@ nameserver 1.0.0.1
 ║                                       │                               ║
 ║                                       ▼                               ║
 ║  ┌─────────────────────────────────────────────────────────────────┐  ║
-║  │              Data Sources & AI Integration                      │  ║
+║  │              Data Sources & Analysis Engine                     │  ║
 ║  │  ┌───────────────────────┐  ┌───────────────────────────────┐   │  ║
-║  │  │   Market Data APIs    │  │      AI Providers             │   │  ║
+║  │  │   Market Data APIs    │  │    Analysis Components        │   │  ║
 ║  │  │  ┌───────────────────┐│  │  ┌─────────────────────────┐  │   │  ║
-║  │  │  │ Hyperliquid       ││  │  │ OpenRouter              │  │   │  ║
-║  │  │  │ Binance           ││  │  │ OpenAI                  │  │   │  ║
-║  │  │  │ Real-time Data    ││  │  │ Custom Models           │  │   │  ║
+║  │  │  │ Hyperliquid       ││  │  │ Analysis Engine         │  │   │  ║
+║  │  │  │ Binance           ││  │  │ Technical Indicators    │  │   │  ║
+║  │  │  │ Real-time Data    ││  │  │ Market Intelligence     │  │   │  ║
 ║  │  │  └───────────────────┘│  │  └─────────────────────────┘  │   │  ║
 ║  │  └───────────────────────┘  └───────────────────────────────┘   │  ║
 ║  └─────────────────────────────────────────────────────────────────┘  ║
@@ -442,7 +443,7 @@ nameserver 1.0.0.1
 ### Component Details
 
 **🎯 MCP Protocol Layer**
-- **Tool Execution**: 81+ specialized analysis tools for comprehensive market intelligence
+- **Tool Execution**: 80 specialized analysis tools for comprehensive market intelligence
 - **Resource Management**: 20 detailed documentation resources for research and education
 - **Prompt System**: 24 AI-optimized prompts for structured analysis workflows
 
@@ -453,14 +454,15 @@ nameserver 1.0.0.1
 - **No Credentials Required**: Zero wallet or API key dependencies for core functionality
 
 **📊 Analysis Engine Components**
-- **Technical Indicators**: 70+ indicators across momentum, volume, volatility, and trend analysis
-- **Market Structure**: Advanced change-of-character detection and fractal analysis
-- **Risk Management**: Position sizing and stop-loss calculations for research purposes
+- **Technical Indicators**: 70+ indicators across momentum, volume, volatility, and trend analysis with correlation and market breadth indicators
+- **Market Structure**: Advanced change-of-character detection, market regime analysis, and fractal analysis
+- **Enhanced Analytics**: Bounce analysis, trend detection, correlation coefficients, and multi-timeframe analysis
+- **Risk Management**: Position sizing, stop-loss, take-profit, and trailing stop calculations for research purposes
 - **Multi-Timeframe**: Cross-timeframe trend alignment and confirmation signals
 
 **🌐 Data Integration**
 - **Real-time Market Data**: Live price feeds from Hyperliquid and Binance
-- **AI Enhancement**: OpenRouter and OpenAI integration for intelligent analysis
+- **Advanced Analytics**: Comprehensive technical analysis and market intelligence
 - **Streaming Architecture**: Server-sent events for real-time data updates
 - **Cloud Deployment**: Global CDN distribution via Cloudflare Workers
 
@@ -471,7 +473,7 @@ GEARTRADE/
 ├── packages/
 │   └── geartrade-mcp-server/               # Main MCP server package
 │       ├── src/
-│       │   ├── index.ts                    # MCP server entry (81+ tools, 20 resources, 24 prompts)
+│       │   ├── index.ts                    # MCP server entry (80 tools, 20 resources, 24 prompts)
 │       │   └── signal-generation/          # Analysis engine modules
 │       │       ├── ai/                     # AI integration
 │       │       ├── analysis/               # Market analysis modules
@@ -508,7 +510,7 @@ GEARTRADE/
 
 | Directory | Description |
 |-----------|-------------|
-| `packages/geartrade-mcp-server/src/index.ts` | Main MCP server entry with 81+ analysis tools, 20 resources, 24 prompts |
+| `packages/geartrade-mcp-server/src/index.ts` | Main MCP server entry with 80 analysis tools, 20 resources, 24 prompts |
 | `packages/geartrade-mcp-server/local-server.ts` | HTTP/SSE streaming server for remote MCP client connections |
 | `packages/geartrade-mcp-server/package.json` | MCP server package configuration and dependencies |
 | `packages/geartrade-mcp-server/tsconfig.json` | TypeScript configuration for MCP server compilation |
@@ -517,7 +519,7 @@ GEARTRADE/
 | `packages/geartrade-mcp-server/src/signal-generation/technical-indicators/` | Technical indicator implementations (70+ indicators) |
 | `packages/geartrade-mcp-server/src/signal-generation/data-fetchers/` | Multi-source market data fetchers (Hyperliquid, Binance, etc.) |
 | `packages/geartrade-mcp-server/src/signal-generation/risk-management/` | Risk assessment and position sizing calculations |
-| `packages/geartrade-mcp-server/src/signal-generation/ai/` | AI integration for enhanced market analysis |
+| `packages/geartrade-mcp-server/src/signal-generation/ai/` | Market analysis utilities |
 | `packages/geartrade-mcp-server/src/signal-generation/monitoring/` | Real-time market monitoring and alerts |
 | `scripts/` | Utility scripts for development and deployment |
 | `logs/` | Application logs and debugging information |
@@ -578,29 +580,9 @@ curl -X POST http://localhost:8787/mcp \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"get_price","arguments":{"ticker":"BTC"}}}'
 ```
 
-## 📄 License (MIT)
+## 📄 License
 
-MIT License
-
-Copyright (c) 2025 Fajar Arrizki
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+MIT
 
 ---
 

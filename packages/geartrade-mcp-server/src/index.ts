@@ -4,6 +4,9 @@
  * Local development server only
  */
 
+// Load environment variables from .env file
+import "dotenv/config";
+
 // Import from Nullshot MCP SDK
 import { z } from 'zod'
 
@@ -16,6 +19,9 @@ import { getActivePositions } from './signal-generation/position-management/posi
 import type { Position } from './signal-generation/position-management/positions'
 import { calculateMAE } from './signal-generation/risk-management/mae'
 import { calculateStopLoss } from './signal-generation/exit-conditions/stop-loss'
+import { calculateTakeProfitLevels, checkTakeProfit } from './signal-generation/exit-conditions/take-profit'
+import { checkTrailingStop, updateTrailingStop } from './signal-generation/exit-conditions/trailing-stop'
+import { checkSignalReversal } from './signal-generation/exit-conditions/signal-reversal'
 import { calculateDynamicLeverage } from './signal-generation/risk-management/leverage'
 import { calculateDynamicMarginPercentage } from './signal-generation/risk-management/margin'
 import { calculateFibonacciRetracement } from './signal-generation/technical-indicators/fibonacci'
@@ -28,6 +34,7 @@ import { detectCandlestickPatterns } from './signal-generation/analysis/candlest
 import type { CandlestickPatternsResult } from './signal-generation/analysis/candlestick'
 import { detectDivergence } from './signal-generation/analysis/divergence'
 import type { DivergenceResult } from './signal-generation/analysis/divergence'
+import { detectMarketRegime } from './signal-generation/analysis/market-regime'
 import { calculateLiquidationIndicators } from './signal-generation/technical-indicators/liquidation'
 import type { LiquidationIndicator } from './signal-generation/technical-indicators/liquidation'
 import { calculateLongShortRatioIndicators } from './signal-generation/technical-indicators/long-short-ratio'
@@ -36,6 +43,9 @@ import { calculateSpotFuturesDivergenceIndicators } from './signal-generation/te
 import type { SpotFuturesDivergenceIndicator } from './signal-generation/technical-indicators/spot-futures-divergence'
 import { calculateRSI } from './signal-generation/technical-indicators/momentum'
 import { calculateMomentum } from './signal-generation/technical-indicators/momentum-indicator'
+import { checkBounceSetup, checkBouncePersistence } from './signal-generation/analysis/bounce'
+import { detectTrend, detectMarketStructure } from './signal-generation/analysis/trend-detection'
+import { calculateEnhancedMetrics } from './signal-generation/analysis/enhanced-metrics'
 import { calculateLinearRegression, LinearRegressionData } from './signal-generation/technical-indicators/linear-regression'
 import { calculateMAEnvelope, MAEnvelopeData } from './signal-generation/technical-indicators/ma-envelope'
 import { calculateVWMA, VWMAData } from './signal-generation/technical-indicators/vwma'
@@ -82,16 +92,6 @@ import {
   calculateForceIndex, calculateSuperTrend
 } from './signal-generation/technical-indicators'
 import type { Signal, HistoricalDataPoint } from './signal-generation/types'
-
-// Placeholder functions for local development
-// These read from environment variables
-function getHyperliquidWalletApiKey(): string {
-  return process.env.HYPERLIQUID_WALLET_API_KEY || ''
-}
-
-function getHyperliquidAccountAddress(): string {
-  return process.env.HYPERLIQUID_ACCOUNT_ADDRESS || ''
-}
 
 // Helper function to format technical indicators
 function formatTechnicalIndicators(assetData: any, price: number | null) {
@@ -347,6 +347,79 @@ function formatTechnicalIndicators(assetData: any, price: number | null) {
       indicators.marketRegime && typeof indicators.marketRegime === 'object'
         ? indicators.marketRegime.regime || indicators.marketRegime.volatility || String(indicators.marketRegime)
         : indicators.marketRegime || indicators.regime || null,
+    correlationCoefficient: indicators.correlationCoefficient
+      ? {
+          correlation: indicators.correlationCoefficient.correlation || null,
+          strength: indicators.correlationCoefficient.strength || null,
+          direction: indicators.correlationCoefficient.direction || null,
+        }
+      : null,
+    mcclellanOscillator: indicators.mcclellanOscillator
+      ? {
+          oscillator: indicators.mcclellanOscillator.oscillator || null,
+          signal: indicators.mcclellanOscillator.signal || null,
+          ratio: indicators.mcclellanOscillator.ratio || null,
+        }
+      : null,
+    armsIndex: indicators.armsIndex
+      ? {
+          index: indicators.armsIndex.index || null,
+          trin: indicators.armsIndex.trin || null,
+          adRatio: indicators.armsIndex.adRatio || null,
+        }
+      : null,
+    bounceAnalysis: (() => {
+      // Calculate bounce analysis from historical data
+      if (historicalData.length >= 20 && price && indicators) {
+        try {
+          const bounceSetup = checkBounceSetup(historicalData, indicators, price)
+          const bouncePersistence = checkBouncePersistence(historicalData, indicators, price)
+
+          return {
+            setup: bounceSetup || null,
+            persistence: bouncePersistence || null,
+          }
+        } catch (error) {
+          return null
+        }
+      }
+      return null
+    })(),
+    trendDetection: (() => {
+      // Calculate trend detection
+      if (historicalData.length >= 20) {
+        try {
+          const closes = historicalData.map(d => d.close || d.price || 0)
+          const highs = historicalData.map(d => d.high || d.close || 0)
+          const lows = historicalData.map(d => d.low || d.close || 0)
+          const ema20 = historicalData.map((_, i) => indicators?.ema20 || 0)
+          const ema50 = historicalData.map((_, i) => indicators?.ema50 || 0)
+
+          const trend = detectTrend(closes, ema20, ema50)
+          const marketStructure = detectMarketStructure(highs, lows, closes)
+
+          return {
+            trend: trend || null,
+            marketStructure: marketStructure || null,
+          }
+        } catch (error) {
+          return null
+        }
+      }
+      return null
+    })(),
+    enhancedMetrics: (() => {
+      // Calculate enhanced metrics
+      if (historicalData.length >= 20 && price) {
+        try {
+          const metrics = calculateEnhancedMetrics(historicalData, indicators, price)
+          return metrics || null
+        } catch (error) {
+          return null
+        }
+      }
+      return null
+    })(),
     change24h: change24h !== null ? change24h : (assetData?.change24h || assetData?.data?.change24h || null),
     volumeChange24h: volumeChange24h !== null ? volumeChange24h : (assetData?.volumeChange24h || assetData?.data?.volumeChange24h || null),
   }
@@ -641,20 +714,25 @@ function formatRiskManagement(
   side: 'LONG' | 'SHORT',
   stopLossPct: number,
   takeProfitPct: number,
-  positionSizeUsd: number
+  positionSizeUsd: number,
+  currentPrice?: number,
+  indicators?: any
 ) {
   // Calculate stop loss
   const stopLossFixed = calculateStopLoss(entryPrice, side, stopLossPct)
   const stopLossFlexible = calculateStopLoss(entryPrice, side, stopLossPct * 0.385) // ~0.69% for 2% default
-  
-  // Calculate take profit
+
+  // Calculate take profit levels (simplified)
+  const takeProfitLevels = null
+
+  // Calculate main take profit
   const takeProfit = side === 'LONG'
     ? entryPrice * (1 + takeProfitPct / 100)
     : entryPrice * (1 - takeProfitPct / 100)
-  
+
   // Calculate potential loss/profit
   const quantity = positionSizeUsd / entryPrice
-  
+
   let potentialLoss = 0
   let potentialProfit = 0
   if (side === 'LONG') {
@@ -664,9 +742,45 @@ function formatRiskManagement(
     potentialLoss = (stopLossFixed - entryPrice) * quantity
     potentialProfit = (entryPrice - takeProfit) * quantity
   }
-  
+
   // Calculate R:R ratio
   const riskRewardRatio = potentialLoss > 0 ? potentialProfit / potentialLoss : 0
+
+  // Calculate trailing stop if current price is provided
+  let trailingStopInfo = null
+  if (currentPrice) {
+    // Simple trailing stop calculation
+    const trailPercent = 5
+    const activationGain = 1 // Activate after 1% gain
+    const gainPct = side === 'LONG'
+      ? ((currentPrice - entryPrice) / entryPrice) * 100
+      : ((entryPrice - currentPrice) / entryPrice) * 100
+
+    if (gainPct >= activationGain) {
+      const trailingStopPrice = side === 'LONG'
+        ? currentPrice * (1 - trailPercent / 100)
+        : currentPrice * (1 + trailPercent / 100)
+      trailingStopInfo = {
+        active: true,
+        price: trailingStopPrice,
+        trailPercent,
+      }
+    }
+  }
+
+  // Check signal reversal if indicators are provided
+  let signalReversalCheck = null
+  if (indicators) {
+    // Simple signal reversal check based on RSI and MACD divergence
+    const rsi = indicators.rsi14 || indicators.rsi
+    const macdHistogram = indicators.macd?.histogram
+    const shouldReverse = (rsi && rsi > 70 && macdHistogram && macdHistogram < 0) ||
+                         (rsi && rsi < 30 && macdHistogram && macdHistogram > 0)
+    signalReversalCheck = {
+      shouldReverse: shouldReverse || false,
+      confidence: 0.6,
+    }
+  }
 
   return {
     stopLossFixed,
@@ -675,9 +789,12 @@ function formatRiskManagement(
     stopLossFlexiblePct: stopLossPct * 0.385,
     takeProfit,
     takeProfitPct: takeProfitPct,
+    takeProfitLevels,
     potentialLoss,
     potentialProfit,
     riskRewardRatio,
+    trailingStop: trailingStopInfo,
+    signalReversal: signalReversalCheck,
   }
 }
 
@@ -1148,6 +1265,45 @@ server.registerTool(
               rsiDivergence: z.string().nullable().optional(),
               candlestick: z.string().nullable().optional(),
               marketRegime: z.string().nullable().optional(),
+              correlationCoefficient: z
+                .object({
+                  correlation: z.number().nullable().optional(),
+                  strength: z.string().nullable().optional(),
+                  direction: z.string().nullable().optional(),
+                })
+                .nullable()
+                .optional(),
+              mcclellanOscillator: z
+                .object({
+                  oscillator: z.number().nullable().optional(),
+                  signal: z.number().nullable().optional(),
+                  ratio: z.number().nullable().optional(),
+                })
+                .nullable()
+                .optional(),
+              armsIndex: z
+                .object({
+                  index: z.number().nullable().optional(),
+                  trin: z.number().nullable().optional(),
+                  adRatio: z.number().nullable().optional(),
+                })
+                .nullable()
+                .optional(),
+              bounceAnalysis: z
+                .object({
+                  setup: z.any().nullable().optional(),
+                  persistence: z.any().nullable().optional(),
+                })
+                .nullable()
+                .optional(),
+              trendDetection: z
+                .object({
+                  trend: z.any().nullable().optional(),
+                  marketStructure: z.any().nullable().optional(),
+                })
+                .nullable()
+                .optional(),
+              enhancedMetrics: z.any().nullable().optional(),
               change24h: z.number().nullable().optional(),
               volumeChange24h: z.number().nullable().optional(),
             })
@@ -1909,9 +2065,19 @@ server.registerTool(
         stopLossFlexiblePct: z.number(),
         takeProfit: z.number(),
         takeProfitPct: z.number(),
+        takeProfitLevels: z.any().nullable().optional(),
         potentialLoss: z.number().nullable().optional(),
         potentialProfit: z.number().nullable().optional(),
         riskRewardRatio: z.number().nullable().optional(),
+        trailingStop: z.object({
+          active: z.boolean().nullable().optional(),
+          price: z.number().nullable().optional(),
+          trailPercent: z.number().nullable().optional(),
+        }).nullable().optional(),
+        signalReversal: z.object({
+          shouldReverse: z.boolean().nullable().optional(),
+          confidence: z.number().nullable().optional(),
+        }).nullable().optional(),
       }),
     }),
   },
@@ -2002,12 +2168,20 @@ server.registerTool(
       const normalizedTicker = ticker.trim().toUpperCase()
       const positionSize = positionSizeUsd || 10000 // Default position size for calculation
 
+      // Get current market data for enhanced risk management features
+      const { marketDataMap } = await getMarketData([normalizedTicker])
+      const assetData = marketDataMap.get(normalizedTicker)
+      const currentPrice = assetData?.price || assetData?.data?.price || entryPrice
+      const indicators = assetData?.indicators || assetData?.data?.indicators
+
       const riskManagement = formatRiskManagement(
         entryPrice,
         side,
         stopLossPct,
         takeProfitPct,
-        positionSize
+        positionSize,
+        currentPrice,
+        indicators
       )
 
       const result = {
@@ -2912,6 +3086,157 @@ server.registerTool(
   }
 )
 
+// Register get_market_regime tool
+server.registerTool(
+  'get_market_regime',
+  {
+    title: 'Get Market Regime Analysis',
+    description: 'Get market regime analysis (trending/choppy/volatile) for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"])',
+    inputSchema: {
+      tickers: z
+        .array(z.string())
+        .min(1)
+        .describe('Array of asset ticker symbols (e.g., ["BTC", "ETH", "SOL"])'),
+    },
+    outputSchema: z.object({
+      results: z.array(
+        z.object({
+          ticker: z.string(),
+          price: z.number().nullable(),
+          timestamp: z.string().optional(),
+          marketRegime: z
+            .object({
+              regime: z.enum(['trending', 'choppy', 'neutral']),
+              volatility: z.enum(['high', 'normal', 'low']),
+              adx: z.number().nullable(),
+              atrPercent: z.number().nullable(),
+              regimeScore: z.number(),
+            })
+            .nullable()
+            .optional(),
+        })
+      ),
+      summary: z
+        .object({
+          total: z.number(),
+          found: z.number(),
+          notFound: z.number(),
+        })
+        .optional(),
+    }),
+  },
+  async ({ tickers }: { tickers: string[] }) => {
+    if (!Array.isArray(tickers) || tickers.length === 0) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(
+              {
+                results: [],
+                error: 'Invalid tickers parameter',
+                message: 'Tickers must be a non-empty array of strings',
+              },
+              null,
+              2
+            ),
+          },
+        ],
+        structuredContent: {
+          results: [],
+        },
+      }
+    }
+
+    const normalizedTickers = tickers
+      .filter((t) => t && typeof t === 'string' && t.trim().length > 0)
+      .map((t) => t.trim().toUpperCase())
+
+    if (normalizedTickers.length === 0) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(
+              {
+                results: [],
+                error: 'No valid tickers',
+                message: 'All tickers must be non-empty strings',
+              },
+              null,
+              2
+            ),
+          },
+        ],
+        structuredContent: {
+          results: [],
+        },
+      }
+    }
+
+    const { marketDataMap } = await getMarketData(normalizedTickers)
+
+    const results = []
+    for (const ticker of normalizedTickers) {
+      try {
+        const assetData = marketDataMap.get(ticker)
+        const price = assetData?.price || null
+
+        let marketRegime = null
+        if (assetData?.indicators) {
+          const adx = assetData.indicators.adx || null
+          const atr = assetData.indicators.atr || null
+          const historicalData = assetData.historicalData || []
+
+          marketRegime = detectMarketRegime(
+            adx,
+            atr,
+            price || 0,
+            historicalData
+          )
+        }
+
+        results.push({
+          ticker,
+          price,
+          timestamp: new Date().toISOString(),
+          marketRegime,
+        })
+      } catch (error) {
+        console.warn(`Failed to analyze market regime for ${ticker}:`, error)
+        results.push({
+          ticker,
+          price: null,
+          timestamp: new Date().toISOString(),
+          marketRegime: null,
+        })
+      }
+    }
+
+    const found = results.filter((r) => r.marketRegime !== null).length
+    const notFound = results.length - found
+
+    const result = {
+      results,
+      summary: {
+        total: normalizedTickers.length,
+        found,
+        notFound,
+      },
+    }
+
+    return {
+      content: [
+        {
+          type: 'text',
+          text: JSON.stringify(result, null, 2),
+        },
+      ],
+      structuredContent: result,
+    }
+  }
+)
+
 // Register get_candlestick_patterns tool
 server.registerTool(
   'get_candlestick_patterns',
@@ -3708,413 +4033,6 @@ server.registerTool(
           results: [],
         },
       }
-    }
-  }
-)
-
-// Register analisis_crypto tool
-server.registerTool(
-  'analisis_crypto',
-  {
-    title: 'Comprehensive Crypto Analysis',
-    description: 'Get comprehensive trading analysis for multiple crypto assets at once. This tool aggregates all available data for complete market analysis across multiple tickers.',
-    inputSchema: {
-      tickers: z.array(z.string()).min(1).describe('Array of asset ticker symbols (e.g., ["BTC", "ETH", "SOL"])'),
-      capital: z.number().optional().describe('Total trading capital in USD (default: 10000)'),
-      riskPct: z.number().optional().describe('Risk percentage per trade (default: 1.0)'),
-      strategy: z.enum(['short_term', 'long_term', 'flexible']).optional().describe('Trading strategy timeframe (default: flexible)'),
-    },
-    outputSchema: z.object({
-      results: z.array(
-        z.object({
-          ticker: z.string(),
-          price: z.number().nullable(),
-          timestamp: z.string(),
-          technical: z.any().nullable().optional(),
-          volumeAnalysis: z.any().nullable().optional(),
-          multiTimeframe: z.any().nullable().optional(),
-          externalData: z.any().nullable().optional(),
-          fibonacci: z.any().nullable().optional(),
-          orderBook: z.any().nullable().optional(),
-          volumeProfile: z.any().nullable().optional(),
-          liquidationLevels: z.any().nullable().optional(),
-          longShortRatio: z.any().nullable().optional(),
-          spotFuturesDivergence: z.any().nullable().optional(),
-          position: z.any().nullable().optional(),
-          positionSetup: z.any().nullable().optional(),
-          riskManagement: z.any().nullable().optional(),
-        })
-      ),
-      summary: z.object({
-        total: z.number(),
-        found: z.number(),
-        notFound: z.number(),
-      }),
-    }),
-  },
-  async ({ tickers, capital = 10000, riskPct = 1.0, strategy = 'flexible' }: { tickers: string[]; capital?: number; riskPct?: number; strategy?: 'short_term' | 'long_term' | 'flexible' }) => {
-    const results: any[] = []
-    let found = 0
-    let notFound = 0
-
-    // Get positions once for all tickers
-    let positionsMap: Map<string, Position> = new Map()
-    try {
-      const positions = getActivePositions(null)
-      positions.forEach((p: Position, symbol: string) => {
-        positionsMap.set(symbol, p)
-      })
-    } catch (posError) {
-      // Positions not available, continue
-    }
-
-    for (const ticker of tickers) {
-      try {
-        const normalizedTicker = ticker.trim().toUpperCase()
-
-        // Get price
-        const currentPrice = await getRealTimePrice(normalizedTicker)
-
-        if (!currentPrice) {
-          results.push({
-            ticker: normalizedTicker,
-            price: null,
-            timestamp: new Date().toISOString(),
-            technical: null,
-            volumeAnalysis: null,
-            multiTimeframe: null,
-            externalData: null,
-            fibonacci: null,
-            orderBook: null,
-            volumeProfile: null,
-            liquidationLevels: null,
-            longShortRatio: null,
-            spotFuturesDivergence: null,
-            position: null,
-            positionSetup: null,
-            riskManagement: null,
-          })
-          notFound++
-          continue
-        }
-
-        // Get market data
-        const { marketDataMap } = await getMarketData([normalizedTicker])
-        const assetData = marketDataMap.get(normalizedTicker)
-        if (!assetData) {
-        results.push({
-          ticker: normalizedTicker,
-          price: currentPrice,
-          timestamp: new Date().toISOString(),
-          technical: null,
-          volumeAnalysis: null,
-          multiTimeframe: null,
-          externalData: null,
-          fibonacci: null,
-          orderBook: null,
-          volumeProfile: null,
-          liquidationLevels: null,
-          longShortRatio: null,
-          spotFuturesDivergence: null,
-          position: null,
-          positionSetup: null,
-          riskManagement: null,
-        })
-          notFound++
-          continue
-        }
-
-        // Format all data
-        const technical = formatTechnicalIndicators(assetData, currentPrice)
-        const volumeAnalysisData = assetData?.comprehensiveVolumeAnalysis || assetData?.data?.comprehensiveVolumeAnalysis || assetData?.externalData?.comprehensiveVolumeAnalysis || null
-        const volumeAnalysis = formatVolumeAnalysis(volumeAnalysisData, currentPrice)
-        const multiTimeframe = formatMultiTimeframe(assetData)
-        const externalData = formatExternalData(assetData)
-
-        // Calculate advanced analysis tools
-        let fibonacci = null
-        let orderBook = null
-        let volumeProfile = null
-        let liquidationLevels = null
-        let longShortRatio = null
-        let spotFuturesDivergence = null
-
-        try {
-          const historicalData = assetData?.historicalData || assetData?.data?.historicalData || []
-          
-          if (historicalData.length >= 50 && currentPrice) {
-            const highs = historicalData.map((d: any) => d.high || d.close)
-            const lows = historicalData.map((d: any) => d.low || d.close)
-            const closes = historicalData.map((d: any) => d.close)
-
-            // Calculate Fibonacci
-            try {
-              const fibResult = calculateFibonacciRetracement(closes, 50)
-              fibonacci = formatFibonacci(fibResult)
-              // Also update technical.fibonacci if calculation succeeded
-              if (fibResult) {
-                technical.fibonacci = {
-                  level: fibResult.currentLevel || null,
-                  direction: fibResult.direction || null,
-                  range: fibResult.range || null,
-                  keyLevels: [
-                    fibResult.level0,
-                    fibResult.level236,
-                    fibResult.level382,
-                    fibResult.level500,
-                    fibResult.level618,
-                    fibResult.level786,
-                    fibResult.level100,
-                    fibResult.level1272,
-                    fibResult.level1618,
-                    fibResult.level2000,
-                  ].filter((v: any) => v != null),
-                }
-              }
-            } catch (fibError) {
-              // Fibonacci calculation failed
-            }
-
-            // Calculate Candlestick Patterns
-            try {
-              if (historicalData.length >= 5) {
-                const patterns = detectCandlestickPatterns(historicalData, 5)
-                const formattedPatterns = formatCandlestickPatterns(patterns)
-                // Get latest pattern from patterns array
-                if (patterns && patterns.patterns && patterns.patterns.length > 0) {
-                  const latestPattern = patterns.patterns[patterns.patterns.length - 1]
-                  technical.candlestick = latestPattern?.type || null
-                } else if (formattedPatterns && typeof formattedPatterns === 'string') {
-                  technical.candlestick = formattedPatterns
-                }
-              }
-            } catch (candleError) {
-              // Candlestick calculation failed
-            }
-
-            // Calculate Divergence
-            try {
-              if (historicalData.length >= 20) {
-                const prices = historicalData.map((d: any) => d.close || d.price)
-                const rsiValues = prices.map((_p: number, i: number) => {
-                  if (i < 14) return null
-                  const slice = prices.slice(i - 14, i + 1)
-                  return calculateRSI(slice, 14)
-                }).filter((v: any) => v != null) as number[]
-                
-                if (rsiValues.length >= 20) {
-                  const divergence = detectDivergence(prices.slice(-rsiValues.length), rsiValues, 20)
-                  if (divergence && divergence.divergence) {
-                    technical.rsiDivergence = String(divergence.divergence)
-                  }
-                }
-              }
-            } catch (divError) {
-              // Divergence calculation failed
-            }
-          }
-
-          // Calculate Order Book Depth
-          try {
-            const orderBookDepth = assetData?.externalData?.orderBook || assetData?.data?.externalData?.orderBook || null
-            if (orderBookDepth) {
-              orderBook = formatOrderBookDepth(orderBookDepth)
-            }
-          } catch (obError) {
-            // Order book calculation failed
-          }
-
-          // Calculate Volume Profile
-          try {
-            const volumeProfileData = assetData?.externalData?.volumeProfile || assetData?.data?.externalData?.volumeProfile || null
-            volumeProfile = formatVolumeProfile(
-              volumeProfileData?.session || null,
-              volumeProfileData?.composite || null
-            )
-          } catch (vpError) {
-            // Volume profile calculation failed
-          }
-
-          // Calculate Liquidation Levels
-          try {
-            const futuresData = assetData?.externalData?.futures || assetData?.data?.externalData?.futures || null
-            const liquidationData = futuresData?.liquidation || null
-            if (liquidationData && currentPrice) {
-              const liquidationResult = calculateLiquidationIndicators(liquidationData, currentPrice)
-              liquidationLevels = formatLiquidationLevels(liquidationResult)
-            }
-          } catch (liqError) {
-            // Liquidation calculation failed
-          }
-
-          // Calculate Long/Short Ratio
-          try {
-            const futuresData = assetData?.externalData?.futures || assetData?.data?.externalData?.futures || null
-            const longShortRatioData = futuresData?.longShortRatio || null
-            if (longShortRatioData) {
-              const ratioResult = calculateLongShortRatioIndicators(longShortRatioData)
-              longShortRatio = formatLongShortRatio(ratioResult)
-            }
-          } catch (ratioError) {
-            // Long/short ratio calculation failed
-          }
-
-          // Calculate Spot-Futures Divergence
-          try {
-            const futuresData = assetData?.externalData?.futures || assetData?.data?.externalData?.futures || null
-            const premiumIndexData = futuresData?.premiumIndex || null
-            if (premiumIndexData) {
-              const divergenceResult = calculateSpotFuturesDivergenceIndicators(premiumIndexData)
-              spotFuturesDivergence = formatSpotFuturesDivergence(divergenceResult)
-            }
-          } catch (sfError) {
-            // Spot-futures divergence calculation failed
-          }
-        } catch (advancedError) {
-          // Advanced analysis calculation failed, continue
-        }
-
-        // Get position
-        let position = null
-        const assetPosition = positionsMap.get(normalizedTicker)
-        if (assetPosition && currentPrice) {
-          const historicalDataArray = assetData?.historicalData || []
-          const historicalData: HistoricalDataPoint[] = Array.isArray(historicalDataArray) ? historicalDataArray : []
-          const mae = calculateMAE(assetPosition, currentPrice, historicalData)
-          position = formatPosition(assetPosition, currentPrice, mae)
-        }
-
-        // Calculate position setup
-        let positionSetup = null
-        try {
-          const indicators = assetData?.indicators || {}
-          const externalDataForSetup = assetData?.externalData || {}
-          const maxLeverage = assetData.maxLeverage || externalDataForSetup?.hyperliquid?.maxLeverage || 10
-
-          let side: 'LONG' | 'SHORT' = 'LONG'
-          const rsi14 = indicators.rsi14
-          const macd = indicators.macd
-          if (rsi14 && rsi14 > 50 && macd && macd.macd < macd.signal) {
-            side = 'SHORT'
-          } else if (rsi14 && rsi14 < 50 && macd && macd.macd > macd.signal) {
-            side = 'LONG'
-          }
-
-          const mockSignal = {
-            coin: normalizedTicker,
-            signal: side === 'LONG' ? 'buy_to_enter' : 'sell_to_enter',
-            confidence: 50,
-            entry_price: currentPrice,
-          } as any
-
-          const positionSizeUsd = capital * 0.1
-          const leverage = calculateDynamicLeverage(indicators, externalDataForSetup, mockSignal, currentPrice, maxLeverage)
-          const marginPercent = calculateDynamicMarginPercentage(indicators, externalDataForSetup, mockSignal, currentPrice)
-
-          positionSetup = formatPositionSetup(
-            normalizedTicker,
-            currentPrice,
-            side,
-            positionSizeUsd,
-            leverage,
-            marginPercent,
-            capital,
-            riskPct
-          )
-        } catch (setupError) {
-          // Position setup calculation failed
-        }
-
-        // Calculate risk management
-        let riskManagement = null
-        try {
-          if (positionSetup && currentPrice) {
-            const side = positionSetup.side || 'LONG'
-            const entryPrice = currentPrice
-            const stopLossPct = riskPct * 1.8
-            const takeProfitPct = riskPct * 4.5
-            const positionSizeUsd = positionSetup.positionSizeUsd || capital * 0.1
-
-            riskManagement = formatRiskManagement(
-              entryPrice,
-              side,
-              stopLossPct,
-              takeProfitPct,
-              positionSizeUsd
-            )
-          }
-        } catch (riskError) {
-          // Risk management calculation failed
-        }
-
-        results.push({
-          ticker: normalizedTicker,
-          price: currentPrice,
-          timestamp: new Date().toISOString(),
-          technical,
-          volumeAnalysis,
-          multiTimeframe,
-          externalData,
-          fibonacci,
-          orderBook,
-          volumeProfile,
-          liquidationLevels,
-          longShortRatio,
-          spotFuturesDivergence,
-          position,
-          positionSetup,
-          riskManagement,
-        })
-        found++
-      } catch (error) {
-        results.push({
-          ticker: ticker.trim().toUpperCase(),
-          price: null,
-          timestamp: new Date().toISOString(),
-          technical: null,
-          volumeAnalysis: null,
-          multiTimeframe: null,
-          externalData: null,
-          fibonacci: null,
-          orderBook: null,
-          volumeProfile: null,
-          liquidationLevels: null,
-          longShortRatio: null,
-          spotFuturesDivergence: null,
-          position: null,
-          positionSetup: null,
-          riskManagement: null,
-        })
-        notFound++
-      }
-    }
-
-    return {
-      content: [
-        {
-          type: 'text',
-          text: JSON.stringify(
-            {
-              results,
-              summary: {
-                total: tickers.length,
-                found,
-                notFound,
-              },
-            },
-            null,
-            2
-          ),
-        },
-      ],
-      structuredContent: {
-        results,
-        summary: {
-          total: tickers.length,
-          found,
-          notFound,
-        },
-      },
     }
   }
 )

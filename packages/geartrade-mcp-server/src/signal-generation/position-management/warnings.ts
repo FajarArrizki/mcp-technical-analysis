@@ -1,41 +1,38 @@
 /**
- * Warning Collection
- * collectWarning, signalWarnings functions
+ * Position Warnings - Stub implementation
+ * Simplified version for MCP compatibility
  */
 
-export interface SignalWarning {
-  asset: string
+export interface WarningData {
   message: string
-  details: string[] | null
+  severity: 'low' | 'medium' | 'high' | 'critical'
+  category: string
   timestamp: number
-}
-
-// Global warnings collection for signal processing
-export const signalWarnings: SignalWarning[] = []
-
-/**
- * Helper function to collect warnings instead of printing immediately
- */
-export function collectWarning(asset: string, message: string, details: string[] | null = null): void {
-  signalWarnings.push({
-    asset,
-    message,
-    details,
-    timestamp: Date.now()
-  })
+  metadata?: Record<string, any>
 }
 
 /**
- * Clear all warnings
+ * Collect warning - stub implementation
  */
-export function clearWarnings(): void {
-  signalWarnings.length = 0
+export function collectWarning(
+  asset: string,
+  message: string,
+  metadata?: any[],
+  severity: 'low' | 'medium' | 'high' | 'critical' = 'medium'
+): void {
+  console.warn(`[${asset}] ${message}`)
 }
 
 /**
- * Get all warnings for a specific asset
+ * Get warnings for asset - stub implementation
  */
-export function getWarningsForAsset(asset: string): SignalWarning[] {
-  return signalWarnings.filter(w => w.asset === asset)
+export function getWarningsForAsset(asset: string): WarningData[] {
+  return []
 }
 
+/**
+ * Clear warnings for asset - stub implementation
+ */
+export function clearWarningsForAsset(asset: string): void {
+  // No-op
+}
