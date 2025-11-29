@@ -182,28 +182,28 @@ nameserver 1.0.0.1
 
 ### Countries with Complete Bans
 
-| Country | Status | Year | Main Reason |
-|---------|--------|------|-------------|
-| United States | Banned | 2019 | Regulatory violations; Binance.US launched as compliant alternative |
-| Canada | Withdrew from market | 2023 | Strict regulations; $4.32 million fine for anti-money laundering violations (2024) |
-| United Kingdom | Banned | 2021-2023 | FCA revoked license for non-compliance with anti-money laundering rules; total license revocation in 2023 |
-| Netherlands | Withdrew from market | 2023 | Failed to obtain regulatory approval; €3.3 million fine for unlicensed operations (2022) |
-| Nigeria | Declared illegal | 2023-2024 | SEC Nigeria declared Binance illegal; Executives arrested; Naira services deactivated |
-| Belgium | Banned | 2023 | Financial regulator ordered operations halt for non-compliance with EU financial laws |
-| Philippines | Blocked | 2024 | SEC blocked website (March 2024) for unlicensed operations; Attempts to block app |
-| Japan | Banned | 2021 | Financial Services Agency banned operations for being unregistered; AML violation complaints |
-| Thailand | Blocked | 2021 | SEC Thailand filed criminal complaints for unlicensed operations |
-| Malaysia | Not available | - | Listed in SC Malaysia's investor warning list |
-| Singapore | Restricted | 2021 | MAS banned Binance.com from recruiting Singapore users without license; IP geo-blocking |
-| Italy | Temporarily blocked | 2021 | CONSOB ordered blocking (July 2021); Obtained regulatory approval (May 2022) |
-| India | Blocked | 2024 | App removed from App Store and Google Play (January 2024); PMLA violations |
+| No | Country | Status | Year | Main Reason |
+|----|---------|--------|------|-------------|
+| 1 | United States | Banned | 2019 | Regulatory violations; Binance.US launched as compliant alternative |
+| 2 | Canada | Withdrew from market | 2023 | Strict regulations; $4.32 million fine for anti-money laundering violations (2024) |
+| 3 | United Kingdom | Banned | 2021-2023 | FCA revoked license for non-compliance with anti-money laundering rules; total license revocation in 2023 |
+| 4 | Netherlands | Withdrew from market | 2023 | Failed to obtain regulatory approval; €3.3 million fine for unlicensed operations (2022) |
+| 5 | Nigeria | Declared illegal | 2023-2024 | SEC Nigeria declared Binance illegal; Executives arrested; Naira services deactivated |
+| 6 | Belgium | Banned | 2023 | Financial regulator ordered operations halt for non-compliance with EU financial laws |
+| 7 | Philippines | Blocked | 2024 | SEC blocked website (March 2024) for unlicensed operations; Attempts to block app |
+| 8 | Japan | Banned | 2021 | Financial Services Agency banned operations for being unregistered; AML violation complaints |
+| 9 | Thailand | Blocked | 2021 | SEC Thailand filed criminal complaints for unlicensed operations |
+| 10 | Malaysia | Not available | - | Listed in SC Malaysia's investor warning list |
+| 11 | Singapore | Restricted | 2021 | MAS banned Binance.com from recruiting Singapore users without license; IP geo-blocking |
+| 12 | Italy | Temporarily blocked | 2021 | CONSOB ordered blocking (July 2021); Obtained regulatory approval (May 2022) |
+| 13 | India | Blocked | 2024 | App removed from App Store and Google Play (January 2024); PMLA violations |
 
 ### Countries with Partial Restrictions
 
-| Country | Restriction Type | Details |
-|---------|------------------|---------|
-| China | Spot trading blocked | Excluding Hong Kong SAR and Taiwan |
-| Indonesia | No official license | Serves through local partner Tokocrypto regulated by Bappebti |
+| No | Country | Restriction Type | Details |
+|----|---------|------------------|---------|
+| 1 | China | Spot trading blocked | Excluding Hong Kong SAR and Taiwan |
+| 2 | Indonesia | No official license | Serves through local partner Tokocrypto regulated by Bappebti |
 
 **Note:** This information is for educational purposes. Always comply with local laws and regulations regarding cryptocurrency trading in your jurisdiction.
 
@@ -211,166 +211,166 @@ nameserver 1.0.0.1
 
 ### 🔧 Tools (80)
 
-| Tool Name | Description |
-|-----------|-------------|
-| **Price & Market Data** | |
-| `get_price` | Get latest prices for multiple trading tickers/symbols at once (e.g., ["BTC", "ETH", "SOL"]) |
-| `get_indicators` | Get comprehensive technical analysis indicators for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"]) |
-| `get_volume_analysis` | Get comprehensive volume analysis for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"]) |
-| `get_Multitimeframe` | Get multi-timeframe trend alignment analysis for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"]) |
-| `get_External_data` | Get external market data for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"]) |
-| **Order Book & Market Depth** | |
-| `get_orderbook_depth` | Get order book depth analysis for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"]) |
-| `get_volume_profile` | Get volume profile analysis for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"]) |
-| **Market Structure & Patterns** | |
-| `get_market_structure` | Get market structure analysis for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"]) |
-| `get_market_regime` | Get market regime analysis (trending/choppy/volatile) for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"]) |
-| `get_candlestick_patterns` | Get candlestick pattern detection for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"]) |
-| `get_divergence` | Get RSI divergence detection for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"]) |
-| `get_liquidation_levels` | Get liquidation level analysis for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"]) |
-| `get_long_short_ratio` | Get long/short ratio analysis for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"]) |
-| **Risk Management & Position Sizing** | |
-| `calculate_risk_management` | Calculate stop loss, take profit, and risk/reward ratio for a trading position |
-| `calculate_position_setup` | Calculate position size, leverage, margin, and quantity for a trading signal |
-| **Comprehensive Analysis** | |
-| `analisis_crypto` | Get comprehensive trading analysis for multiple crypto assets at once. This tool aggregates all available data for complete market analysis across multiple tickers. |
-| **Moving Averages & Trend Indicators** | |
-| `ma_envelope` | Calculate moving average envelopes for volatility-based support/resistance and overbought/oversold signals |
-| `vwma` | Calculate volume-weighted moving average that gives more weight to periods with higher volume |
-| `mcginley_dynamic` | Calculate adaptive moving average that adjusts to market volatility and reduces lag compared to traditional MAs |
-| `rainbow_ma` | Calculate multiple moving averages with different periods for comprehensive trend visualization and alignment analysis |
-| `kaufman_adaptive_ma` | Calculate adaptive moving average that adjusts smoothing based on market efficiency and volatility |
-| `hull_moving_average` | Calculate Hull Moving Average that reduces lag while maintaining smoothness for better trend identification |
-| `weighted_moving_average` | Calculate Weighted Moving Average that gives more weight to recent prices for responsive trend analysis |
-| `smoothed_moving_average` | Calculate Smoothed Moving Average that provides smooth trend following with reduced noise |
-| `double_exponential_moving_average` | Calculate Double Exponential Moving Average that reduces lag compared to traditional EMA |
-| `triple_exponential_moving_average` | Calculate Triple Exponential Moving Average that further reduces lag and provides smooth trend signals |
-| **Momentum & Oscillator Indicators** | |
-| `detrended_price_oscillator` | Calculate detrended price oscillator that removes trend from price data to identify cycles and overbought/oversold conditions |
-| `relative_vigor_index` | Calculate Relative Vigor Index that compares close vs open momentum to identify trend strength and reversals |
-| `gator_oscillator` | Calculate Gator Oscillator that shows convergence/divergence of Alligator lines and identifies trend strength |
-| `elder_ray` | Calculate Elder-Ray Index that measures buying and selling pressure using Bull Power and Bear Power |
-| `fisher_transform` | Calculate Fisher Transform that normalizes price data using Gaussian distribution for sharp reversal signals |
-| `know_sure_thing` | Calculate Know Sure Thing oscillator that combines multiple timeframe ROC calculations for momentum analysis |
-| `chande_momentum_oscillator` | Calculate Chande Momentum Oscillator that measures momentum on both up and down moves with range of -100 to +100 |
-| `bull_bear_power` | Calculate Bull Bear Power that measures the strength of bulls vs bears using price action and volume |
-| `true_strength_index` | Calculate True Strength Index that uses double-smoothed momentum to reduce noise and provide clearer signals |
-| `percentage_price_oscillator` | Calculate Percentage Price Oscillator that expresses MACD as a percentage for better cross-asset comparability |
-| `accelerator_oscillator` | Calculate Accelerator Oscillator from Bill Williams trading system that measures acceleration/deceleration of momentum |
-| `schaff_trend_cycle` | Calculate Schaff Trend Cycle that combines MACD with Stochastic oscillator and double smoothing for early trend signals |
-| `coppock_curve` | Calculate Coppock Curve that combines two ROC periods for identifying major market bottoms and long-term momentum |
-| `stochastic_rsi` | Calculate Stochastic RSI that applies stochastic oscillator formula to RSI values |
-| `money_flow_index` | Calculate Money Flow Index that uses price and volume to measure buying and selling pressure |
-| `ultimate_oscillator` | Calculate Ultimate Oscillator that combines three different timeframes to reduce false signals |
-| `balance_of_power` | Calculate Balance of Power that measures the strength of buyers vs sellers by analyzing the relationship between price close and range |
-| **Volume & Flow Indicators** | |
-| `klinger_oscillator` | Calculate Klinger Volume Oscillator that combines volume and price action for volume-based trend analysis |
-| `volume_oscillator` | Calculate Volume Oscillator that compares short-term and long-term volume moving averages to identify volume trends |
-| `ease_of_movement` | Calculate Ease of Movement that measures how easily price moves by combining price change and volume |
-| `price_volume_trend` | Calculate Price Volume Trend that accumulates volume based on price percentage changes |
-| `positive_volume_index` | Calculate Positive Volume Index that accumulates price changes on days when volume increases from the previous day |
-| `volume_roc` | Calculate Volume Rate of Change that measures the percentage change in volume over a specified period |
-| `anchored_vwap` | Calculate Anchored VWAP that computes volume-weighted average price from a specific anchor point instead of session start |
-| `chaikin_money_flow` | Calculate Chaikin Money Flow that provides volume-weighted measure of accumulation/distribution over a specified period |
-| `volume_zone_oscillator` | Calculate Volume Zone Oscillator that analyzes volume distribution across price zones to identify accumulation/distribution patterns |
-| `chaikin_volatility` | Calculate Chaikin Volatility that measures the rate of change of the trading range over a specified period |
-| **Volatility & Statistical Indicators** | |
-| `mass_index` | Calculate Mass Index that uses EMA of High-Low range to identify potential reversals when the index exceeds 27 |
-| `ulcer_index` | Calculate Ulcer Index that measures downside volatility and risk by focusing on drawdowns from recent highs |
-| `bollinger_percent_b` | Calculate Bollinger %B that shows where the price is relative to the Bollinger Bands |
-| `bollinger_band_width` | Calculate Bollinger Band Width that measures the distance between the upper and lower bands |
-| `historical_volatility` | Calculate Historical Volatility that measures the standard deviation of price changes over a specified period |
-| `trix` | Calculate TRIX (Triple Exponential Average) oscillator that shows the rate of change of a triple exponentially smoothed moving average |
-| `vortex` | Calculate Vortex Indicator that identifies the start of a new trend by comparing upward and downward price movements |
-| `center_of_gravity` | Calculate Center of Gravity oscillator that identifies potential reversal points based on weighted moving averages |
-| **Price Channels & Support/Resistance** | |
-| `price_channel` | Calculate price channels using highest high and lowest low for support/resistance and breakout signals |
-| `pivot_camarilla` | Calculate Camarilla Pivot Points for advanced support and resistance levels |
-| `fibonacci_retracement` | Calculate Fibonacci retracement levels for potential support and resistance zones |
-| `standard_pivot_points` | Calculate Standard Pivot Points for traditional support and resistance levels |
-| `keltner_channels` | Calculate Keltner Channels that combine moving averages with ATR for volatility-based support and resistance |
-| `donchian_channels` | Calculate Donchian Channels using highest high and lowest low over a specified period |
-| **Complex Indicators** | |
-| `alligator` | Calculate Alligator Indicator from Bill Williams trading system using three smoothed moving averages |
-| `awesome_oscillator` | Calculate Awesome Oscillator that shows momentum changes using simple moving averages of the median price |
-| `ichimoku_cloud` | Calculate Ichimoku Cloud for comprehensive trend analysis with multiple timeframe support/resistance |
-| `r_squared` | Calculate R-squared (coefficient of determination) to measure how well data fits a statistical model |
-| `momentum_indicator` | Calculate Momentum Indicator that measures the rate of price change over a specified period |
-| `rate_of_change` | Calculate Rate of Change that measures the percentage change in price over a specified period |
-| `force_index` | Calculate Force Index that combines price change direction with volume to measure buying/selling pressure |
-| `supertrend` | Calculate SuperTrend indicator that combines ATR and price action for trend-following stop levels |
-| `linear_regression` | Calculate linear regression line, slope, intercept, R-squared, and regression bands for trend analysis |
-| **Breadth & Market Indicators** | |
-| `advance_decline_line` | Calculate Advance Decline Line that measures market breadth by comparing advancing vs declining assets |
-| **Fractal & Pattern Recognition** | |
-| `fractals` | Calculate Bill Williams Fractals that identify potential reversal points in price action |
-| `zigzag_indicator` | Calculate ZigZag indicator that filters out market noise and shows significant price swings |
-| `trend_detection` | Detect market trends and change of character points using advanced market structure analysis |
-| **Price Action & Candlestick** | |
-| `chaikin_oscillator` | Calculate Chaikin Oscillator that combines accumulation/distribution with exponential moving averages |
+| No | Tool Name | Description |
+|----|-----------|-------------|
+| | **Price & Market Data** | |
+| 1 | `get_price` | Get latest prices for multiple trading tickers/symbols at once (e.g., ["BTC", "ETH", "SOL"]) |
+| 2 | `get_indicators` | Get comprehensive technical analysis indicators for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"]) |
+| 3 | `get_volume_analysis` | Get comprehensive volume analysis for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"]) |
+| 4 | `get_Multitimeframe` | Get multi-timeframe trend alignment analysis for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"]) |
+| 5 | `get_External_data` | Get external market data for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"]) |
+| | **Order Book & Market Depth** | |
+| 6 | `get_orderbook_depth` | Get order book depth analysis for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"]) |
+| 7 | `get_volume_profile` | Get volume profile analysis for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"]) |
+| | **Market Structure & Patterns** | |
+| 8 | `get_market_structure` | Get market structure analysis for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"]) |
+| 9 | `get_market_regime` | Get market regime analysis (trending/choppy/volatile) for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"]) |
+| 10 | `get_candlestick_patterns` | Get candlestick pattern detection for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"]) |
+| 11 | `get_divergence` | Get RSI divergence detection for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"]) |
+| 12 | `get_liquidation_levels` | Get liquidation level analysis for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"]) |
+| 13 | `get_long_short_ratio` | Get long/short ratio analysis for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"]) |
+| | **Risk Management & Position Sizing** | |
+| 14 | `calculate_risk_management` | Calculate stop loss, take profit, and risk/reward ratio for a trading position |
+| 15 | `calculate_position_setup` | Calculate position size, leverage, margin, and quantity for a trading signal |
+| | **Comprehensive Analysis** | |
+| 16 | `analisis_crypto` | Get comprehensive trading analysis for multiple crypto assets at once. This tool aggregates all available data for complete market analysis across multiple tickers. |
+| | **Moving Averages & Trend Indicators** | |
+| 17 | `ma_envelope` | Calculate moving average envelopes for volatility-based support/resistance and overbought/oversold signals |
+| 18 | `vwma` | Calculate volume-weighted moving average that gives more weight to periods with higher volume |
+| 19 | `mcginley_dynamic` | Calculate adaptive moving average that adjusts to market volatility and reduces lag compared to traditional MAs |
+| 20 | `rainbow_ma` | Calculate multiple moving averages with different periods for comprehensive trend visualization and alignment analysis |
+| 21 | `kaufman_adaptive_ma` | Calculate adaptive moving average that adjusts smoothing based on market efficiency and volatility |
+| 22 | `hull_moving_average` | Calculate Hull Moving Average that reduces lag while maintaining smoothness for better trend identification |
+| 23 | `weighted_moving_average` | Calculate Weighted Moving Average that gives more weight to recent prices for responsive trend analysis |
+| 24 | `smoothed_moving_average` | Calculate Smoothed Moving Average that provides smooth trend following with reduced noise |
+| 25 | `double_exponential_moving_average` | Calculate Double Exponential Moving Average that reduces lag compared to traditional EMA |
+| 26 | `triple_exponential_moving_average` | Calculate Triple Exponential Moving Average that further reduces lag and provides smooth trend signals |
+| | **Momentum & Oscillator Indicators** | |
+| 27 | `detrended_price_oscillator` | Calculate detrended price oscillator that removes trend from price data to identify cycles and overbought/oversold conditions |
+| 28 | `relative_vigor_index` | Calculate Relative Vigor Index that compares close vs open momentum to identify trend strength and reversals |
+| 29 | `gator_oscillator` | Calculate Gator Oscillator that shows convergence/divergence of Alligator lines and identifies trend strength |
+| 30 | `elder_ray` | Calculate Elder-Ray Index that measures buying and selling pressure using Bull Power and Bear Power |
+| 31 | `fisher_transform` | Calculate Fisher Transform that normalizes price data using Gaussian distribution for sharp reversal signals |
+| 32 | `know_sure_thing` | Calculate Know Sure Thing oscillator that combines multiple timeframe ROC calculations for momentum analysis |
+| 33 | `chande_momentum_oscillator` | Calculate Chande Momentum Oscillator that measures momentum on both up and down moves with range of -100 to +100 |
+| 34 | `bull_bear_power` | Calculate Bull Bear Power that measures the strength of bulls vs bears using price action and volume |
+| 35 | `true_strength_index` | Calculate True Strength Index that uses double-smoothed momentum to reduce noise and provide clearer signals |
+| 36 | `percentage_price_oscillator` | Calculate Percentage Price Oscillator that expresses MACD as a percentage for better cross-asset comparability |
+| 37 | `accelerator_oscillator` | Calculate Accelerator Oscillator from Bill Williams trading system that measures acceleration/deceleration of momentum |
+| 38 | `schaff_trend_cycle` | Calculate Schaff Trend Cycle that combines MACD with Stochastic oscillator and double smoothing for early trend signals |
+| 39 | `coppock_curve` | Calculate Coppock Curve that combines two ROC periods for identifying major market bottoms and long-term momentum |
+| 40 | `stochastic_rsi` | Calculate Stochastic RSI that applies stochastic oscillator formula to RSI values |
+| 41 | `money_flow_index` | Calculate Money Flow Index that uses price and volume to measure buying and selling pressure |
+| 42 | `ultimate_oscillator` | Calculate Ultimate Oscillator that combines three different timeframes to reduce false signals |
+| 43 | `balance_of_power` | Calculate Balance of Power that measures the strength of buyers vs sellers by analyzing the relationship between price close and range |
+| | **Volume & Flow Indicators** | |
+| 44 | `klinger_oscillator` | Calculate Klinger Volume Oscillator that combines volume and price action for volume-based trend analysis |
+| 45 | `volume_oscillator` | Calculate Volume Oscillator that compares short-term and long-term volume moving averages to identify volume trends |
+| 46 | `ease_of_movement` | Calculate Ease of Movement that measures how easily price moves by combining price change and volume |
+| 47 | `price_volume_trend` | Calculate Price Volume Trend that accumulates volume based on price percentage changes |
+| 48 | `positive_volume_index` | Calculate Positive Volume Index that accumulates price changes on days when volume increases from the previous day |
+| 49 | `volume_roc` | Calculate Volume Rate of Change that measures the percentage change in volume over a specified period |
+| 50 | `anchored_vwap` | Calculate Anchored VWAP that computes volume-weighted average price from a specific anchor point instead of session start |
+| 51 | `chaikin_money_flow` | Calculate Chaikin Money Flow that provides volume-weighted measure of accumulation/distribution over a specified period |
+| 52 | `volume_zone_oscillator` | Calculate Volume Zone Oscillator that analyzes volume distribution across price zones to identify accumulation/distribution patterns |
+| 53 | `chaikin_volatility` | Calculate Chaikin Volatility that measures the rate of change of the trading range over a specified period |
+| | **Volatility & Statistical Indicators** | |
+| 54 | `mass_index` | Calculate Mass Index that uses EMA of High-Low range to identify potential reversals when the index exceeds 27 |
+| 55 | `ulcer_index` | Calculate Ulcer Index that measures downside volatility and risk by focusing on drawdowns from recent highs |
+| 56 | `bollinger_percent_b` | Calculate Bollinger %B that shows where the price is relative to the Bollinger Bands |
+| 57 | `bollinger_band_width` | Calculate Bollinger Band Width that measures the distance between the upper and lower bands |
+| 58 | `historical_volatility` | Calculate Historical Volatility that measures the standard deviation of price changes over a specified period |
+| 59 | `trix` | Calculate TRIX (Triple Exponential Average) oscillator that shows the rate of change of a triple exponentially smoothed moving average |
+| 60 | `vortex` | Calculate Vortex Indicator that identifies the start of a new trend by comparing upward and downward price movements |
+| 61 | `center_of_gravity` | Calculate Center of Gravity oscillator that identifies potential reversal points based on weighted moving averages |
+| | **Price Channels & Support/Resistance** | |
+| 62 | `price_channel` | Calculate price channels using highest high and lowest low for support/resistance and breakout signals |
+| 63 | `pivot_camarilla` | Calculate Camarilla Pivot Points for advanced support and resistance levels |
+| 64 | `fibonacci_retracement` | Calculate Fibonacci retracement levels for potential support and resistance zones |
+| 65 | `standard_pivot_points` | Calculate Standard Pivot Points for traditional support and resistance levels |
+| 66 | `keltner_channels` | Calculate Keltner Channels that combine moving averages with ATR for volatility-based support and resistance |
+| 67 | `donchian_channels` | Calculate Donchian Channels using highest high and lowest low over a specified period |
+| | **Complex Indicators** | |
+| 68 | `alligator` | Calculate Alligator Indicator from Bill Williams trading system using three smoothed moving averages |
+| 69 | `awesome_oscillator` | Calculate Awesome Oscillator that shows momentum changes using simple moving averages of the median price |
+| 70 | `ichimoku_cloud` | Calculate Ichimoku Cloud for comprehensive trend analysis with multiple timeframe support/resistance |
+| 71 | `r_squared` | Calculate R-squared (coefficient of determination) to measure how well data fits a statistical model |
+| 72 | `momentum_indicator` | Calculate Momentum Indicator that measures the rate of price change over a specified period |
+| 73 | `rate_of_change` | Calculate Rate of Change that measures the percentage change in price over a specified period |
+| 74 | `force_index` | Calculate Force Index that combines price change direction with volume to measure buying/selling pressure |
+| 75 | `supertrend` | Calculate SuperTrend indicator that combines ATR and price action for trend-following stop levels |
+| 76 | `linear_regression` | Calculate linear regression line, slope, intercept, R-squared, and regression bands for trend analysis |
+| | **Breadth & Market Indicators** | |
+| 77 | `advance_decline_line` | Calculate Advance Decline Line that measures market breadth by comparing advancing vs declining assets |
+| | **Fractal & Pattern Recognition** | |
+| 78 | `fractals` | Calculate Bill Williams Fractals that identify potential reversal points in price action |
+| 79 | `zigzag_indicator` | Calculate ZigZag indicator that filters out market noise and shows significant price swings |
+| 80 | `trend_detection` | Detect market trends and change of character points using advanced market structure analysis |
+| | **Price Action & Candlestick** | |
+| 81 | `chaikin_oscillator` | Calculate Chaikin Oscillator that combines accumulation/distribution with exponential moving averages |
 
 ### 📚 Resources (20)
 
-| Resource URI | Description |
-|--------------|-------------|
-| `geartrade://trading-strategies` | Comprehensive guide on trading strategies, technical analysis, and best practices for using MCP Technical Analysis Server |
-| `geartrade://risk-management` | Guide on risk management, position sizing, stop loss, and take profit strategies |
-| `geartrade://tools-overview` | Complete tools documentation and usage examples |
-| `geartrade://execution-workflow` | Step-by-step guide for analysis to execution workflow |
-| `geartrade://technical-indicators-guide` | Complete reference for all technical indicators and their usage |
-| `geartrade://hyperliquid-api-reference` | Hyperliquid API documentation and integration guide |
-| `geartrade://volume-analysis-guide` | Comprehensive volume analysis techniques and interpretation |
-| `geartrade://fibonacci-trading-guide` | Fibonacci retracement and extension strategies |
-| `geartrade://market-structure-guide` | Market structure analysis and change of character detection |
-| `geartrade://orderbook-analysis-guide` | Order book depth analysis and market maker behavior |
-| `geartrade://candlestick-patterns-guide` | Candlestick pattern recognition and trading signals |
-| `geartrade://divergence-trading-guide` | RSI and price divergence identification and trading |
-| `geartrade://liquidation-analysis-guide` | Liquidation level analysis and risk assessment |
-| `geartrade://long-short-ratio-guide` | Long/short ratio analysis for market sentiment |
-| `geartrade://spot-futures-divergence-guide` | Spot-futures price divergence opportunities |
-| `geartrade://external-data-guide` | External market data integration and usage |
-| `geartrade://multitimeframe-analysis-guide` | Multi-timeframe trend alignment analysis |
-| `geartrade://moving-averages-guide` | Moving averages, envelopes, and trend analysis |
-| `geartrade://momentum-oscillators-guide` | Momentum indicators and oscillator-based strategies |
-| `geartrade://volume-indicators-guide` | Volume-based indicators and flow analysis |
-| `geartrade://volatility-indicators-guide` | Volatility measurement and option strategies |
+| No | Resource URI | Description |
+|----|--------------|-------------|
+| 1 | `geartrade://trading-strategies` | Comprehensive guide on trading strategies, technical analysis, and best practices for using MCP Technical Analysis Server |
+| 2 | `geartrade://risk-management` | Guide on risk management, position sizing, stop loss, and take profit strategies |
+| 3 | `geartrade://tools-overview` | Complete tools documentation and usage examples |
+| 4 | `geartrade://execution-workflow` | Step-by-step guide for analysis to execution workflow |
+| 5 | `geartrade://technical-indicators-guide` | Complete reference for all technical indicators and their usage |
+| 6 | `geartrade://hyperliquid-api-reference` | Hyperliquid API documentation and integration guide |
+| 7 | `geartrade://volume-analysis-guide` | Comprehensive volume analysis techniques and interpretation |
+| 8 | `geartrade://fibonacci-trading-guide` | Fibonacci retracement and extension strategies |
+| 9 | `geartrade://market-structure-guide` | Market structure analysis and change of character detection |
+| 10 | `geartrade://orderbook-analysis-guide` | Order book depth analysis and market maker behavior |
+| 11 | `geartrade://candlestick-patterns-guide` | Candlestick pattern recognition and trading signals |
+| 12 | `geartrade://divergence-trading-guide` | RSI and price divergence identification and trading |
+| 13 | `geartrade://liquidation-analysis-guide` | Liquidation level analysis and risk assessment |
+| 14 | `geartrade://long-short-ratio-guide` | Long/short ratio analysis for market sentiment |
+| 15 | `geartrade://spot-futures-divergence-guide` | Spot-futures price divergence opportunities |
+| 16 | `geartrade://external-data-guide` | External market data integration and usage |
+| 17 | `geartrade://multitimeframe-analysis-guide` | Multi-timeframe trend alignment analysis |
+| 18 | `geartrade://moving-averages-guide` | Moving averages, envelopes, and trend analysis |
+| 19 | `geartrade://momentum-oscillators-guide` | Momentum indicators and oscillator-based strategies |
+| 20 | `geartrade://volume-indicators-guide` | Volume-based indicators and flow analysis |
+| 21 | `geartrade://volatility-indicators-guide` | Volatility measurement and option strategies |
 
 ### 🤖 Prompts (24)
 
-| Prompt Name | Description |
-|-------------|-------------|
-| **Core Trading Prompts** | |
-| `analyze_and_execute` | Analyze a crypto asset and prepare execution plan with risk management |
-| `multi_asset_scan` | Scan multiple assets for trading opportunities |
-| `comprehensive_analysis` | Complete market analysis with technical indicators and risk assessment |
-| **Quick Analysis Prompts** | |
-| `quick_price_check` | Fast price check with basic market data |
-| `trend_analysis` | Trend direction and strength analysis |
-| `market_overview` | High-level market sentiment and key levels |
-| **Technical Analysis Prompts** | |
-| `technical_indicator_analysis` | Deep dive into technical indicators and signals |
-| `volume_profile_analysis` | Volume profile and liquidity analysis |
-| `market_structure_analysis` | Market structure and change of character detection |
-| **Advanced Strategy Prompts** | |
-| `divergence_scan` | RSI and price divergence identification |
-| `liquidation_analysis` | Liquidation level analysis and risk zones |
-| `fibonacci_trading_strategy` | Fibonacci retracement and extension trading |
-| `spot_futures_arbitrage` | Spot-futures price divergence opportunities |
-| **Risk Management Prompts** | |
-| `risk_analysis` | Comprehensive risk assessment and position sizing |
-| `position_monitoring` | Active position monitoring and adjustment recommendations |
-| `portfolio_review` | Portfolio performance and rebalancing analysis |
-| `volatility_analysis` | Volatility measurement and risk assessment |
-| **Specialized Trading Prompts** | |
-| `entry_exit_strategy` | Entry and exit timing optimization |
-| `momentum_trading` | Momentum-based trading strategies |
-| `mean_reversion` | Mean reversion trading opportunities |
-| `breakout_trading` | Breakout pattern recognition and execution |
-| `scalping_strategy` | High-frequency scalping strategies |
-| `swing_trading` | Medium-term swing trading analysis |
-| `trend_following` | Long-term trend following strategies |
-| `arbitrage_opportunities` | Cross-exchange and cross-asset arbitrage |
-| `options_strategy` | Options trading and volatility plays |
+| No | Prompt Name | Description |
+|----|-------------|-------------|
+| | **Core Trading Prompts** | |
+| 1 | `analyze_and_execute` | Analyze a crypto asset and prepare execution plan with risk management |
+| 2 | `multi_asset_scan` | Scan multiple assets for trading opportunities |
+| 3 | `comprehensive_analysis` | Complete market analysis with technical indicators and risk assessment |
+| | **Quick Analysis Prompts** | |
+| 4 | `quick_price_check` | Fast price check with basic market data |
+| 5 | `trend_analysis` | Trend direction and strength analysis |
+| 6 | `market_overview` | High-level market sentiment and key levels |
+| | **Technical Analysis Prompts** | |
+| 7 | `technical_indicator_analysis` | Deep dive into technical indicators and signals |
+| 8 | `volume_profile_analysis` | Volume profile and liquidity analysis |
+| 9 | `market_structure_analysis` | Market structure and change of character detection |
+| | **Advanced Strategy Prompts** | |
+| 10 | `divergence_scan` | RSI and price divergence identification |
+| 11 | `liquidation_analysis` | Liquidation level analysis and risk zones |
+| 12 | `fibonacci_trading_strategy` | Fibonacci retracement and extension trading |
+| 13 | `spot_futures_arbitrage` | Spot-futures price divergence opportunities |
+| | **Risk Management Prompts** | |
+| 14 | `risk_analysis` | Comprehensive risk assessment and position sizing |
+| 15 | `position_monitoring` | Active position monitoring and adjustment recommendations |
+| 16 | `portfolio_review` | Portfolio performance and rebalancing analysis |
+| 17 | `volatility_analysis` | Volatility measurement and risk assessment |
+| | **Specialized Trading Prompts** | |
+| 18 | `entry_exit_strategy` | Entry and exit timing optimization |
+| 19 | `momentum_trading` | Momentum-based trading strategies |
+| 20 | `mean_reversion` | Mean reversion trading opportunities |
+| 21 | `breakout_trading` | Breakout pattern recognition and execution |
+| 22 | `scalping_strategy` | High-frequency scalping strategies |
+| 23 | `swing_trading` | Medium-term swing trading analysis |
+| 24 | `trend_following` | Long-term trend following strategies |
+| 25 | `arbitrage_opportunities` | Cross-exchange and cross-asset arbitrage |
+| 26 | `options_strategy` | Options trading and volatility plays |
 
 ## 🏗️ Architecture
 
@@ -509,21 +509,21 @@ GEARTRADE/
 
 ### Key Directories
 
-| Directory | Description |
-|-----------|-------------|
-| `packages/geartrade-mcp-server/src/index.ts` | Main MCP server entry with 80 analysis tools, 20 resources, 24 prompts |
-| `packages/geartrade-mcp-server/local-server.ts` | HTTP/SSE streaming server for remote MCP client connections |
-| `packages/geartrade-mcp-server/package.json` | MCP server package configuration and dependencies |
-| `packages/geartrade-mcp-server/tsconfig.json` | TypeScript configuration for MCP server compilation |
-| `packages/geartrade-mcp-server/src/signal-generation/` | Core analysis engine with market intelligence and indicators |
-| `packages/geartrade-mcp-server/src/signal-generation/analysis/` | Market analysis modules for pattern recognition |
-| `packages/geartrade-mcp-server/src/signal-generation/technical-indicators/` | Technical indicator implementations (70+ indicators) |
-| `packages/geartrade-mcp-server/src/signal-generation/data-fetchers/` | Multi-source market data fetchers (Hyperliquid, Binance, etc.) |
-| `packages/geartrade-mcp-server/src/signal-generation/risk-management/` | Risk assessment and position sizing calculations |
-| `packages/geartrade-mcp-server/src/signal-generation/ai/` | Market analysis utilities |
-| `packages/geartrade-mcp-server/src/signal-generation/monitoring/` | Real-time market monitoring and alerts |
-| `scripts/` | Utility scripts for development and deployment |
-| `logs/` | Application logs and debugging information |
+| No | Directory | Description |
+|----|-----------|-------------|
+| 1 | `packages/geartrade-mcp-server/src/index.ts` | Main MCP server entry with 80 analysis tools, 20 resources, 24 prompts |
+| 2 | `packages/geartrade-mcp-server/local-server.ts` | HTTP/SSE streaming server for remote MCP client connections |
+| 3 | `packages/geartrade-mcp-server/package.json` | MCP server package configuration and dependencies |
+| 4 | `packages/geartrade-mcp-server/tsconfig.json` | TypeScript configuration for MCP server compilation |
+| 5 | `packages/geartrade-mcp-server/src/signal-generation/` | Core analysis engine with market intelligence and indicators |
+| 6 | `packages/geartrade-mcp-server/src/signal-generation/analysis/` | Market analysis modules for pattern recognition |
+| 7 | `packages/geartrade-mcp-server/src/signal-generation/technical-indicators/` | Technical indicator implementations (70+ indicators) |
+| 8 | `packages/geartrade-mcp-server/src/signal-generation/data-fetchers/` | Multi-source market data fetchers (Hyperliquid, Binance, etc.) |
+| 9 | `packages/geartrade-mcp-server/src/signal-generation/risk-management/` | Risk assessment and position sizing calculations |
+| 10 | `packages/geartrade-mcp-server/src/signal-generation/ai/` | Market analysis utilities |
+| 11 | `packages/geartrade-mcp-server/src/signal-generation/monitoring/` | Real-time market monitoring and alerts |
+| 12 | `scripts/` | Utility scripts for development and deployment |
+| 13 | `logs/` | Application logs and debugging information |
 
 ## 🛠️ Development
 
@@ -558,12 +558,12 @@ This server is designed exclusively for market analysis and research. No trading
 
 When running `bash scripts/mcp-auto-start.sh`:
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `http://localhost:8787/` | GET | Server info & documentation |
-| `http://localhost:8787/health` | GET | Health check (JSON) |
-| `http://localhost:8787/mcp` | POST | MCP JSON-RPC endpoint |
-| `http://localhost:8787/stream` | GET/POST | SSE streaming endpoint |
+| No | Endpoint | Method | Description |
+|----|----------|--------|-------------|
+| 1 | `http://localhost:8787/` | GET | Server info & documentation |
+| 2 | `http://localhost:8787/health` | GET | Health check (JSON) |
+| 3 | `http://localhost:8787/mcp` | POST | MCP JSON-RPC endpoint |
+| 4 | `http://localhost:8787/stream` | GET/POST | SSE streaming endpoint |
 
 **Test Commands:**
 ```bash
