@@ -3,7 +3,7 @@
 # This script automatically detects network conditions and uses the best available connection
 
 SERVER_PORT=8787
-PROJECT_DIR="/root/GEARTRADE"
+PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 LOG_FILE="${PROJECT_DIR}/logs/mcp-server.log"
 
 # Create logs directory
@@ -17,28 +17,28 @@ is_server_running() {
 }
 
 # Always use localhost - simplified configuration
-echo "🌐 Using localhost configuration" >&2
+echo "🌐 Using localhost configuration"
 PREFERRED_URL="http://localhost:${SERVER_PORT}"
 
 # Check if server is already running
 if is_server_running "$PREFERRED_URL"; then
     SERVER_URL="$PREFERRED_URL"
-    echo "✅ MCP Server already running at ${SERVER_URL}" >&2
+    echo "✅ MCP Server already running at ${SERVER_URL}"
 else
-    echo "🚀 Starting MCP Server..." >&2
+    echo "🚀 Starting MCP Server..."
 
-    # Start server in background
+    # Start server in background using tsx to run TypeScript directly
     cd "${PROJECT_DIR}/packages/geartrade-mcp-server"
-    nohup pnpm tsx local-server.ts > "${LOG_FILE}" 2>&1 &
+    nohup npx tsx local-server.ts > "${LOG_FILE}" 2>&1 &
     SERVER_PID=$!
 
     # Wait for server to be ready (max 15 seconds)
-    echo "⏳ Waiting for server to start..." >&2
+    echo "⏳ Waiting for server to start..."
     for i in {1..30}; do
         if is_server_running "$PREFERRED_URL"; then
             SERVER_URL="$PREFERRED_URL"
-            echo "✅ MCP Server started successfully (PID: ${SERVER_PID})" >&2
-            echo "🌐 Using: ${SERVER_URL}" >&2
+            echo "✅ MCP Server started successfully (PID: ${SERVER_PID})"
+            echo "🌐 Using: ${SERVER_URL}"
             break
         fi
         sleep 0.5
@@ -51,6 +51,9 @@ else
     fi
 fi
 
-# Connect via mcp-remote
-echo "🔗 Connecting to MCP server..." >&2
-exec npx -y mcp-remote "${SERVER_URL}/mcp"
+# Server is ready - output the URL for client connection
+echo "🔗 MCP Server ready at: ${SERVER_URL}/mcp"
+echo "✅ Connect your MCP client to: ${SERVER_URL}/mcp"
+
+# Keep script running to maintain server process
+wait

@@ -2,7 +2,26 @@
  * Alligator Indicator (Bill Williams)
  * Three smoothed moving averages representing different phases of market
  */
-import { calculateSMMA } from './smma';
+// Local SMMA helper function that calculates SMMA at a specific offset from the end
+function calcSMMAAtOffset(values, period, offset) {
+    // We need at least (period + offset) data points
+    if (values.length < period + offset) {
+        return null;
+    }
+    // Calculate SMMA up to (length - offset) index
+    const endIndex = values.length - offset;
+    const slicedValues = values.slice(0, endIndex);
+    if (slicedValues.length < period) {
+        return null;
+    }
+    // Start with SMA for the first period
+    let smma = slicedValues.slice(0, period).reduce((sum, val) => sum + val, 0) / period;
+    // Continue with SMMA calculation
+    for (let i = period; i < slicedValues.length; i++) {
+        smma = (smma * (period - 1) + slicedValues[i]) / period;
+    }
+    return smma;
+}
 export function calculateAlligator(closes, jawPeriod = 13, teethPeriod = 8, lipsPeriod = 5, jawShift = 8, teethShift = 5, lipsShift = 3) {
     if (closes.length < jawPeriod + jawShift) {
         return {
@@ -13,18 +32,10 @@ export function calculateAlligator(closes, jawPeriod = 13, teethPeriod = 8, lips
             trend: null,
         };
     }
-    // Calculate SMMA for each line
-    const jawSMMA = calculateSMMA(closes, jawPeriod);
-    const teethSMMA = calculateSMMA(closes, teethPeriod);
-    const lipsSMMA = calculateSMMA(closes, lipsPeriod);
-    // Apply shifts (looking backwards from current position)
-    const currentIndex = closes.length - 1;
-    const jawIndex = currentIndex - jawShift;
-    const teethIndex = currentIndex - teethShift;
-    const lipsIndex = currentIndex - lipsShift;
-    const jaw = jawIndex >= 0 && jawIndex < jawSMMA.length ? jawSMMA[jawIndex] : null;
-    const teeth = teethIndex >= 0 && teethIndex < teethSMMA.length ? teethSMMA[teethIndex] : null;
-    const lips = lipsIndex >= 0 && lipsIndex < lipsSMMA.length ? lipsSMMA[lipsIndex] : null;
+    // Calculate SMMA for each line with their respective offsets (shifts)
+    const jaw = calcSMMAAtOffset(closes, jawPeriod, jawShift);
+    const teeth = calcSMMAAtOffset(closes, teethPeriod, teethShift);
+    const lips = calcSMMAAtOffset(closes, lipsPeriod, lipsShift);
     // Determine market phase based on Alligator lines
     let phase = null;
     let trend = null;

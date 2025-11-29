@@ -26,7 +26,7 @@ A comprehensive Model Context Protocol (MCP) server that bridges AI assistants w
 
 
 **🔥 Key Features:**
-- 🔴 **80 Analysis Tools** - Complete market analysis toolkit (all tested & verified)
+- 🔴 **52 Analysis & Trading Tools** - Complete market analysis + trading execution toolkit
 - 📊 **Real-time Market Data** - Live prices, indicators, volume analysis
 - 🎯 **Advanced Technical Analysis** - RSI, MACD, Fibonacci, Order Book, etc.
 - 💰 **Risk Management** - Position sizing, stop loss, take profit calculations
@@ -34,25 +34,22 @@ A comprehensive Model Context Protocol (MCP) server that bridges AI assistants w
 - 🤖 **24 AI Prompts** - Pre-configured analysis workflows
 - 📚 **20 Resources** - Comprehensive analysis documentation
 - 🔄 **Streaming Support** - HTTP/SSE for real-time updates
-- 📈 **Analysis-Only Focus** - Pure market intelligence without execution risks
-- ✅ **Fully Tested** - All 80 tools validated and working
+- 💹 **Hyperliquid Trading** - Testnet & Mainnet futures execution with slippage protection
+- ✅ **Fully Tested** - All tools validated and working
 
 🏠 **Local Development:** Run the MCP server locally for full control and privacy  
 🌐 **HTTP Streaming:** Remote MCP connection via `mcp-remote` for Cursor IDE
 
 ## 🌟 **What's Included**
 
-### 📊 **80 Complete Analysis Tools**
-- **Price Tools** (2): Real-time pricing for single/multiple assets
-- **Technical Analysis** (2): 20+ indicators (RSI, EMA, MACD, Bollinger Bands, ATR, ADX, etc.)
-- **Volume Analysis** (2): Buy/sell pressure, CVD, liquidity zones analysis
-- **Multi-Timeframe** (2): Daily, 4H, 1H trend alignment analysis
-- **Advanced Analysis** (4): Fibonacci, Order Book Depth, Liquidation Levels, Market Regime
-- **Market Analysis** (8): Volume Profile, Market Structure, Candlestick Patterns, Divergence, Long/Short Ratio, Spot-Futures Divergence, External Data
-- **Risk Management** (2): Position sizing, stop loss, take profit calculations
-- **Comprehensive Analysis** (2): Complete crypto analysis with position setup
-- **Analysis Tools** (4): Advanced market intelligence and research capabilities
-- **Batch Operations** (11): Multi-asset analysis for all above tools
+### 📊 **52 Complete Analysis & Trading Tools**
+- **Market Data** (5): Price, indicators, volume analysis, multi-timeframe, external data
+- **Order Book & Market** (8): Order book depth, volume profile, market structure, regime, patterns, divergence, liquidation, long/short ratio
+- **Risk Management** (2): Position sizing and risk/reward calculations
+- **Moving Averages** (10): MA envelope, VWMA, McGinley, Rainbow, Kaufman, Hull, WMA, SMMA, DEMA, TEMA
+- **Oscillators** (18): Stochastic RSI, CMO, PPO, AO, Gator, Elder Ray, Fisher, KST, Schaff, Coppock, TSI, RVI, DPO, Momentum, ROC, Ultimate, TRIX
+- **Merged Indicator Tools** (7): Volume indicators, volatility, trend, strength, channels, pivot points, patterns
+- **Trading Execution** (2): Hyperliquid Testnet & Mainnet futures trading with intelligent slippage handling
 
 ### 📚 **20 Analysis Resources**
 - Comprehensive documentation for trading strategies, risk management, and technical analysis
@@ -97,6 +94,26 @@ pnpm run build
 
 ### 🔧 MCP Client Configuration
 
+#### Windows Configuration
+
+**For Cursor IDE / Claude Desktop** (`mcp.json` or `.cursor/mcp.json`):
+```json
+{
+  "mcpServers": {
+    "geartrade-v2": {
+      "command": "cmd",
+      "args": ["/c", "cd /d C:\\Users\\hp5cd\\mcp-technical-analysis\\mcp-technical-analysis\\packages\\geartrade-mcp-server && node dist\\local-server.js"],
+      "env": {
+        "CANDLES_COUNT": "75"
+      },
+      "description": "GearTrade MCP Server v2 - Windows"
+    }
+  }
+}
+```
+
+#### Linux Configuration
+
 **Start the server:**
 ```bash
 cd /root/GEARTRADE
@@ -105,7 +122,7 @@ bash scripts/mcp-auto-start.sh
 
 Server runs at `http://localhost:8787` with SSE streaming support!
 
-**For Cursor IDE** (`.cursor/mcp.json`):
+**For Cursor IDE / Claude Desktop** (`.cursor/mcp.json` or `mcp.json`):
 ```json
 {
   "mcpServers": {
@@ -118,7 +135,8 @@ Server runs at `http://localhost:8787` with SSE streaming support!
 }
 ```
 
-**For Claude Code (CLI)**:
+#### Claude Code (CLI) - Both Platforms
+
 ```bash
 # Add the MCP server to Claude Code
 claude mcp add --transport http mcp-technical-analysis http://localhost:8787/mcp
@@ -130,22 +148,11 @@ claude mcp list
 /mcp
 ```
 
-**For Claude Desktop** (`.mcp.json` in project root):
-```json
-{
-  "mcpServers": {
-    "mcp-technical-analysis": {
-      "command": "npx",
-      "args": ["mcp-remote", "http://localhost:8787/mcp"]
-    }
-  }
-}
-```
+#### Remote Access via mcp-remote
 
-**Alternative: Inline in plugin.json** (for plugin development):
+**For remote MCP connection** (`.mcp.json` in project root):
 ```json
 {
-  "name": "my-plugin",
   "mcpServers": {
     "mcp-technical-analysis": {
       "command": "npx",
@@ -209,105 +216,75 @@ nameserver 1.0.0.1
 
 ## 📦 MCP Capabilities
 
-### 🔧 Tools (80)
+### 🔧 Tools (52)
 
 | No | Tool Name | Description |
 |----|-----------|-------------|
 | | **Price & Market Data** | |
 | 1 | `get_price` | Get latest prices for multiple trading tickers/symbols at once (e.g., ["BTC", "ETH", "SOL"]) |
-| 2 | `get_indicators` | Get comprehensive technical analysis indicators for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"]) |
-| 3 | `get_volume_analysis` | Get comprehensive volume analysis for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"]) |
-| 4 | `get_Multitimeframe` | Get multi-timeframe trend alignment analysis for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"]) |
-| 5 | `get_External_data` | Get external market data for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"]) |
-| | **Order Book & Market Depth** | |
-| 6 | `get_orderbook_depth` | Get order book depth analysis for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"]) |
-| 7 | `get_volume_profile` | Get volume profile analysis for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"]) |
-| | **Market Structure & Patterns** | |
-| 8 | `get_market_structure` | Get market structure analysis for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"]) |
-| 9 | `get_market_regime` | Get market regime analysis (trending/choppy/volatile) for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"]) |
-| 10 | `get_candlestick_patterns` | Get candlestick pattern detection for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"]) |
-| 11 | `get_divergence` | Get RSI divergence detection for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"]) |
-| 12 | `get_liquidation_levels` | Get liquidation level analysis for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"]) |
-| 13 | `get_long_short_ratio` | Get long/short ratio analysis for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"]) |
-| | **Risk Management & Position Sizing** | |
-| 14 | `calculate_risk_management` | Calculate stop loss, take profit, and risk/reward ratio for a trading position |
-| 15 | `calculate_position_setup` | Calculate position size, leverage, margin, and quantity for a trading signal |
-| | **Comprehensive Analysis** | |
-| 16 | `analisis_crypto` | Get comprehensive trading analysis for multiple crypto assets at once. This tool aggregates all available data for complete market analysis across multiple tickers. |
-| | **Moving Averages & Trend Indicators** | |
-| 17 | `ma_envelope` | Calculate moving average envelopes for volatility-based support/resistance and overbought/oversold signals |
-| 18 | `vwma` | Calculate volume-weighted moving average that gives more weight to periods with higher volume |
-| 19 | `mcginley_dynamic` | Calculate adaptive moving average that adjusts to market volatility and reduces lag compared to traditional MAs |
-| 20 | `rainbow_ma` | Calculate multiple moving averages with different periods for comprehensive trend visualization and alignment analysis |
-| 21 | `kaufman_adaptive_ma` | Calculate adaptive moving average that adjusts smoothing based on market efficiency and volatility |
-| 22 | `hull_moving_average` | Calculate Hull Moving Average that reduces lag while maintaining smoothness for better trend identification |
-| 23 | `weighted_moving_average` | Calculate Weighted Moving Average that gives more weight to recent prices for responsive trend analysis |
-| 24 | `smoothed_moving_average` | Calculate Smoothed Moving Average that provides smooth trend following with reduced noise |
-| 25 | `double_exponential_moving_average` | Calculate Double Exponential Moving Average that reduces lag compared to traditional EMA |
-| 26 | `triple_exponential_moving_average` | Calculate Triple Exponential Moving Average that further reduces lag and provides smooth trend signals |
-| | **Momentum & Oscillator Indicators** | |
-| 27 | `detrended_price_oscillator` | Calculate detrended price oscillator that removes trend from price data to identify cycles and overbought/oversold conditions |
-| 28 | `relative_vigor_index` | Calculate Relative Vigor Index that compares close vs open momentum to identify trend strength and reversals |
-| 29 | `gator_oscillator` | Calculate Gator Oscillator that shows convergence/divergence of Alligator lines and identifies trend strength |
-| 30 | `elder_ray` | Calculate Elder-Ray Index that measures buying and selling pressure using Bull Power and Bear Power |
-| 31 | `fisher_transform` | Calculate Fisher Transform that normalizes price data using Gaussian distribution for sharp reversal signals |
-| 32 | `know_sure_thing` | Calculate Know Sure Thing oscillator that combines multiple timeframe ROC calculations for momentum analysis |
-| 33 | `chande_momentum_oscillator` | Calculate Chande Momentum Oscillator that measures momentum on both up and down moves with range of -100 to +100 |
-| 34 | `bull_bear_power` | Calculate Bull Bear Power that measures the strength of bulls vs bears using price action and volume |
-| 35 | `true_strength_index` | Calculate True Strength Index that uses double-smoothed momentum to reduce noise and provide clearer signals |
-| 36 | `percentage_price_oscillator` | Calculate Percentage Price Oscillator that expresses MACD as a percentage for better cross-asset comparability |
-| 37 | `accelerator_oscillator` | Calculate Accelerator Oscillator from Bill Williams trading system that measures acceleration/deceleration of momentum |
-| 38 | `schaff_trend_cycle` | Calculate Schaff Trend Cycle that combines MACD with Stochastic oscillator and double smoothing for early trend signals |
-| 39 | `coppock_curve` | Calculate Coppock Curve that combines two ROC periods for identifying major market bottoms and long-term momentum |
-| 40 | `stochastic_rsi` | Calculate Stochastic RSI that applies stochastic oscillator formula to RSI values |
-| 41 | `money_flow_index` | Calculate Money Flow Index that uses price and volume to measure buying and selling pressure |
-| 42 | `ultimate_oscillator` | Calculate Ultimate Oscillator that combines three different timeframes to reduce false signals |
-| 43 | `balance_of_power` | Calculate Balance of Power that measures the strength of buyers vs sellers by analyzing the relationship between price close and range |
-| | **Volume & Flow Indicators** | |
-| 44 | `klinger_oscillator` | Calculate Klinger Volume Oscillator that combines volume and price action for volume-based trend analysis |
-| 45 | `volume_oscillator` | Calculate Volume Oscillator that compares short-term and long-term volume moving averages to identify volume trends |
-| 46 | `ease_of_movement` | Calculate Ease of Movement that measures how easily price moves by combining price change and volume |
-| 47 | `price_volume_trend` | Calculate Price Volume Trend that accumulates volume based on price percentage changes |
-| 48 | `positive_volume_index` | Calculate Positive Volume Index that accumulates price changes on days when volume increases from the previous day |
-| 49 | `volume_roc` | Calculate Volume Rate of Change that measures the percentage change in volume over a specified period |
-| 50 | `anchored_vwap` | Calculate Anchored VWAP that computes volume-weighted average price from a specific anchor point instead of session start |
-| 51 | `chaikin_money_flow` | Calculate Chaikin Money Flow that provides volume-weighted measure of accumulation/distribution over a specified period |
-| 52 | `volume_zone_oscillator` | Calculate Volume Zone Oscillator that analyzes volume distribution across price zones to identify accumulation/distribution patterns |
-| 53 | `chaikin_volatility` | Calculate Chaikin Volatility that measures the rate of change of the trading range over a specified period |
-| | **Volatility & Statistical Indicators** | |
-| 54 | `mass_index` | Calculate Mass Index that uses EMA of High-Low range to identify potential reversals when the index exceeds 27 |
-| 55 | `ulcer_index` | Calculate Ulcer Index that measures downside volatility and risk by focusing on drawdowns from recent highs |
-| 56 | `bollinger_percent_b` | Calculate Bollinger %B that shows where the price is relative to the Bollinger Bands |
-| 57 | `bollinger_band_width` | Calculate Bollinger Band Width that measures the distance between the upper and lower bands |
-| 58 | `historical_volatility` | Calculate Historical Volatility that measures the standard deviation of price changes over a specified period |
-| 59 | `trix` | Calculate TRIX (Triple Exponential Average) oscillator that shows the rate of change of a triple exponentially smoothed moving average |
-| 60 | `vortex` | Calculate Vortex Indicator that identifies the start of a new trend by comparing upward and downward price movements |
-| 61 | `center_of_gravity` | Calculate Center of Gravity oscillator that identifies potential reversal points based on weighted moving averages |
-| | **Price Channels & Support/Resistance** | |
-| 62 | `price_channel` | Calculate price channels using highest high and lowest low for support/resistance and breakout signals |
-| 63 | `pivot_camarilla` | Calculate Camarilla Pivot Points for advanced support and resistance levels |
-| 64 | `fibonacci_retracement` | Calculate Fibonacci retracement levels for potential support and resistance zones |
-| 65 | `standard_pivot_points` | Calculate Standard Pivot Points for traditional support and resistance levels |
-| 66 | `keltner_channels` | Calculate Keltner Channels that combine moving averages with ATR for volatility-based support and resistance |
-| 67 | `donchian_channels` | Calculate Donchian Channels using highest high and lowest low over a specified period |
-| | **Complex Indicators** | |
-| 68 | `alligator` | Calculate Alligator Indicator from Bill Williams trading system using three smoothed moving averages |
-| 69 | `awesome_oscillator` | Calculate Awesome Oscillator that shows momentum changes using simple moving averages of the median price |
-| 70 | `ichimoku_cloud` | Calculate Ichimoku Cloud for comprehensive trend analysis with multiple timeframe support/resistance |
-| 71 | `r_squared` | Calculate R-squared (coefficient of determination) to measure how well data fits a statistical model |
-| 72 | `momentum_indicator` | Calculate Momentum Indicator that measures the rate of price change over a specified period |
-| 73 | `rate_of_change` | Calculate Rate of Change that measures the percentage change in price over a specified period |
-| 74 | `force_index` | Calculate Force Index that combines price change direction with volume to measure buying/selling pressure |
-| 75 | `supertrend` | Calculate SuperTrend indicator that combines ATR and price action for trend-following stop levels |
-| 76 | `linear_regression` | Calculate linear regression line, slope, intercept, R-squared, and regression bands for trend analysis |
-| | **Breadth & Market Indicators** | |
-| 77 | `advance_decline_line` | Calculate Advance Decline Line that measures market breadth by comparing advancing vs declining assets |
-| | **Fractal & Pattern Recognition** | |
-| 78 | `fractals` | Calculate Bill Williams Fractals that identify potential reversal points in price action |
-| 79 | `zigzag_indicator` | Calculate ZigZag indicator that filters out market noise and shows significant price swings |
-| 80 | `trend_detection` | Detect market trends and change of character points using advanced market structure analysis |
-| | **Price Action & Candlestick** | |
-| 81 | `chaikin_oscillator` | Calculate Chaikin Oscillator that combines accumulation/distribution with exponential moving averages |
+| 2 | `get_indicators` | Get comprehensive technical analysis indicators for multiple trading tickers at once |
+| 3 | `get_volume_analysis` | Get comprehensive volume analysis for multiple trading tickers at once |
+| 4 | `get_Multitimeframe` | Get multi-timeframe trend alignment analysis (Daily, 4H, 1H) |
+| 5 | `get_External_data` | Get external market data (funding rate, open interest, etc.) |
+| | **Order Book & Market Analysis** | |
+| 6 | `get_orderbook_depth` | Get order book depth analysis with support/resistance zones |
+| 7 | `get_volume_profile` | Get volume profile analysis (POC, VAH, VAL, HVN, LVN) |
+| 8 | `get_market_structure` | Get market structure analysis (swing highs/lows, COC) |
+| 9 | `get_market_regime` | Get market regime analysis (trending/ranging/volatile) |
+| 10 | `get_candlestick_patterns` | Get candlestick pattern detection (doji, engulfing, etc.) |
+| 11 | `get_divergence` | Get RSI/price divergence detection |
+| 12 | `get_liquidation_levels` | Get liquidation level analysis and risk zones |
+| 13 | `get_long_short_ratio` | Get long/short ratio analysis for market sentiment |
+| | **Risk Management** | |
+| 14 | `calculate_risk_management` | Calculate stop loss, take profit, and risk/reward ratio |
+| 15 | `calculate_position_setup` | Calculate position size, leverage, margin, and quantity |
+| | **Moving Averages (Merged Tool)** | |
+| 16 | `ma_envelope` | MA Envelope for volatility-based support/resistance |
+| 17 | `vwma` | Volume-Weighted Moving Average |
+| 18 | `mcginley_dynamic` | McGinley Dynamic - adaptive MA with reduced lag |
+| 19 | `rainbow_ma` | Rainbow MA - multiple MAs for trend visualization |
+| 20 | `kaufman_adaptive_ma` | Kaufman Adaptive MA - adjusts to market efficiency |
+| 21 | `hull_ma` | Hull Moving Average - reduced lag, smooth trend |
+| 22 | `weighted_ma` | Weighted Moving Average |
+| 23 | `smoothed_ma` | Smoothed Moving Average |
+| 24 | `double_ema` | Double Exponential Moving Average (DEMA) |
+| 25 | `triple_ema` | Triple Exponential Moving Average (TEMA) |
+| | **Oscillators (Merged Tool)** | |
+| 26 | `stochastic_rsi` | Stochastic RSI - RSI with stochastic formula |
+| 27 | `chande_momentum` | Chande Momentum Oscillator (-100 to +100) |
+| 28 | `percentage_price_oscillator` | PPO - MACD as percentage |
+| 29 | `accelerator_oscillator` | Accelerator Oscillator (Bill Williams) |
+| 30 | `awesome_oscillator` | Awesome Oscillator - momentum via median price |
+| 31 | `gator_oscillator` | Gator Oscillator - Alligator convergence/divergence |
+| 32 | `elder_ray` | Elder-Ray Index - Bull/Bear Power |
+| 33 | `fisher_transform` | Fisher Transform - Gaussian normalized reversals |
+| 34 | `know_sure_thing` | KST - multi-timeframe ROC momentum |
+| 35 | `schaff_trend_cycle` | Schaff Trend Cycle - MACD + Stochastic |
+| 36 | `coppock_curve` | Coppock Curve - long-term momentum bottoms |
+| 37 | `true_strength_index` | TSI - double-smoothed momentum |
+| 38 | `relative_vigor_index` | RVI - close vs open momentum |
+| 39 | `detrended_price` | Detrended Price Oscillator - cycle identification |
+| 40 | `momentum` | Momentum Indicator - rate of price change |
+| 41 | `rate_of_change` | ROC - percentage price change |
+| 42 | `ultimate_oscillator` | Ultimate Oscillator - 3 timeframe combination |
+| 43 | `trix` | TRIX - triple smoothed EMA rate of change |
+| | **Volume Indicators (Merged Tool)** | |
+| 44 | `volume_indicators` | Merged volume tool with types: chaikin_money_flow, chaikin_oscillator, klinger_oscillator, volume_oscillator, ease_of_movement, price_volume_trend, positive_volume_index, volume_roc, anchored_vwap, volume_zone_oscillator, money_flow_index |
+| | **Volatility Indicators (Merged Tool)** | |
+| 45 | `volatility_indicators` | Merged volatility tool with types: bollinger_band_width, bollinger_percent_b, chaikin_volatility, historical_volatility, mass_index, ulcer_index |
+| | **Trend Indicators (Merged Tool)** | |
+| 46 | `trend_indicators` | Merged trend tool with types: supertrend, alligator, ichimoku_cloud, vortex, linear_regression, r_squared |
+| | **Strength Indicators (Merged Tool)** | |
+| 47 | `strength_indicators` | Merged strength tool with types: bull_bear_power, force_index, center_of_gravity, balance_of_power, advance_decline_line |
+| | **Channels (Merged Tool)** | |
+| 48 | `channels` | Merged channels tool with types: keltner_channels, donchian_channels, price_channel |
+| | **Pivot Points (Merged Tool)** | |
+| 49 | `pivot_points` | Merged pivot tool with types: camarilla, standard, fibonacci_retracement |
+| | **Patterns (Merged Tool)** | |
+| 50 | `patterns` | Merged patterns tool with types: fractals, zigzag, change_of_character |
+| | **Trading Execution (Hyperliquid)** | |
+| 51 | `hyperliquid_testnet_futures_trade` | Execute futures trades on Hyperliquid TESTNET. Supports market/limit/custom orders, sizeInUsd ($100), leverage (1-100x), slippage protection (0.01%-50%), auto-fallback to GTC on no liquidity. |
+| 52 | `hyperliquid_mainnet_futures_trade` | Execute REAL futures trades on Hyperliquid MAINNET. Safety checks: confirmExecution=true required, asset whitelist, min $10, max 25% equity. |
 
 ### 📚 Resources (20)
 
@@ -391,7 +368,7 @@ nameserver 1.0.0.1
 ║                                       │                               ║
 ║                                       ▼                               ║
 ║  ┌─────────────────────────────────────────────────────────────────┐  ║
-║  │                  Core MCP Server (80 Tools)                     │  ║
+║  │                Core MCP Server (52 Tools incl. Trading)         │  ║
 ║  │  ┌───────────────────────┐  ┌───────────────────────────────┐   │  ║
 ║  │  │   Analysis Engine     │  │       Resources (20)          │   │  ║
 ║  │  │  ┌───────────────────┐│  │  ┌─────────────────────────┐  │   │  ║
@@ -407,8 +384,8 @@ nameserver 1.0.0.1
 ║  │  │   AI Prompts (24)     │  │   Security & Validation       │   │  ║
 ║  │  │  ┌───────────────────┐│  │  ┌─────────────────────────┐  │   │  ║
 ║  │  │  │ Analysis Workflows││  │  │ Input Validation        │  │   │  ║
-║  │  │  │ Research Prompts  ││  │  │ Analysis-Only Mode      │  │   │  ║
-║  │  │  │ Strategy Guides   ││  │  │ No Execution Risk       │  │   │  ║
+║  │  │  │ Research Prompts  ││  │  │ Trading Safety Checks   │  │   │  ║
+║  │  │  │ Strategy Guides   ││  │  │ Slippage Protection     │  │   │  ║
 ║  │  │  └───────────────────┘│  │  └─────────────────────────┘  │   │  ║
 ║  │  └───────────────────────┘  └───────────────────────────────┘   │  ║
 ║  └─────────────────────────────────────────────────────────────────┘  ║
@@ -438,21 +415,35 @@ nameserver 1.0.0.1
 ║  │  │  └───────────────────┘│  │  └─────────────────────────┘  │   │  ║
 ║  │  └───────────────────────┘  └───────────────────────────────┘   │  ║
 ║  └─────────────────────────────────────────────────────────────────┘  ║
+║                                       │                               ║
+║                                       ▼                               ║
+║  ┌─────────────────────────────────────────────────────────────────┐  ║
+║  │                Trading Execution (Hyperliquid)                  │  ║
+║  │  ┌───────────────────────┐  ┌───────────────────────────────┐   │  ║
+║  │  │   Testnet Trading     │  │     Mainnet Trading           │   │  ║
+║  │  │  ┌───────────────────┐│  │  ┌─────────────────────────┐  │   │  ║
+║  │  │  │ Market/Limit/     ││  │  │ Safety Checks           │  │   │  ║
+║  │  │  │ Custom Orders     ││  │  │ Asset Whitelist         │  │   │  ║
+║  │  │  │ Slippage Control  ││  │  │ Position Limits         │  │   │  ║
+║  │  │  │ GTC Fallback      ││  │  │ Confirm Required        │  │   │  ║
+║  │  │  └───────────────────┘│  │  └─────────────────────────┘  │   │  ║
+║  │  └───────────────────────┘  └───────────────────────────────┘   │  ║
+║  └─────────────────────────────────────────────────────────────────┘  ║
 ╚═══════════════════════════════════════════════════════════════════════╝
 ```
 
 ### Component Details
 
 **🎯 MCP Protocol Layer**
-- **Tool Execution**: 80 specialized analysis tools for comprehensive market intelligence
+- **Tool Execution**: 52 specialized analysis & trading tools for comprehensive market intelligence
 - **Resource Management**: 20 detailed documentation resources for research and education
 - **Prompt System**: 24 AI-optimized prompts for structured analysis workflows
 
 **🔒 Security & Validation Layer**
-- **Analysis-Only Environment**: Pure market research with zero execution capabilities
 - **Input Validation**: Comprehensive Zod schema validation for all data inputs
-- **Read-Only Access**: Market data access without trading permissions
-- **No Credentials Required**: Zero wallet or API key dependencies for core functionality
+- **Trading Safety**: Mainnet trading requires explicit confirmation, asset whitelist, position size limits
+- **Testnet Support**: Full trading capabilities on testnet for safe testing
+- **Configurable Slippage**: Dynamic slippage with auto-retry (0.01% to 50%)
 
 **📊 Analysis Engine Components**
 - **Technical Indicators**: 70+ indicators across momentum, volume, volatility, and trend analysis with correlation and market breadth indicators
@@ -541,18 +532,22 @@ pnpm run validate
 pnpm run list
 ```
 
-## 🔐 Security & Analysis-Only Focus
+## 🔐 Security & Trading Safety
 
-### Pure Analysis Environment
-This server is designed exclusively for market analysis and research. No trading execution capabilities are included.
+### Analysis & Trading Environment
+This server provides both market analysis and trading execution capabilities with comprehensive safety measures.
 
 **Security Features:**
-- ✅ No wallet credentials required
 - ✅ Zod schema validation for all inputs
-- ✅ Read-only market data access
-- ✅ No execution permissions
-- ✅ Analysis-focused security model
-- ✅ Multi-user support for research teams
+- ✅ Testnet trading for safe testing (no real funds)
+- ✅ Mainnet safety checks:
+  - `confirmExecution: true` required
+  - Asset whitelist (BTC, ETH, SOL, etc.)
+  - Minimum order value: $10
+  - Maximum position size: 25% of equity
+- ✅ Configurable slippage protection (0.01% - 50%)
+- ✅ Auto-fallback to GTC orders on no liquidity
+- ✅ Environment variables for wallet security (AGENT_WALLET_PRIVATE_KEY, MAIN_WALLET_ADDRESS)
 
 ## 🌐 API Endpoints (HTTP Streaming Mode)
 

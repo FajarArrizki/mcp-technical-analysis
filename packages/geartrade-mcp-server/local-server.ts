@@ -8,7 +8,7 @@ import { createServer } from 'http'
 import { URL } from 'url'
 
 // Import the default export which includes the fetch handler
-import mcpServer from './src/index.js'
+import mcpServer from './dist/index.js'
 
 const PORT = process.env.PORT || 8787
 const HOST = 'localhost' // Always bind to localhost for security
