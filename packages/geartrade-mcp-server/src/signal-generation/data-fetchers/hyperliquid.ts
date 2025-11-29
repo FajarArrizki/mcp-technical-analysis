@@ -8,7 +8,11 @@
  * - Exchange endpoint (/exchange) requires signed messages, not Bearer tokens
  */
 
-import { getHyperliquidApiUrl } from '../config'
+// Hyperliquid API URL helper
+function getHyperliquidApiUrl(): string {
+  const isTestnet = process.env.HYPERLIQUID_TESTNET === 'true'
+  return isTestnet ? 'https://api.hyperliquid-testnet.xyz' : 'https://api.hyperliquid.xyz'
+}
 
 export async function fetchHyperliquid(endpoint: string, data: any): Promise<any> {
   const HYPERLIQUID_API_URL = getHyperliquidApiUrl()

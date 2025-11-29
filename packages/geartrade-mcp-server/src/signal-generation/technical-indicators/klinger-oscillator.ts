@@ -83,7 +83,8 @@ export function calculateKlingerOscillator(
   // Calculate long-term EMA (55 periods) of VF
   const longEMA = calculateEMA(volumeForces, 55)
 
-  if (!shortEMA || !longEMA) {
+  // Check for valid EMA values (0 is valid, undefined/NaN is not)
+  if (shortEMA === undefined || longEMA === undefined || isNaN(shortEMA) || isNaN(longEMA)) {
     return null
   }
 
@@ -206,7 +207,7 @@ function calculateSMA(values: number[], period: number): number {
 }
 
 /**
- * Helper function to calculate Klinger history
+ * Helper function to calculate Klinger history (non-recursive)
  */
 function calculateKlingerHistory(
   highs: number[],
@@ -223,9 +224,27 @@ function calculateKlingerHistory(
     const sliceCloses = closes.slice(0, i)
     const sliceVolumes = volumes.slice(0, i)
 
-    const klinger = calculateKlingerOscillator(sliceHighs, sliceLows, sliceCloses, sliceVolumes)
-    if (klinger) {
-      klingerValues.push(klinger.klinger)
+    // Calculate Klinger directly without recursion
+    const volumeForces: number[] = []
+    for (let j = 1; j < sliceHighs.length; j++) {
+      const high = sliceHighs[j]
+      const low = sliceLows[j]
+      const close = sliceCloses[j]
+      const prevClose = sliceCloses[j - 1]
+      const volume = sliceVolumes[j]
+
+      const trend = close > prevClose ? 1 : close < prevClose ? -1 : 0
+      const range = high - low
+      const vf = range > 0 ? volume * trend * (2 * (close - low) / range - 1) : 0
+      volumeForces.push(vf)
+    }
+
+    const shortEMA = calculateEMA(volumeForces, 34)
+    const longEMA = calculateEMA(volumeForces, 55)
+
+    if (shortEMA && longEMA) {
+      const klinger = shortEMA - longEMA
+      klingerValues.push(klinger)
     }
   }
 

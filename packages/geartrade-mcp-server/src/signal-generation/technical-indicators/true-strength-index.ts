@@ -225,7 +225,7 @@ function calculateEMA(values: number[], period: number): number[] {
 }
 
 /**
- * Helper function to calculate TSI history
+ * Helper function to calculate TSI history (non-recursive)
  */
 function calculateTSIHistory(closes: number[], shortPeriod: number, longPeriod: number): number[] {
   const tsiValues: number[] = []
@@ -233,9 +233,31 @@ function calculateTSIHistory(closes: number[], shortPeriod: number, longPeriod: 
   // Start from where we have enough data
   for (let i = shortPeriod + longPeriod + 10; i <= closes.length; i++) {
     const slice = closes.slice(0, i)
-    const tsi = calculateTrueStrengthIndex(slice, shortPeriod, longPeriod)
-    if (tsi) {
-      tsiValues.push(tsi.tsi)
+    
+    // Calculate TSI directly without recursion
+    const priceChanges: number[] = []
+    for (let j = 1; j < slice.length; j++) {
+      priceChanges.push(slice[j] - slice[j - 1])
+    }
+
+    const firstSmooth = calculateEMA(priceChanges, shortPeriod)
+    const doubleSmooth = calculateEMA(firstSmooth, longPeriod)
+
+    const absPriceChanges: number[] = []
+    for (let j = 1; j < slice.length; j++) {
+      absPriceChanges.push(Math.abs(slice[j] - slice[j - 1]))
+    }
+
+    const absFirstSmooth = calculateEMA(absPriceChanges, shortPeriod)
+    const absDoubleSmooth = calculateEMA(absFirstSmooth, longPeriod)
+
+    if (doubleSmooth.length > 0 && absDoubleSmooth.length > 0) {
+      const doubleSmoothedMomentum = doubleSmooth[doubleSmooth.length - 1]
+      const absDoubleSmoothedMomentum = absDoubleSmooth[absDoubleSmooth.length - 1]
+
+      const tsi = absDoubleSmoothedMomentum > 0 ?
+        100 * (doubleSmoothedMomentum / absDoubleSmoothedMomentum) : 0
+      tsiValues.push(tsi)
     }
   }
 

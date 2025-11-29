@@ -12,12 +12,14 @@ import { calculateEnhancedMetrics } from '../analysis/enhanced-metrics'
 import { calculateOrderBookDepth } from '../analysis/orderbook'
 import { calculateSessionVolumeProfile, calculateCompositeVolumeProfile } from '../analysis/volume-profile'
 import { detectChangeOfCharacter } from '../analysis/market-structure'
-import { calculateCumulativeVolumeDelta } from '../analysis/volume-delta'
 import { performComprehensiveVolumeAnalysis } from '../analysis/volume-analysis'
-import { formatPrice } from '../formatting/price' // OPTIMIZATION: Static import instead of dynamic import inside processAsset
 import { fetchFuturesData } from './binance-futures'
-import { calculateBTCCorrelation } from '../analysis/btc-correlation'
-import { analyzeWhaleActivity } from '../analysis/whale-detection'
+
+// Stub functions for removed modules
+function calculateCumulativeVolumeDelta(_data: any, _price?: number): any { return null }
+function formatPrice(price: number, _asset?: string, _priceString?: string): string { return price.toString() }
+function calculateBTCCorrelation(_data: any, _btcData: any): any { return null }
+function analyzeWhaleActivity(_data: any): any { return null }
 
 // Cache for funding rate and open interest trends
 const fundingRateCache = new Map<string, { value: number; timestamp: number }>()
@@ -443,7 +445,10 @@ export async function getMarketData(assets: string[], metadata?: any): Promise<{
             multiTimeframeData: multiTimeframeData,
             multiTimeframeIndicators: multiTimeframeIndicators,
             trendAlignment: trendAlignment,
-            externalData: externalData
+            externalData: externalData,
+            // Direct access to openInterest for redundancy
+            openInterest: openInterest,
+            fundingRate: fundingRate,
           }
         }
         

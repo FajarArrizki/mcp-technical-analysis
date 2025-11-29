@@ -562,10 +562,13 @@ function formatExternalData(assetData: any): {
   volumeTrend: string
   volatility: string
 } | null {
+  // Access externalData from assetData (which is result.data from market-data.ts)
   const externalData = assetData?.externalData || assetData?.data?.externalData || {}
   const hyperliquid = externalData.hyperliquid || {}
   const enhanced = externalData.enhanced || {}
   const futures = externalData.futures || {}
+  
+
 
   // Get funding rate (from hyperliquid or futures)
   // Handle both number and object types (FundingRateData object has 'current' property)
@@ -596,31 +599,44 @@ function formatExternalData(assetData: any): {
   
   const fundingRateTrend = hyperliquid.fundingRateTrend || 'stable'
   
-  // Get open interest (from hyperliquid or futures)
-  // Handle both number and object types (OpenInterestData object has 'current' property)
-  let openInterestRaw: any = futures.openInterest || hyperliquid.openInterest || null
+  // Get open interest (prefer Hyperliquid as primary source, fallback to Binance futures)
   let openInterest: number | null = null
   
-  if (openInterestRaw !== null && openInterestRaw !== undefined) {
-    if (typeof openInterestRaw === 'number') {
-      openInterest = isNaN(openInterestRaw) || !isFinite(openInterestRaw) ? null : openInterestRaw
-    } else if (typeof openInterestRaw === 'object') {
-      // If it's an object (OpenInterestData), extract the 'current' value
-      openInterest = openInterestRaw.current || openInterestRaw.value || openInterestRaw.amount || openInterestRaw.oi || null
-      if (openInterest !== null && typeof openInterest !== 'number') {
-        openInterest = parseFloat(String(openInterest))
-        if (isNaN(openInterest) || !isFinite(openInterest)) {
-          openInterest = null
-        }
-      } else if (openInterest !== null && (isNaN(openInterest) || !isFinite(openInterest))) {
-        openInterest = null
-      }
-    } else if (typeof openInterestRaw === 'string') {
-      openInterest = parseFloat(openInterestRaw)
-      if (isNaN(openInterest) || !isFinite(openInterest)) {
-        openInterest = null
-      }
+  // Helper function to extract OI value from various formats
+  const extractOIValue = (raw: any): number | null => {
+    if (raw === null || raw === undefined) return null
+    if (typeof raw === 'number') {
+      return isNaN(raw) || !isFinite(raw) ? null : raw
     }
+    if (typeof raw === 'string') {
+      const parsed = parseFloat(raw)
+      return isNaN(parsed) || !isFinite(parsed) ? null : parsed
+    }
+    if (typeof raw === 'object') {
+      const val = raw.current || raw.value || raw.amount || raw.oi || null
+      if (val === null) return null
+      const parsed = typeof val === 'number' ? val : parseFloat(String(val))
+      return isNaN(parsed) || !isFinite(parsed) ? null : parsed
+    }
+    return null
+  }
+  
+  // Try multiple sources for open interest
+  // 1. Direct hyperliquid.openInterest (number from market-data.ts)
+  if (hyperliquid.openInterest !== undefined && hyperliquid.openInterest !== null) {
+    openInterest = extractOIValue(hyperliquid.openInterest)
+  }
+  // 2. Try futures.openInterest if hyperliquid failed
+  if (openInterest === null && futures.openInterest !== undefined) {
+    openInterest = extractOIValue(futures.openInterest)
+  }
+  // 3. Fallback: try assetData directly (in case externalData path is wrong)
+  if (openInterest === null && assetData?.openInterest !== undefined) {
+    openInterest = extractOIValue(assetData.openInterest)
+  }
+  // 4. Try data.openInterest
+  if (openInterest === null && assetData?.data?.openInterest !== undefined) {
+    openInterest = extractOIValue(assetData.data.openInterest)
   }
   
   const oiTrend = hyperliquid.oiTrend || 'stable'
@@ -647,13 +663,18 @@ function formatExternalData(assetData: any): {
   }
   
   // Format open interest (if it's a number, format it as string with commas)
+  // Accept 0 as valid value (but format only positive values with commas)
   let openInterestFormatted: string | number | null = null
-  if (openInterest !== null && typeof openInterest === 'number' && !isNaN(openInterest) && isFinite(openInterest) && openInterest > 0) {
-    // Format large numbers with commas
-    openInterestFormatted = openInterest.toLocaleString('en-US', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    })
+  if (openInterest !== null && typeof openInterest === 'number' && !isNaN(openInterest) && isFinite(openInterest)) {
+    if (openInterest > 0) {
+      // Format large numbers with commas
+      openInterestFormatted = openInterest.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      })
+    } else {
+      openInterestFormatted = openInterest // Return 0 as is
+    }
   }
 
   return {
@@ -663,6 +684,7 @@ function formatExternalData(assetData: any): {
     openInterestTrend: oiTrend,
     volumeTrend: volumeTrend,
     volatility: volatility,
+
   }
 }
 
@@ -1026,8 +1048,8 @@ const server = {
   registerResource(name: string, uri: string, config: any, handler: any) {
     this.resources.set(name, { uri, config, handler })
   },
-  registerPrompt(name: string, config: any) {
-    this.prompts.set(name, config)
+  registerPrompt(name: string, config: any, handler?: any) {
+    this.prompts.set(name, { config, handler })
   }
 } as any
 
@@ -10234,23 +10256,55 @@ async function handleMcpMethod(method: string, params: any, id: string | number 
       }
 
     case 'prompts/list':
-      const prompts = Array.from(server.prompts.entries()).map(([name, config]: [string, any]) => ({
-        name,
-        description: config.description || '',
-        arguments: config.arguments || []
-      }))
+      const prompts = Array.from(server.prompts.entries()).map(([name, { config }]: [string, any]) => {
+        // Extract arguments from argsSchema (Zod schemas)
+        const args: any[] = []
+        if (config.argsSchema) {
+          for (const [key, schema] of Object.entries(config.argsSchema)) {
+            const zodSchema = schema as any
+            const isRequired = !zodSchema?._def?.typeName?.includes('Optional')
+            args.push({
+              name: key,
+              description: zodSchema?._def?.description || '',
+              required: isRequired
+            })
+          }
+        }
+        return {
+          name,
+          description: config.description || '',
+          arguments: args
+        }
+      })
       return jsonRpcResponse(id, { prompts })
 
     case 'prompts/get':
       const promptName = params?.name
-      const promptConfig = server.prompts.get(promptName)
-      if (!promptConfig) {
+      const promptData = server.prompts.get(promptName)
+      if (!promptData) {
         return jsonRpcError(id, -32601, `Prompt not found: ${promptName}`)
       }
-      // Generate prompt messages based on arguments
+      const { config: promptConfig, handler: promptHandler } = promptData
       const promptArgs = params?.arguments || {}
+      
+      // If there's a handler function, call it with arguments
+      if (promptHandler && typeof promptHandler === 'function') {
+        try {
+          const result = await promptHandler(promptArgs)
+          return jsonRpcResponse(id, {
+            description: promptConfig.description,
+            messages: result.messages || [{
+              role: 'user',
+              content: { type: 'text', text: promptConfig.description }
+            }]
+          })
+        } catch (err: any) {
+          return jsonRpcError(id, -32603, err.message || 'Prompt handler failed')
+        }
+      }
+      
+      // Fallback: use template or description
       let promptText = promptConfig.template || promptConfig.description || ''
-      // Simple template substitution
       for (const [key, value] of Object.entries(promptArgs)) {
         promptText = promptText.replace(new RegExp(`\\{${key}\\}`, 'g'), String(value))
       }

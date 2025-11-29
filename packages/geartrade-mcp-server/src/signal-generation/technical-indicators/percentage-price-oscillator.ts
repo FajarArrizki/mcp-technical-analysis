@@ -56,12 +56,20 @@ export function calculatePercentagePriceOscillator(
   const fastEMA = calculateEMA(closes, fastPeriod)
   const slowEMA = calculateEMA(closes, slowPeriod)
 
-  if (!fastEMA || !slowEMA || fastEMA.length !== slowEMA.length) {
+  if (!fastEMA || !slowEMA || fastEMA.length === 0 || slowEMA.length === 0) {
     return null
   }
 
   // Calculate PPO: ((Fast EMA - Slow EMA) / Slow EMA) * 100
-  const ppo = ((fastEMA[fastEMA.length - 1] - slowEMA[slowEMA.length - 1]) / slowEMA[slowEMA.length - 1]) * 100
+  // Use the last values from each EMA array
+  const lastFastEMA = fastEMA[fastEMA.length - 1]
+  const lastSlowEMA = slowEMA[slowEMA.length - 1]
+  
+  if (lastSlowEMA === 0) {
+    return null
+  }
+  
+  const ppo = ((lastFastEMA - lastSlowEMA) / lastSlowEMA) * 100
 
   // Calculate signal line (EMA of PPO values)
   const ppoHistory = calculatePPOHistory(closes, fastPeriod, slowPeriod)
@@ -200,7 +208,7 @@ function calculateEMA(values: number[], period: number): number[] {
 }
 
 /**
- * Helper function to calculate PPO history
+ * Helper function to calculate PPO history (non-recursive)
  */
 function calculatePPOHistory(closes: number[], fastPeriod: number, slowPeriod: number): number[] {
   const ppoValues: number[] = []
@@ -208,9 +216,14 @@ function calculatePPOHistory(closes: number[], fastPeriod: number, slowPeriod: n
   // Start from where we have enough data
   for (let i = slowPeriod; i <= closes.length; i++) {
     const slice = closes.slice(0, i)
-    const ppo = calculatePercentagePriceOscillator(slice, fastPeriod, slowPeriod, 1) // No signal smoothing for history
-    if (ppo) {
-      ppoValues.push(ppo.ppo)
+    
+    // Calculate PPO directly without recursion
+    const fastEMA = calculateEMA(slice, fastPeriod)
+    const slowEMA = calculateEMA(slice, slowPeriod)
+    
+    if (fastEMA.length > 0 && slowEMA.length > 0 && slowEMA[slowEMA.length - 1] !== 0) {
+      const ppo = ((fastEMA[fastEMA.length - 1] - slowEMA[slowEMA.length - 1]) / slowEMA[slowEMA.length - 1]) * 100
+      ppoValues.push(ppo)
     }
   }
 

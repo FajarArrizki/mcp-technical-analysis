@@ -148,7 +148,7 @@ function calculateSMA(values: number[], period: number): number {
 }
 
 /**
- * Helper function to calculate EMV history
+ * Helper function to calculate EMV history (non-recursive)
  */
 function calculateEMVHistory(
   highs: number[],
@@ -158,14 +158,17 @@ function calculateEMVHistory(
   const emvValues: number[] = []
 
   for (let i = 1; i < highs.length; i++) {
-    const sliceHighs = highs.slice(0, i + 1)
-    const sliceLows = lows.slice(0, i + 1)
-    const sliceVolumes = volumes.slice(0, i + 1)
-
-    const emv = calculateEaseOfMovement(sliceHighs, sliceLows, sliceVolumes, 1) // No smoothing for history
-    if (emv) {
-      emvValues.push(emv.emv)
-    }
+    // Calculate EMV directly without recursion
+    const distanceMoved = ((highs[i] + lows[i]) / 2) -
+                          ((highs[i - 1] + lows[i - 1]) / 2)
+    
+    const currentRange = highs[i] - lows[i]
+    const currentVolume = volumes[i]
+    
+    const boxRatio = currentRange > 0 ? currentVolume / currentRange : 0
+    const emv = boxRatio > 0 ? distanceMoved / boxRatio : 0
+    
+    emvValues.push(emv)
   }
 
   return emvValues
