@@ -1,11 +1,11 @@
 {
   "mcpServers": {
-    "geartrade": {
-      "command": "bash",
+    "geartrade-v2": {
+      "command": "node",
       "args": [
-        "/root/GEARTRADE/scripts/mcp-auto-start.sh"
+        "C:\\Users\\hp5cd\\mcp-technical-analysis\\mcp-technical-analysis\\packages\\geartrade-mcp-server\\dist\\local-server.js"
       ],
-      "description": "GearTrade MCP Server - Localhost Only"
+      "description": "GearTrade MCP Server V2 - 50 Tools"
     }
   }
 }

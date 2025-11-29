@@ -3,7 +3,9 @@
  * Auto-exit positions on critical conditions (liquidation risk, funding extreme, BTC shock)
  */
 import { calculateLiquidationPrice } from './anti-liquidation';
-import { isBTCMoveSignificant, getBTCCurrentPrice } from '../analysis/btc-correlation';
+// Stub functions for removed btc-correlation module
+function isBTCMoveSignificant(_btcMovePct, _correlationData, _threshold) { return false; }
+function getBTCCurrentPrice() { return null; }
 // BTC price cache for shock detection
 let btcPriceHistory = [];
 // const BTC_SHOCK_THRESHOLD = 5 // 5% BTC move in short time

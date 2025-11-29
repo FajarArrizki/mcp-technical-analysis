@@ -1,29 +1,22 @@
 /**
- * Warning Collection
- * collectWarning, signalWarnings functions
+ * Position Warnings - Stub implementation
+ * Simplified version for MCP compatibility
  */
-// Global warnings collection for signal processing
-export const signalWarnings = [];
 /**
- * Helper function to collect warnings instead of printing immediately
+ * Collect warning - stub implementation
  */
-export function collectWarning(asset, message, details = null) {
-    signalWarnings.push({
-        asset,
-        message,
-        details,
-        timestamp: Date.now()
-    });
+export function collectWarning(asset, message, metadata, severity = 'medium') {
+    console.warn(`[${asset}] ${message}`);
 }
 /**
- * Clear all warnings
- */
-export function clearWarnings() {
-    signalWarnings.length = 0;
-}
-/**
- * Get all warnings for a specific asset
+ * Get warnings for asset - stub implementation
  */
 export function getWarningsForAsset(asset) {
-    return signalWarnings.filter(w => w.asset === asset);
+    return [];
+}
+/**
+ * Clear warnings for asset - stub implementation
+ */
+export function clearWarningsForAsset(asset) {
+    // No-op
 }

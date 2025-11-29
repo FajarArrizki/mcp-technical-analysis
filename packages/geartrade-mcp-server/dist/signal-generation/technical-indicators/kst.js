@@ -128,16 +128,21 @@ function calculateSMA(values, period) {
     return sum / period;
 }
 /**
- * Helper function to calculate KST history for signal line
+ * Helper function to calculate KST history for signal line (non-recursive)
  */
 function calculateKSTHistory(prices) {
     const kstValues = [];
     // Start from where we have enough data (45 periods minimum)
     for (let i = 45; i <= prices.length; i++) {
         const slice = prices.slice(0, i);
-        const kst = calculateKST(slice);
-        if (kst) {
-            kstValues.push(kst.kst);
+        // Calculate KST directly without recursion
+        const roc1 = calculateSmoothedROC(slice, 10, 10);
+        const roc2 = calculateSmoothedROC(slice, 15, 10);
+        const roc3 = calculateSmoothedROC(slice, 20, 10);
+        const roc4 = calculateSmoothedROC(slice, 30, 15);
+        if (roc1 !== null && roc2 !== null && roc3 !== null && roc4 !== null) {
+            const kst = roc1 * 1 + roc2 * 2 + roc3 * 3 + roc4 * 4;
+            kstValues.push(kst);
         }
     }
     return kstValues;

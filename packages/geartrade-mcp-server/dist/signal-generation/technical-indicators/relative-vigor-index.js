@@ -95,20 +95,25 @@ export function calculateRelativeVigorIndex(opens, highs, lows, closes, period =
     };
 }
 /**
- * Helper function to calculate RVI history
+ * Helper function to calculate RVI history (non-recursive)
  */
 function calculateRVIHistory(opens, highs, lows, closes, period) {
     const rviValues = [];
     // Start from where we have enough data
     for (let i = period; i <= opens.length; i++) {
-        const sliceOpens = opens.slice(0, i);
-        const sliceHighs = highs.slice(0, i);
-        const sliceLows = lows.slice(0, i);
-        const sliceCloses = closes.slice(0, i);
-        const rvi = calculateRelativeVigorIndex(sliceOpens, sliceHighs, sliceLows, sliceCloses, period, 1);
-        if (rvi) {
-            rviValues.push(rvi.rvi);
+        // Calculate RVI directly without recursion
+        let rvi = 0;
+        let totalWeight = 0;
+        for (let j = Math.max(0, i - period); j < i; j++) {
+            const weight = j - Math.max(0, i - period) + 1;
+            const numerator = closes[j] - opens[j];
+            const denominator = highs[j] - lows[j];
+            const ratio = denominator > 0 ? numerator / denominator : 0;
+            rvi += ratio * weight;
+            totalWeight += weight;
         }
+        rvi = totalWeight > 0 ? rvi / totalWeight : 0;
+        rviValues.push(rvi);
     }
     return rviValues;
 }

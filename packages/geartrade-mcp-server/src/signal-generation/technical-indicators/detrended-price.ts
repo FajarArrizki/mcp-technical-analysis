@@ -69,21 +69,36 @@ export function calculateDetrendedPrice(
   // Calculate DPO: Price - Displaced MA
   const dpo = currentPrice - ma
 
-  // Determine cycle position
+  // Determine cycle position (non-recursive)
   let cyclePosition: 'peak' | 'trough' | 'rising' | 'falling' | 'neutral' = 'neutral'
 
   if (prices.length >= period + displacement + 2) {
-    const prevDpo = calculateDetrendedPrice(prices.slice(0, -1), period)?.dpo || 0
-    const prevPrevDpo = calculateDetrendedPrice(prices.slice(0, -2), period)?.dpo || 0
+    // Calculate previous DPO values directly without recursion
+    const prevMaStartIndex = prices.length - 1 - period - displacement
+    const prevMaEndIndex = prices.length - 1 - displacement
+    const prevPrevMaStartIndex = prices.length - 2 - period - displacement
+    const prevPrevMaEndIndex = prices.length - 2 - displacement
+    
+    if (prevMaStartIndex >= 0 && prevPrevMaStartIndex >= 0) {
+      const prevMaPrices = prices.slice(prevMaStartIndex, prevMaEndIndex)
+      const prevMa = prevMaPrices.reduce((sum, price) => sum + price, 0) / prevMaPrices.length
+      const prevPrice = prices[prices.length - 2]
+      const prevDpo = prevPrice - prevMa
+      
+      const prevPrevMaPrices = prices.slice(prevPrevMaStartIndex, prevPrevMaEndIndex)
+      const prevPrevMa = prevPrevMaPrices.reduce((sum, price) => sum + price, 0) / prevPrevMaPrices.length
+      const prevPrevPrice = prices[prices.length - 3]
+      const prevPrevDpo = prevPrevPrice - prevPrevMa
 
-    if (dpo > prevDpo && prevDpo > prevPrevDpo) {
-      cyclePosition = 'rising'
-    } else if (dpo < prevDpo && prevDpo < prevPrevDpo) {
-      cyclePosition = 'falling'
-    } else if (dpo < prevDpo && prevDpo > prevPrevDpo) {
-      cyclePosition = 'peak'
-    } else if (dpo > prevDpo && prevDpo < prevPrevDpo) {
-      cyclePosition = 'trough'
+      if (dpo > prevDpo && prevDpo > prevPrevDpo) {
+        cyclePosition = 'rising'
+      } else if (dpo < prevDpo && prevDpo < prevPrevDpo) {
+        cyclePosition = 'falling'
+      } else if (dpo < prevDpo && prevDpo > prevPrevDpo) {
+        cyclePosition = 'peak'
+      } else if (dpo > prevDpo && prevDpo < prevPrevDpo) {
+        cyclePosition = 'trough'
+      }
     }
   }
 
@@ -147,17 +162,26 @@ export function calculateDetrendedPrice(
 }
 
 /**
- * Helper function to calculate DPO history
+ * Helper function to calculate DPO history (non-recursive)
  */
 function calculateDPOHistory(prices: number[], period: number): number[] {
   const dpoValues: number[] = []
   const maxHistory = Math.min(50, prices.length - period * 2) // Limit history for performance
+  const displacement = Math.floor(period / 2) + 1
 
   for (let i = period * 2; i <= prices.length; i++) {
     const slice = prices.slice(0, i)
-    const dpo = calculateDetrendedPrice(slice, period)
-    if (dpo) {
-      dpoValues.push(dpo.dpo)
+    
+    // Calculate DPO directly without recursion
+    const maStartIndex = slice.length - period - displacement
+    const maEndIndex = slice.length - displacement
+    
+    if (maStartIndex >= 0) {
+      const maPrices = slice.slice(maStartIndex, maEndIndex)
+      const ma = maPrices.reduce((sum, price) => sum + price, 0) / maPrices.length
+      const currentPrice = slice[slice.length - 1]
+      const dpo = currentPrice - ma
+      dpoValues.push(dpo)
     }
   }
 

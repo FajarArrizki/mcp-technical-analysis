@@ -5,7 +5,14 @@
 
 import { HistoricalDataPoint } from '../types'
 import { SessionVolumeProfile, CompositeVolumeProfile } from './volume-profile'
-import { CumulativeVolumeDelta } from './volume-delta'
+
+// Stub type for CumulativeVolumeDelta (removed with volume-delta.ts)
+export interface CumulativeVolumeDelta {
+  cvd: number
+  cvdTrend: 'bullish' | 'bearish' | 'neutral'
+  cvdDelta: number
+  cvdDivergence?: boolean
+}
 
 export interface VolumeConfirmationResult {
   isValid: boolean

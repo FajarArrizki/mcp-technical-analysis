@@ -6,7 +6,10 @@
 import { PositionState } from '../types'
 import { FuturesMarketData, BTCCorrelationData } from '../types/futures-types'
 import { calculateLiquidationPrice } from './anti-liquidation'
-import { isBTCMoveSignificant, getBTCCurrentPrice } from '../analysis/btc-correlation'
+
+// Stub functions for removed btc-correlation module
+function isBTCMoveSignificant(_btcMovePct: number, _correlationData: any, _threshold: number): boolean { return false }
+function getBTCCurrentPrice(): number | null { return null }
 
 export interface EmergencyExitCondition {
   triggered: boolean

@@ -11,12 +11,13 @@ import { calculateEnhancedMetrics } from '../analysis/enhanced-metrics';
 import { calculateOrderBookDepth } from '../analysis/orderbook';
 import { calculateSessionVolumeProfile, calculateCompositeVolumeProfile } from '../analysis/volume-profile';
 import { detectChangeOfCharacter } from '../analysis/market-structure';
-import { calculateCumulativeVolumeDelta } from '../analysis/volume-delta';
 import { performComprehensiveVolumeAnalysis } from '../analysis/volume-analysis';
-import { formatPrice } from '../formatting/price'; // OPTIMIZATION: Static import instead of dynamic import inside processAsset
 import { fetchFuturesData } from './binance-futures';
-import { calculateBTCCorrelation } from '../analysis/btc-correlation';
-import { analyzeWhaleActivity } from '../analysis/whale-detection';
+// Stub functions for removed modules
+function calculateCumulativeVolumeDelta(_data, _price) { return null; }
+function formatPrice(price, _asset, _priceString) { return price.toString(); }
+function calculateBTCCorrelation(_data, _btcData) { return null; }
+function analyzeWhaleActivity(_data) { return null; }
 // Cache for funding rate and open interest trends
 const fundingRateCache = new Map();
 const openInterestCache = new Map();
@@ -406,7 +407,10 @@ export async function getMarketData(assets, metadata) {
                             multiTimeframeData: multiTimeframeData,
                             multiTimeframeIndicators: multiTimeframeIndicators,
                             trendAlignment: trendAlignment,
-                            externalData: externalData
+                            externalData: externalData,
+                            // Direct access to openInterest for redundancy
+                            openInterest: openInterest,
+                            fundingRate: fundingRate,
                         }
                     };
                     return result;
