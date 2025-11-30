@@ -57,6 +57,9 @@ import type { CandlestickPatternsResult } from './signal-generation/analysis/can
 import { detectDivergence } from './signal-generation/analysis/divergence'
 import type { DivergenceResult } from './signal-generation/analysis/divergence'
 import { detectMarketRegime } from './signal-generation/analysis/market-regime'
+import { getTierByNotional, getTierLabel, classifyPositionsByTier, detectPositionChanges, TRADER_TIERS } from './signal-generation/analysis/tier-classification'
+import type { TierClassificationResult, TrackedWallet, PositionWithTier, WalletChange } from './signal-generation/analysis/tier-classification'
+import { getPositionsBySymbol, getWhalePositions as getHyperscreenerWhalePositions } from './signal-generation/data-fetchers/hyperscreener'
 import { calculateLiquidationIndicators } from './signal-generation/technical-indicators/liquidation'
 import type { LiquidationIndicator } from './signal-generation/technical-indicators/liquidation'
 import { calculateLongShortRatioIndicators } from './signal-generation/technical-indicators/long-short-ratio'
@@ -100,6 +103,9 @@ import { calculateChaikinMF, ChaikinMFData } from './signal-generation/technical
 import { calculateVolumeZoneOscillator, VolumeZoneOscillatorData } from './signal-generation/technical-indicators/volume-zone-oscillator'
 import { calculateMassIndex, MassIndexData } from './signal-generation/technical-indicators/mass-index'
 import { calculateUlcerIndex, UlcerIndexData } from './signal-generation/technical-indicators/ulcer-index'
+import { performCorrelationAnalysis, fetchBTCDominance, analyzeAltcoinCorrelation } from './signal-generation/technical-indicators/correlation-analysis'
+import type { CorrelationAnalysisResult, BTCDominanceData, AltcoinCorrelationData } from './signal-generation/technical-indicators/correlation-analysis'
+import { getUserState } from './signal-generation/data-fetchers/hyperliquid'
 // Import all remaining technical indicator functions
 import {
   calculateGatorOscillator, calculateChaikinVolatility,
@@ -1360,6 +1366,18 @@ server.registerTool(
             })
             .nullable()
             .optional(),
+          btcCorrelation: z
+            .object({
+              correlation: z.number().nullable().optional(),
+              strength: z.string().nullable().optional(),
+              direction: z.string().nullable().optional(),
+              beta: z.number().nullable().optional(),
+              relativeStrength: z.number().nullable().optional(),
+              decouplingSignal: z.enum(['decoupled', 'coupled', 'weakly_coupled']).nullable().optional(),
+              interpretation: z.string().nullable().optional(),
+            })
+            .nullable()
+            .optional(),
         })
       ),
     },
@@ -1419,8 +1437,19 @@ server.registerTool(
       if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 200) {
         process.env.CANDLES_COUNT = '200'
       }
+      
+      // Always include BTC for correlation analysis
+      const tickersWithBTC = normalizedTickers.includes('BTC') 
+        ? normalizedTickers 
+        : ['BTC', ...normalizedTickers]
+      
       // Get market data for all tickers (fetched in parallel by getMarketData)
-      const { marketDataMap } = await getMarketData(normalizedTickers)
+      const { marketDataMap } = await getMarketData(tickersWithBTC)
+      
+      // Extract BTC prices for correlation calculation
+      const btcData = marketDataMap.get('BTC')
+      const btcHistoricalData = btcData?.historicalData || btcData?.data?.historicalData || []
+      const btcPrices = btcHistoricalData.map((d: any) => d.close || d.price).filter((p: number) => p > 0)
 
       // Format results for each ticker
       const results = normalizedTickers.map((ticker) => {
@@ -1432,17 +1461,49 @@ server.registerTool(
             price: null,
             timestamp: new Date().toISOString(),
             technical: null,
+            btcCorrelation: null,
           }
         }
 
         const price = assetData.price || assetData.data?.price || null
         const technical = formatTechnicalIndicators(assetData, price)
+        
+        // Calculate BTC correlation for non-BTC tickers
+        let btcCorrelation: any = null
+        if (ticker !== 'BTC' && btcPrices.length >= 30) {
+          const historicalData = assetData?.historicalData || assetData?.data?.historicalData || []
+          const assetPrices = historicalData.map((d: any) => d.close || d.price).filter((p: number) => p > 0)
+          
+          if (assetPrices.length >= 30) {
+            const correlation = analyzeAltcoinCorrelation(ticker, assetPrices, btcPrices, 30)
+            btcCorrelation = {
+              correlation: correlation.correlationWithBTC?.correlation || null,
+              strength: correlation.correlationWithBTC?.strength || null,
+              direction: correlation.correlationWithBTC?.direction || null,
+              beta: correlation.beta,
+              relativeStrength: correlation.relativeStrength,
+              decouplingSignal: correlation.decouplingSignal,
+              interpretation: correlation.interpretation,
+            }
+          }
+        } else if (ticker === 'BTC') {
+          btcCorrelation = {
+            correlation: 1,
+            strength: 'perfect',
+            direction: 'positive',
+            beta: 1,
+            relativeStrength: 0,
+            decouplingSignal: 'coupled',
+            interpretation: 'BTC is the reference asset for correlation analysis.',
+          }
+        }
 
         return {
           ticker,
           price: price,
           timestamp: new Date().toISOString(),
           technical: technical,
+          btcCorrelation: btcCorrelation,
         }
       })
 
@@ -4364,6 +4425,865 @@ server.registerTool(
         ],
         structuredContent: {
           results: [],
+        },
+      }
+    }
+  }
+)
+
+// =============================================================================
+// POSITION MANAGEMENT TOOLS
+// =============================================================================
+
+// Register get_position tool
+server.registerTool(
+  'get_position',
+  {
+    title: 'Get Position',
+    description: 'Get current open positions, account balance, margin info, and PnL from Hyperliquid. Requires MAIN_WALLET_ADDRESS environment variable.',
+    inputSchema: {
+      walletAddress: z
+        .string()
+        .optional()
+        .describe('Wallet address to check positions for. If not provided, uses MAIN_WALLET_ADDRESS from environment'),
+    },
+    outputSchema: z.object({
+      success: z.boolean(),
+      walletAddress: z.string().nullable(),
+      accountValue: z.number().nullable(),
+      totalMarginUsed: z.number().nullable(),
+      totalUnrealizedPnl: z.number().nullable(),
+      withdrawable: z.number().nullable(),
+      positions: z.array(
+        z.object({
+          symbol: z.string(),
+          side: z.enum(['LONG', 'SHORT']),
+          size: z.number(),
+          entryPrice: z.number(),
+          markPrice: z.number().nullable(),
+          liquidationPrice: z.number().nullable(),
+          unrealizedPnl: z.number(),
+          unrealizedPnlPercent: z.number().nullable(),
+          leverage: z.number().nullable(),
+          marginUsed: z.number().nullable(),
+          returnOnEquity: z.number().nullable(),
+          maxLeverage: z.number().nullable(),
+        })
+      ),
+      openOrders: z.number().nullable(),
+      error: z.string().nullable(),
+    }),
+  },
+  async ({ walletAddress }: { walletAddress?: string }) => {
+    try {
+      const address = walletAddress || process.env.MAIN_WALLET_ADDRESS
+      
+      if (!address) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify({
+                success: false,
+                walletAddress: null,
+                accountValue: null,
+                totalMarginUsed: null,
+                totalUnrealizedPnl: null,
+                withdrawable: null,
+                positions: [],
+                openOrders: null,
+                error: 'No wallet address provided. Set MAIN_WALLET_ADDRESS environment variable or provide walletAddress parameter.',
+              }, null, 2),
+            },
+          ],
+          structuredContent: {
+            success: false,
+            walletAddress: null,
+            accountValue: null,
+            totalMarginUsed: null,
+            totalUnrealizedPnl: null,
+            withdrawable: null,
+            positions: [],
+            openOrders: null,
+            error: 'No wallet address provided',
+          },
+        }
+      }
+      
+      // Fetch user state from Hyperliquid
+      const userState = await getUserState(address)
+      
+      if (!userState) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify({
+                success: false,
+                walletAddress: address,
+                accountValue: null,
+                totalMarginUsed: null,
+                totalUnrealizedPnl: null,
+                withdrawable: null,
+                positions: [],
+                openOrders: null,
+                error: 'Failed to fetch user state from Hyperliquid',
+              }, null, 2),
+            },
+          ],
+          structuredContent: {
+            success: false,
+            walletAddress: address,
+            accountValue: null,
+            totalMarginUsed: null,
+            totalUnrealizedPnl: null,
+            withdrawable: null,
+            positions: [],
+            openOrders: null,
+            error: 'Failed to fetch user state',
+          },
+        }
+      }
+      
+      // Parse positions
+      const assetPositions = userState.assetPositions || []
+      const marginSummary = userState.marginSummary || {}
+      const crossMarginSummary = userState.crossMarginSummary || {}
+      
+      const positions = assetPositions
+        .filter((pos: any) => {
+          const position = pos.position || pos
+          const szi = parseFloat(position.szi || '0')
+          return szi !== 0
+        })
+        .map((pos: any) => {
+          const position = pos.position || pos
+          const szi = parseFloat(position.szi || '0')
+          const entryPx = parseFloat(position.entryPx || '0')
+          const unrealizedPnl = parseFloat(position.unrealizedPnl || '0')
+          const positionValue = parseFloat(position.positionValue || '0')
+          const marginUsed = parseFloat(position.marginUsed || '0')
+          const returnOnEquity = parseFloat(position.returnOnEquity || '0')
+          const maxLeverage = parseFloat(position.maxLeverage || position.maxTradeLeverage || '0')
+          const liquidationPx = position.liquidationPx ? parseFloat(position.liquidationPx) : null
+          
+          // Calculate leverage from position value and margin
+          const leverage = marginUsed > 0 ? positionValue / marginUsed : null
+          
+          // Calculate unrealized PnL percent
+          const entryValue = Math.abs(szi) * entryPx
+          const unrealizedPnlPercent = entryValue > 0 ? (unrealizedPnl / entryValue) * 100 : null
+          
+          return {
+            symbol: position.coin || pos.coin || 'UNKNOWN',
+            side: szi > 0 ? 'LONG' : 'SHORT',
+            size: Math.abs(szi),
+            entryPrice: entryPx,
+            markPrice: null, // Would need separate call to get mark price
+            liquidationPrice: liquidationPx,
+            unrealizedPnl,
+            unrealizedPnlPercent,
+            leverage,
+            marginUsed,
+            returnOnEquity: returnOnEquity * 100, // Convert to percentage
+            maxLeverage,
+          }
+        })
+      
+      // Calculate totals
+      const accountValue = parseFloat(marginSummary.accountValue || crossMarginSummary.accountValue || '0')
+      const totalMarginUsed = parseFloat(marginSummary.totalMarginUsed || crossMarginSummary.totalMarginUsed || '0')
+      const totalUnrealizedPnl = positions.reduce((sum: number, p: any) => sum + p.unrealizedPnl, 0)
+      const withdrawable = parseFloat(marginSummary.withdrawable || crossMarginSummary.withdrawable || '0')
+      
+      const result = {
+        success: true,
+        walletAddress: address,
+        accountValue,
+        totalMarginUsed,
+        totalUnrealizedPnl,
+        withdrawable,
+        positions,
+        openOrders: userState.openOrders?.length || 0,
+        error: null,
+      }
+      
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+        structuredContent: result,
+      }
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error)
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              success: false,
+              walletAddress: walletAddress || process.env.MAIN_WALLET_ADDRESS || null,
+              accountValue: null,
+              totalMarginUsed: null,
+              totalUnrealizedPnl: null,
+              withdrawable: null,
+              positions: [],
+              openOrders: null,
+              error: errorMsg,
+            }, null, 2),
+          },
+        ],
+        structuredContent: {
+          success: false,
+          walletAddress: walletAddress || process.env.MAIN_WALLET_ADDRESS || null,
+          accountValue: null,
+          totalMarginUsed: null,
+          totalUnrealizedPnl: null,
+          withdrawable: null,
+          positions: [],
+          openOrders: null,
+          error: errorMsg,
+        },
+      }
+    }
+  }
+)
+
+// =============================================================================
+// CORRELATION ANALYSIS TOOLS
+// =============================================================================
+
+// Register get_correlation_analysis tool
+server.registerTool(
+  'get_correlation_analysis',
+  {
+    title: 'Get Correlation Analysis',
+    description: 'Get BTC dominance, altcoin correlation with BTC, beta analysis, and market regime for multiple tickers. Useful for understanding market dynamics and diversification.',
+    inputSchema: {
+      tickers: z
+        .array(z.string())
+        .min(1)
+        .describe('Array of asset ticker symbols to analyze correlation (e.g., ["ETH", "SOL", "AVAX"])'),
+      period: z
+        .number()
+        .int()
+        .min(10)
+        .max(100)
+        .optional()
+        .default(30)
+        .describe('Period for correlation calculation (default: 30)'),
+    },
+    outputSchema: z.object({
+      timestamp: z.number(),
+      btcDominance: z.object({
+        dominance: z.number(),
+        dominanceChange24h: z.number(),
+        dominanceTrend: z.enum(['increasing', 'decreasing', 'stable']),
+        altcoinSeasonSignal: z.enum(['altcoin_season', 'btc_season', 'neutral']),
+        interpretation: z.string(),
+      }).nullable(),
+      altcoinCorrelations: z.array(
+        z.object({
+          ticker: z.string(),
+          correlationWithBTC: z.object({
+            correlation: z.number(),
+            strength: z.string(),
+            direction: z.string(),
+          }).nullable(),
+          beta: z.number().nullable(),
+          relativeStrength: z.number().nullable(),
+          decouplingSignal: z.enum(['decoupled', 'coupled', 'weakly_coupled']),
+          interpretation: z.string(),
+        })
+      ),
+      marketCorrelationAverage: z.number().nullable(),
+      marketRegime: z.enum(['risk_on', 'risk_off', 'neutral']),
+      tradingRecommendation: z.string(),
+      error: z.string().nullable(),
+    }),
+  },
+  async ({ tickers, period = 30 }: { tickers: string[], period?: number }) => {
+    if (!Array.isArray(tickers) || tickers.length === 0) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              timestamp: Date.now(),
+              btcDominance: null,
+              altcoinCorrelations: [],
+              marketCorrelationAverage: null,
+              marketRegime: 'neutral',
+              tradingRecommendation: 'Invalid tickers parameter',
+              error: 'Tickers must be a non-empty array of strings',
+            }, null, 2),
+          },
+        ],
+        structuredContent: {
+          timestamp: Date.now(),
+          btcDominance: null,
+          altcoinCorrelations: [],
+          marketCorrelationAverage: null,
+          marketRegime: 'neutral',
+          tradingRecommendation: 'Invalid tickers parameter',
+          error: 'Invalid tickers parameter',
+        },
+      }
+    }
+
+    try {
+      // Normalize tickers and ensure BTC is included
+      const normalizedTickers = tickers
+        .filter((t) => t && typeof t === 'string' && t.trim().length > 0)
+        .map((t) => t.trim().toUpperCase())
+      
+      const allTickers = normalizedTickers.includes('BTC') 
+        ? normalizedTickers 
+        : ['BTC', ...normalizedTickers]
+      
+      // Fetch market data for all tickers including BTC
+      const { marketDataMap } = await getMarketData(allTickers)
+      
+      // Extract price arrays
+      const priceDataMap = new Map<string, number[]>()
+      
+      for (const ticker of allTickers) {
+        const assetData = marketDataMap.get(ticker)
+        const historicalData = assetData?.historicalData || assetData?.data?.historicalData || []
+        
+        if (historicalData.length > 0) {
+          const prices = historicalData.map((d: any) => d.close || d.price).filter((p: number) => p > 0)
+          priceDataMap.set(ticker, prices)
+        }
+      }
+      
+      const btcPrices = priceDataMap.get('BTC') || []
+      
+      if (btcPrices.length < period) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify({
+                timestamp: Date.now(),
+                btcDominance: await fetchBTCDominance(),
+                altcoinCorrelations: [],
+                marketCorrelationAverage: null,
+                marketRegime: 'neutral',
+                tradingRecommendation: 'Insufficient BTC price data for correlation analysis',
+                error: 'Insufficient BTC price data',
+              }, null, 2),
+            },
+          ],
+          structuredContent: {
+            timestamp: Date.now(),
+            btcDominance: null,
+            altcoinCorrelations: [],
+            marketCorrelationAverage: null,
+            marketRegime: 'neutral',
+            tradingRecommendation: 'Insufficient data',
+            error: 'Insufficient BTC price data',
+          },
+        }
+      }
+      
+      // Perform correlation analysis
+      const result = await performCorrelationAnalysis(normalizedTickers, priceDataMap, btcPrices, period)
+      
+      // Format for output
+      const formattedResult = {
+        timestamp: result.timestamp,
+        btcDominance: result.btcDominance,
+        altcoinCorrelations: result.altcoinCorrelations.map(c => ({
+          ticker: c.ticker,
+          correlationWithBTC: c.correlationWithBTC ? {
+            correlation: c.correlationWithBTC.correlation,
+            strength: c.correlationWithBTC.strength,
+            direction: c.correlationWithBTC.direction,
+          } : null,
+          beta: c.beta,
+          relativeStrength: c.relativeStrength,
+          decouplingSignal: c.decouplingSignal,
+          interpretation: c.interpretation,
+        })),
+        marketCorrelationAverage: result.marketCorrelationAverage,
+        marketRegime: result.marketRegime,
+        tradingRecommendation: result.tradingRecommendation,
+        error: null,
+      }
+      
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(formattedResult, null, 2),
+          },
+        ],
+        structuredContent: formattedResult,
+      }
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error)
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              timestamp: Date.now(),
+              btcDominance: null,
+              altcoinCorrelations: [],
+              marketCorrelationAverage: null,
+              marketRegime: 'neutral',
+              tradingRecommendation: 'Error performing correlation analysis',
+              error: errorMsg,
+            }, null, 2),
+          },
+        ],
+        structuredContent: {
+          timestamp: Date.now(),
+          btcDominance: null,
+          altcoinCorrelations: [],
+          marketCorrelationAverage: null,
+          marketRegime: 'neutral',
+          tradingRecommendation: 'Error',
+          error: errorMsg,
+        },
+      }
+    }
+  }
+)
+
+// =============================================================================
+// WHALE TRACKING & TIER CLASSIFICATION TOOLS
+// =============================================================================
+
+// In-memory cache for position change detection
+const walletPositionCache = new Map<string, { positions: any[], timestamp: number }>()
+
+// Register get_whale_position tool
+server.registerTool(
+  'get_whale_position',
+  {
+    title: 'Get Whale Position',
+    description: 'Track positions from specific wallet addresses with labeling support. Can also include top whales from HyperScreener. Supports change detection alerts.',
+    inputSchema: {
+      wallets: z
+        .array(z.object({
+          address: z.string().describe('Wallet address to track'),
+          label: z.string().optional().describe('Optional label for the wallet (e.g., "Smart Money 1", "Competitor A")'),
+        }))
+        .optional()
+        .describe('Array of wallet objects with address and optional label'),
+      includeHyperscreener: z
+        .boolean()
+        .optional()
+        .default(false)
+        .describe('Include top whales from HyperScreener data'),
+      hyperscreenerLimit: z
+        .number()
+        .int()
+        .min(1)
+        .max(50)
+        .optional()
+        .default(10)
+        .describe('Number of top whales to fetch from HyperScreener (default: 10)'),
+      tickers: z
+        .array(z.string())
+        .optional()
+        .describe('Optional filter by tickers (e.g., ["BTC", "ETH"])'),
+      detectChanges: z
+        .boolean()
+        .optional()
+        .default(true)
+        .describe('Enable change detection alerts (compares with previous call)'),
+    },
+    outputSchema: z.object({
+      timestamp: z.number(),
+      trackedWallets: z.array(z.any()),
+      hyperscreenerWhales: z.array(z.any()).nullable(),
+      changes: z.array(z.any()).nullable(),
+      summary: z.object({
+        totalWalletsTracked: z.number(),
+        manualWallets: z.number(),
+        hyperscreenerWallets: z.number(),
+        combinedNotional: z.number(),
+        changesDetected: z.number(),
+      }),
+      error: z.string().nullable(),
+    }),
+  },
+  async ({ wallets, includeHyperscreener = false, hyperscreenerLimit = 10, tickers, detectChanges = true }: { 
+    wallets?: Array<{ address: string, label?: string }>,
+    includeHyperscreener?: boolean,
+    hyperscreenerLimit?: number,
+    tickers?: string[],
+    detectChanges?: boolean
+  }) => {
+    try {
+      const trackedWallets: TrackedWallet[] = []
+      const allChanges: WalletChange[] = []
+      let combinedNotional = 0
+      
+      // Normalize tickers filter
+      const tickerFilter = tickers?.map(t => t.toUpperCase()) || null
+      
+      // Process manual wallets
+      if (wallets && wallets.length > 0) {
+        for (const wallet of wallets) {
+          try {
+            const userState = await getUserState(wallet.address)
+            
+            if (!userState) continue
+            
+            const assetPositions = userState.assetPositions || []
+            const positions: PositionWithTier[] = []
+            let walletNotional = 0
+            
+            for (const pos of assetPositions) {
+              const position = pos.position || pos
+              const szi = parseFloat(position.szi || '0')
+              if (szi === 0) continue
+              
+              const symbol = position.coin || pos.coin || 'UNKNOWN'
+              
+              // Apply ticker filter
+              if (tickerFilter && !tickerFilter.includes(symbol.toUpperCase())) continue
+              
+              const entryPx = parseFloat(position.entryPx || '0')
+              const currentPx = parseFloat(position.positionValue || '0') / Math.abs(szi) || entryPx
+              const notional = Math.abs(szi) * currentPx
+              const unrealizedPnl = parseFloat(position.unrealizedPnl || '0')
+              const pnlPercent = entryPx > 0 ? ((currentPx - entryPx) / entryPx) * 100 * (szi > 0 ? 1 : -1) : 0
+              const leverage = parseFloat(position.leverage || '1')
+              
+              const tier = getTierByNotional(notional)
+              
+              positions.push({
+                address: wallet.address,
+                symbol,
+                side: szi > 0 ? 'LONG' : 'SHORT',
+                size: Math.abs(szi),
+                notionalValue: notional,
+                entryPrice: entryPx,
+                currentPrice: currentPx,
+                unrealizedPnl,
+                pnlPercent,
+                leverage,
+                tier: getTierLabel(notional),
+                tierEmoji: tier.emoji,
+                tierName: tier.name,
+              })
+              
+              walletNotional += notional
+            }
+            
+            // Calculate wallet tier based on total notional
+            const walletTier = getTierByNotional(walletNotional)
+            
+            // Change detection
+            if (detectChanges) {
+              const cacheKey = wallet.address.toLowerCase()
+              const cached = walletPositionCache.get(cacheKey)
+              
+              if (cached) {
+                const changes = detectPositionChanges(cached.positions, positions, wallet.address)
+                allChanges.push(...changes)
+              }
+              
+              // Update cache
+              walletPositionCache.set(cacheKey, {
+                positions: positions,
+                timestamp: Date.now()
+              })
+            }
+            
+            trackedWallets.push({
+              address: wallet.address,
+              label: wallet.label || null,
+              source: 'manual',
+              tier: getTierLabel(walletNotional),
+              tierEmoji: walletTier.emoji,
+              accountValue: parseFloat(userState.marginSummary?.accountValue || userState.crossMarginSummary?.accountValue || '0'),
+              totalNotional: walletNotional,
+              positions,
+            })
+            
+            combinedNotional += walletNotional
+          } catch (walletError) {
+            console.error(`Error fetching wallet ${wallet.address}:`, walletError)
+          }
+        }
+      }
+      
+      // Process HyperScreener whales
+      let hyperscreenerWhales: TrackedWallet[] | null = null
+      
+      if (includeHyperscreener) {
+        try {
+          const whalePositions = await getHyperscreenerWhalePositions('notional_value', 'desc', hyperscreenerLimit * 3)
+          
+          // Group by address
+          const whaleMap = new Map<string, any[]>()
+          for (const pos of whalePositions) {
+            const symbol = pos.asset_name || pos.symbol
+            
+            // Apply ticker filter
+            if (tickerFilter && !tickerFilter.includes(symbol.toUpperCase())) continue
+            
+            const address = pos.address
+            if (!whaleMap.has(address)) {
+              whaleMap.set(address, [])
+            }
+            whaleMap.get(address)!.push(pos)
+          }
+          
+          hyperscreenerWhales = []
+          let count = 0
+          
+          for (const [address, positions] of whaleMap) {
+            if (count >= hyperscreenerLimit) break
+            
+            // Skip if already in manual wallets
+            if (wallets?.some(w => w.address.toLowerCase() === address.toLowerCase())) continue
+            
+            let totalNotional = 0
+            const formattedPositions: PositionWithTier[] = []
+            
+            for (const pos of positions) {
+              const notional = pos.notional_value || 0
+              totalNotional += notional
+              const tier = getTierByNotional(notional)
+              
+              formattedPositions.push({
+                address,
+                symbol: pos.asset_name || pos.symbol,
+                side: pos.direction || pos.side,
+                size: pos.size || 0,
+                notionalValue: notional,
+                entryPrice: pos.entry_price || 0,
+                currentPrice: pos.current_price || 0,
+                unrealizedPnl: pos.unrealized_pnl || 0,
+                pnlPercent: pos.pnl_percent || 0,
+                leverage: pos.leverage || 1,
+                tier: getTierLabel(notional),
+                tierEmoji: tier.emoji,
+                tierName: tier.name,
+              })
+            }
+            
+            const walletTier = getTierByNotional(totalNotional)
+            
+            hyperscreenerWhales.push({
+              address,
+              label: null,
+              source: 'hyperscreener',
+              tier: getTierLabel(totalNotional),
+              tierEmoji: walletTier.emoji,
+              accountValue: totalNotional, // Approximate
+              totalNotional,
+              positions: formattedPositions,
+            })
+            
+            combinedNotional += totalNotional
+            count++
+          }
+        } catch (hsError) {
+          console.error('Error fetching HyperScreener whales:', hsError)
+        }
+      }
+      
+      const result = {
+        timestamp: Date.now(),
+        trackedWallets,
+        hyperscreenerWhales,
+        changes: allChanges.length > 0 ? allChanges : null,
+        summary: {
+          totalWalletsTracked: trackedWallets.length + (hyperscreenerWhales?.length || 0),
+          manualWallets: trackedWallets.length,
+          hyperscreenerWallets: hyperscreenerWhales?.length || 0,
+          combinedNotional,
+          changesDetected: allChanges.length,
+        },
+        error: null,
+      }
+      
+      return {
+        content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
+        structuredContent: result,
+      }
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error)
+      return {
+        content: [{ type: 'text', text: JSON.stringify({ error: errorMsg }, null, 2) }],
+        structuredContent: {
+          timestamp: Date.now(),
+          trackedWallets: [],
+          hyperscreenerWhales: null,
+          changes: null,
+          summary: { totalWalletsTracked: 0, manualWallets: 0, hyperscreenerWallets: 0, combinedNotional: 0, changesDetected: 0 },
+          error: errorMsg,
+        },
+      }
+    }
+  }
+)
+
+// Register get_tier_classification tool
+server.registerTool(
+  'get_tier_classification',
+  {
+    title: 'Get Tier Classification',
+    description: 'Get market breakdown by trader tier (Shrimp to Institutional) for given tickers. Shows count, notional, and wallet addresses per tier with Long/Short breakdown.',
+    inputSchema: {
+      tickers: z
+        .array(z.string())
+        .min(1)
+        .describe('Array of ticker symbols to analyze (e.g., ["BTC", "ETH", "SOL"])'),
+      limit: z
+        .number()
+        .int()
+        .min(50)
+        .max(500)
+        .optional()
+        .default(200)
+        .describe('Maximum positions to fetch per ticker (default: 200)'),
+    },
+    outputSchema: z.object({
+      timestamp: z.number(),
+      results: z.record(z.string(), z.any()),
+      tierDefinitions: z.array(z.object({
+        name: z.string(),
+        emoji: z.string(),
+        range: z.string(),
+      })),
+      error: z.string().nullable(),
+    }),
+  },
+  async ({ tickers, limit = 200 }: { tickers: string[], limit?: number }) => {
+    if (!Array.isArray(tickers) || tickers.length === 0) {
+      return {
+        content: [{ type: 'text', text: JSON.stringify({ error: 'Invalid tickers parameter' }, null, 2) }],
+        structuredContent: {
+          timestamp: Date.now(),
+          results: {},
+          tierDefinitions: TRADER_TIERS.map(t => ({
+            name: t.name,
+            emoji: t.emoji,
+            range: t.maxNotional === Infinity ? `> $${(t.minNotional / 1000).toFixed(0)}K` : `$${(t.minNotional / 1000).toFixed(0)}K - $${(t.maxNotional / 1000).toFixed(0)}K`
+          })),
+          error: 'Invalid tickers parameter',
+        },
+      }
+    }
+    
+    try {
+      const normalizedTickers = tickers.map(t => t.trim().toUpperCase())
+      const results: Record<string, any> = {}
+      
+      for (const ticker of normalizedTickers) {
+        try {
+          // Fetch positions from HyperScreener
+          const positions = await getPositionsBySymbol(ticker, 'notional_value', 'desc', limit)
+          
+          if (positions.length === 0) {
+            results[ticker] = {
+              error: 'No positions found',
+              totalPositions: 0,
+              breakdown: {},
+            }
+            continue
+          }
+          
+          // Classify positions by tier
+          const classification = classifyPositionsByTier(positions, ticker)
+          
+          // Format breakdown with top wallets (sorted by notional desc)
+          const formattedBreakdown: Record<string, any> = {}
+          
+          for (const tier of classification.breakdown) {
+            const key = `${tier.emoji} ${tier.tierName}`
+            formattedBreakdown[key] = {
+              count: tier.total.count,
+              notional: tier.total.notional,
+              pct: parseFloat(tier.total.percentage.toFixed(2)),
+              long: {
+                count: tier.long.count,
+                notional: tier.long.notional,
+                topWallets: tier.long.topWallets.map(w => ({
+                  address: w.address,
+                  notional: w.notional,
+                })),
+              },
+              short: {
+                count: tier.short.count,
+                notional: tier.short.notional,
+                topWallets: tier.short.topWallets.map(w => ({
+                  address: w.address,
+                  notional: w.notional,
+                })),
+              },
+            }
+          }
+          
+          results[ticker] = {
+            totalPositions: classification.totalPositions,
+            totalNotional: classification.totalNotional,
+            breakdown: formattedBreakdown,
+            dominance: classification.dominance.retailVsWhale,
+            topTier: `${classification.dominance.topTierEmoji} ${classification.dominance.topTier}`,
+            whaleConcentration: parseFloat(classification.dominance.whaleConcentration.toFixed(2)),
+            institutionalConcentration: parseFloat(classification.dominance.institutionalConcentration.toFixed(2)),
+            longVsShort: {
+              longCount: classification.longVsShort.longCount,
+              shortCount: classification.longVsShort.shortCount,
+              longNotional: classification.longVsShort.longNotional,
+              shortNotional: classification.longVsShort.shortNotional,
+              ratio: parseFloat(classification.longVsShort.ratio.toFixed(2)),
+            },
+          }
+        } catch (tickerError) {
+          results[ticker] = {
+            error: tickerError instanceof Error ? tickerError.message : String(tickerError),
+            totalPositions: 0,
+            breakdown: {},
+          }
+        }
+      }
+      
+      const result = {
+        timestamp: Date.now(),
+        results,
+        tierDefinitions: TRADER_TIERS.map(t => ({
+          name: t.name,
+          emoji: t.emoji,
+          range: t.maxNotional === Infinity 
+            ? `> $${(t.minNotional / 1000000).toFixed(1)}M` 
+            : t.minNotional >= 1000000
+              ? `$${(t.minNotional / 1000000).toFixed(1)}M - $${(t.maxNotional / 1000000).toFixed(1)}M`
+              : `$${(t.minNotional / 1000).toFixed(0)}K - $${(t.maxNotional / 1000).toFixed(0)}K`
+        })),
+        error: null,
+      }
+      
+      return {
+        content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
+        structuredContent: result,
+      }
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error)
+      return {
+        content: [{ type: 'text', text: JSON.stringify({ error: errorMsg }, null, 2) }],
+        structuredContent: {
+          timestamp: Date.now(),
+          results: {},
+          tierDefinitions: TRADER_TIERS.map(t => ({
+            name: t.name,
+            emoji: t.emoji,
+            range: `$${t.minNotional} - $${t.maxNotional}`
+          })),
+          error: errorMsg,
         },
       }
     }

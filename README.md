@@ -26,7 +26,7 @@ A comprehensive Model Context Protocol (MCP) server that bridges AI assistants w
 
 
 **🔥 Key Features:**
-- 🔴 **52 Analysis & Trading Tools** - Complete market analysis + trading execution toolkit
+- 🔴 **56 Analysis & Trading Tools** - Complete market analysis + trading execution toolkit
 - 📊 **Real-time Market Data** - Live prices, indicators, volume analysis
 - 🎯 **Advanced Technical Analysis** - RSI, MACD, Fibonacci, Order Book, etc.
 - 💰 **Risk Management** - Position sizing, stop loss, take profit calculations
@@ -36,10 +36,25 @@ A comprehensive Model Context Protocol (MCP) server that bridges AI assistants w
 - 🔄 **Streaming Support** - HTTP/SSE for real-time updates
 - 💹 **Hyperliquid Trading** - Testnet & Mainnet futures execution with slippage protection
 - 🐋 **HyperScreener Integration** - Whale positions, liquidations, top traders, large trades data
+- 🎯 **Whale Tracking** - Track specific wallet addresses with labeling & change detection alerts
+- 📊 **Tier Classification** - Market breakdown by trader tier (🦐 Shrimp to 🐉 Institutional)
+- 🔗 **BTC Correlation** - Altcoin correlation with BTC, beta analysis, market regime detection
 - 📈 **Enhanced L2 Order Book** - Real-time bids/asks with depth and imbalance from Hyperliquid
-- ✅ **Fully Tested** - All 52 tools validated and working (November 2024)
+- ✅ **Fully Tested** - All 56 tools validated and working (November 2024)
 
 ## 📋 Recent Updates (November 2024)
+
+### New Tools Added
+- ✅ **`get_position`** - Track your own futures positions from Hyperliquid (account value, margin, PnL, positions)
+- ✅ **`get_correlation_analysis`** - BTC dominance, altcoin correlation with BTC, beta analysis, market regime
+- ✅ **`get_whale_position`** - Track specific wallet addresses with labeling & change detection alerts
+- ✅ **`get_tier_classification`** - Market breakdown by trader tier (🦐 Shrimp → 🐉 Institutional) with Long/Short and top wallets
+
+### New Features
+- ✅ **BTC Correlation in `get_indicators`** - Added `btcCorrelation` field showing correlation, beta, relative strength for each ticker
+- ✅ **Tier Classification System** - 7 tiers from Shrimp (<$1K) to Institutional (>$2M)
+- ✅ **Wallet Labeling** - Label tracked wallets (e.g., "Smart Money 1", "Competitor A")
+- ✅ **Change Detection** - Alerts for new positions, closed positions, size changes, side flips
 
 ### Bug Fixes
 - ✅ **CVD (Cumulative Volume Delta)** - Fixed null data issue, now returns cvdTrend and cvdDelta
@@ -68,9 +83,10 @@ A comprehensive Model Context Protocol (MCP) server that bridges AI assistants w
 
 ## 🌟 **What's Included**
 
-### 📊 **52 Complete Analysis & Trading Tools**
+### 📊 **56 Complete Analysis & Trading Tools**
 - **Market Data** (5): Price, indicators, volume analysis, multi-timeframe, external data
 - **Order Book & Market** (8): Order book depth, volume profile, market structure, regime, patterns, divergence, liquidation, long/short ratio
+- **Position & Whale Tracking** (4): Position tracking, correlation analysis, whale position tracking, tier classification
 - **Risk Management** (2): Position sizing and risk/reward calculations
 - **Moving Averages** (10): MA envelope, VWMA, McGinley, Rainbow, Kaufman, Hull, WMA, SMMA, DEMA, TEMA
 - **Oscillators** (18): Stochastic RSI, CMO, PPO, AO, Gator, Elder Ray, Fisher, KST, Schaff, Coppock, TSI, RVI, DPO, Momentum, ROC, Ultimate, TRIX
@@ -82,7 +98,7 @@ A comprehensive Model Context Protocol (MCP) server that bridges AI assistants w
 - API references and integration guides
 - Specialized guides for volume analysis, Fibonacci, orderbook, and more
 - **NEW:** Usage patterns guide for Day Trading, Swing Trading, Position Trading
-- **NEW:** Complete tools reference (52 tools with parameters)
+- **NEW:** Complete tools reference (56 tools with parameters)
 
 ### 🤖 **32 AI Analysis Prompts**
 - Core analysis workflows for comprehensive market research
@@ -250,7 +266,7 @@ nameserver 1.0.0.1
 
 ## 📦 MCP Capabilities
 
-### 🔧 Tools (52)
+### 🔧 Tools (56)
 
 | No | Tool Name | Description |
 |----|-----------|-------------|
@@ -269,9 +285,14 @@ nameserver 1.0.0.1
 | 11 | `get_divergence` | Get RSI/price divergence detection |
 | 12 | `get_liquidation_levels` | Get liquidation level analysis with heatmap data from HyperScreener |
 | 13 | `get_long_short_ratio` | Get long/short ratio with whale positions and top traders from HyperScreener |
+| | **Position & Whale Tracking** | |
+| 14 | `get_position` | Get your own futures positions from Hyperliquid (account value, margin, PnL, leverage) |
+| 15 | `get_correlation_analysis` | BTC dominance, altcoin correlation, beta analysis, market regime detection |
+| 16 | `get_whale_position` | Track specific wallet addresses with labeling & change detection alerts |
+| 17 | `get_tier_classification` | Market breakdown by tier (🦐→🐉) with Long/Short and top wallets per tier |
 | | **Risk Management** | |
-| 14 | `calculate_risk_management` | Calculate stop loss, take profit, and risk/reward ratio |
-| 15 | `calculate_position_setup` | Calculate position size, leverage, margin, and quantity |
+| 18 | `calculate_risk_management` | Calculate stop loss, take profit, and risk/reward ratio |
+| 19 | `calculate_position_setup` | Calculate position size, leverage, margin, and quantity |
 | | **Moving Averages (Merged Tool)** | |
 | 16 | `ma_envelope` | MA Envelope for volatility-based support/resistance |
 | 17 | `vwma` | Volume-Weighted Moving Average |
@@ -346,7 +367,7 @@ nameserver 1.0.0.1
 | 20 | `geartrade://volume-indicators-guide` | Volume-based indicators and flow analysis |
 | 21 | `geartrade://volatility-indicators-guide` | Volatility measurement and option strategies |
 | 22 | `geartrade://usage-patterns` | **NEW:** Recommended usage patterns for Day Trading, Swing Trading, Position Trading |
-| 23 | `geartrade://complete-tools` | **NEW:** Complete reference of all 52 MCP tools with parameters and use cases |
+| 23 | `geartrade://complete-tools` | **NEW:** Complete reference of all 56 MCP tools with parameters and use cases |
 
 ### 🤖 Prompts (32)
 
@@ -405,7 +426,7 @@ nameserver 1.0.0.1
 ║  ┌────────────────────────┐    ┌─────────────────────────────────┐            ║
 ║  │    AI Assistants       │◄──►│        MCP Protocol             │            ║
 ║  │  ┌────────────────────┐│    │  ┌───────────────────────────┐  │            ║
-║  │  │  Claude / Cursor   ││    │  │  52 Tools Execution       │  │            ║
+║  │  │  Claude / Cursor   ││    │  │  56 Tools Execution       │  │            ║
 ║  │  │  Claude Code CLI   ││    │  │  22 Resources Access      │  │            ║
 ║  │  │  Custom MCP Apps   ││    │  │  32 Prompts Management    │  │            ║
 ║  │  └────────────────────┘│    │  └───────────────────────────┘  │            ║
@@ -413,7 +434,7 @@ nameserver 1.0.0.1
 ║                                          │                                    ║
 ║                                          ▼                                    ║
 ║  ┌────────────────────────────────────────────────────────────────────────┐   ║
-║  │                    Core MCP Server (52 Tools)                          │   ║
+║  │                    Core MCP Server (56 Tools)                          │   ║
 ║  │  ┌─────────────────────────┐  ┌─────────────────────────────────────┐  │   ║
 ║  │  │    Analysis Engine      │  │         Resources (22)              │  │   ║
 ║  │  │  ┌─────────────────────┐│  │  ┌─────────────────────────────┐    │  │   ║
@@ -479,7 +500,7 @@ nameserver 1.0.0.1
 ### Component Details
 
 **🎯 MCP Protocol Layer**
-- **Tool Execution**: 52 specialized analysis & trading tools for comprehensive market intelligence
+- **Tool Execution**: 56 specialized analysis & trading tools for comprehensive market intelligence
 - **Resource Management**: 22 detailed documentation resources for research and education
 - **Prompt System**: 32 AI-optimized prompts for structured analysis workflows
 
@@ -564,7 +585,7 @@ GEARTRADE/
 ├── packages/
 │   └── geartrade-mcp-server/               # Main MCP server package
 │       ├── src/
-│       │   ├── index.ts                    # MCP server entry (80 tools, 20 resources, 24 prompts)
+│       │   ├── index.ts                    # MCP server entry (56 tools, 22 resources, 32 prompts)
 │       │   └── signal-generation/          # Analysis engine modules
 │       │       ├── ai/                     # AI integration
 │       │       ├── analysis/               # Market analysis modules
@@ -601,7 +622,7 @@ GEARTRADE/
 
 | No | Directory | Description |
 |----|-----------|-------------|
-| 1 | `packages/geartrade-mcp-server/src/index.ts` | Main MCP server entry with 80 analysis tools, 20 resources, 24 prompts |
+| 1 | `packages/geartrade-mcp-server/src/index.ts` | Main MCP server entry with 56 analysis tools, 22 resources, 32 prompts |
 | 2 | `packages/geartrade-mcp-server/local-server.ts` | HTTP/SSE streaming server for remote MCP client connections |
 | 3 | `packages/geartrade-mcp-server/package.json` | MCP server package configuration and dependencies |
 | 4 | `packages/geartrade-mcp-server/tsconfig.json` | TypeScript configuration for MCP server compilation |
