@@ -47,22 +47,34 @@ export function calculateKST(prices: number[]): KSTData | null {
   // ROC3 = 10-period SMA of 20-period ROC
   // ROC4 = 15-period SMA of 30-period ROC
 
-  if (prices.length < 45) { // Need at least 30 + 15 periods for calculations
+  // Minimum 15 data points required
+  if (prices.length < 15) {
     return null
   }
+  
+  // Calculate adaptive periods based on available data
+  const dataRatio = Math.min(1, prices.length / 45)
+  const roc1Period = Math.max(3, Math.floor(10 * dataRatio))
+  const roc2Period = Math.max(4, Math.floor(15 * dataRatio))
+  const roc3Period = Math.max(5, Math.floor(20 * dataRatio))
+  const roc4Period = Math.max(6, Math.floor(30 * dataRatio))
+  const smoothPeriod1 = Math.max(3, Math.floor(10 * dataRatio))
+  const smoothPeriod2 = Math.max(4, Math.floor(15 * dataRatio))
 
-  // Calculate individual ROC components
-  const roc1 = calculateSmoothedROC(prices, 10, 10) // 10-period ROC, 10-period SMA
-  const roc2 = calculateSmoothedROC(prices, 15, 10) // 15-period ROC, 10-period SMA
-  const roc3 = calculateSmoothedROC(prices, 20, 10) // 20-period ROC, 10-period SMA
-  const roc4 = calculateSmoothedROC(prices, 30, 15) // 30-period ROC, 15-period SMA
+  // Calculate individual ROC components using adaptive periods
+  const roc1 = calculateSmoothedROC(prices, roc1Period, smoothPeriod1)
+  const roc2 = calculateSmoothedROC(prices, roc2Period, smoothPeriod1)
+  const roc3 = calculateSmoothedROC(prices, roc3Period, smoothPeriod1)
+  const roc4 = calculateSmoothedROC(prices, roc4Period, smoothPeriod2)
 
-  if (roc1 === null || roc2 === null || roc3 === null || roc4 === null) {
-    return null
-  }
+  // Use fallback values if calculation fails
+  const r1 = roc1 ?? 0
+  const r2 = roc2 ?? 0
+  const r3 = roc3 ?? 0
+  const r4 = roc4 ?? 0
 
   // Calculate KST: ROC1×1 + ROC2×2 + ROC3×3 + ROC4×4
-  const kst = roc1 * 1 + roc2 * 2 + roc3 * 3 + roc4 * 4
+  const kst = r1 * 1 + r2 * 2 + r3 * 3 + r4 * 4
 
   // Calculate signal line (9-period SMA of KST)
   const kstHistory = calculateKSTHistory(prices)
@@ -134,10 +146,10 @@ export function calculateKST(prices: number[]): KSTData | null {
   return {
     kst,
     signal: signal || kst, // Fallback if signal calculation fails
-    roc1,
-    roc2,
-    roc3,
-    roc4,
+    roc1: r1,
+    roc2: r2,
+    roc3: r3,
+    roc4: r4,
     trend,
     strength,
     bullishCrossover,
@@ -152,21 +164,25 @@ export function calculateKST(prices: number[]): KSTData | null {
  * Helper function to calculate smoothed ROC
  */
 function calculateSmoothedROC(prices: number[], rocPeriod: number, smoothingPeriod: number): number | null {
-  if (prices.length < rocPeriod + smoothingPeriod) {
+  // Use adaptive calculation - allow shorter periods
+  const effectiveRocPeriod = Math.min(rocPeriod, Math.floor(prices.length / 2))
+  const effectiveSmoothPeriod = Math.min(smoothingPeriod, Math.floor(prices.length / 3))
+  
+  if (effectiveRocPeriod < 2 || effectiveSmoothPeriod < 2) {
     return null
   }
 
-  // Calculate ROC values
+  // Calculate ROC values using effective period
   const rocValues: number[] = []
-  for (let i = rocPeriod; i < prices.length; i++) {
+  for (let i = effectiveRocPeriod; i < prices.length; i++) {
     const currentPrice = prices[i]
-    const pastPrice = prices[i - rocPeriod]
-    const roc = ((currentPrice - pastPrice) / pastPrice) * 100
+    const pastPrice = prices[i - effectiveRocPeriod]
+    const roc = pastPrice !== 0 ? ((currentPrice - pastPrice) / pastPrice) * 100 : 0
     rocValues.push(roc)
   }
 
-  // Apply smoothing (SMA)
-  return calculateSMA(rocValues, smoothingPeriod)
+  // Apply smoothing (SMA) using effective period
+  return calculateSMA(rocValues, effectiveSmoothPeriod)
 }
 
 /**

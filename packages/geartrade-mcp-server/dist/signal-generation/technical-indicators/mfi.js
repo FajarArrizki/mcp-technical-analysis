@@ -3,13 +3,16 @@
  * Volume-weighted momentum oscillator
  */
 export function calculateMFI(highs, lows, closes, volumes, period = 14) {
-    if (highs.length < period + 1 || lows.length < period + 1 || closes.length < period + 1 || volumes.length < period + 1) {
+    // Minimum 5 data points required
+    if (highs.length < 5 || lows.length < 5 || closes.length < 5 || volumes.length < 5) {
         return {
             mfi: null,
             signal: null,
             trend: null,
         };
     }
+    // Use adaptive period
+    const effectivePeriod = Math.min(period, highs.length - 1);
     // Calculate Typical Price and Raw Money Flow
     const typicalPrices = [];
     const rawMoneyFlows = [];
@@ -38,15 +41,9 @@ export function calculateMFI(highs, lows, closes, volumes, period = 14) {
             negativeFlows.push(0);
         }
     }
-    // Calculate Money Flow Ratio for the specified period
-    const startIdx = positiveFlows.length - period;
-    if (startIdx < 0) {
-        return {
-            mfi: null,
-            signal: null,
-            trend: null,
-        };
-    }
+    // Calculate Money Flow Ratio for the specified period using effective period
+    const usePeriod = Math.min(effectivePeriod, positiveFlows.length);
+    const startIdx = Math.max(0, positiveFlows.length - usePeriod);
     const periodPositiveFlows = positiveFlows.slice(startIdx);
     const periodNegativeFlows = negativeFlows.slice(startIdx);
     const positiveMF = periodPositiveFlows.reduce((sum, flow) => sum + flow, 0);

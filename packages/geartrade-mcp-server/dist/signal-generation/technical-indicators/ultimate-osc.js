@@ -3,12 +3,18 @@
  * Combines momentum from three different timeframes
  */
 export function calculateUltimateOscillator(highs, lows, closes, shortPeriod = 7, mediumPeriod = 14, longPeriod = 28) {
-    if (closes.length < longPeriod + 1) {
+    // Minimum 5 data points required
+    if (closes.length < 5) {
         return {
             ultimateOsc: null,
             signal: null,
         };
     }
+    // Use adaptive periods
+    const dataRatio = Math.min(1, closes.length / 29);
+    const effectiveShortPeriod = Math.max(3, Math.floor(shortPeriod * dataRatio));
+    const effectiveMediumPeriod = Math.max(5, Math.floor(mediumPeriod * dataRatio));
+    const effectiveLongPeriod = Math.max(7, Math.floor(longPeriod * dataRatio));
     // Calculate Buying Pressure and True Range
     const buyingPressures = [];
     const trueRanges = [];
@@ -24,21 +30,22 @@ export function calculateUltimateOscillator(highs, lows, closes, shortPeriod = 7
         const trueRange = Math.max(high, closePrev) - Math.min(low, closePrev);
         trueRanges.push(trueRange);
     }
-    if (buyingPressures.length < longPeriod) {
+    if (buyingPressures.length < effectiveShortPeriod) {
         return {
             ultimateOsc: null,
             signal: null,
         };
     }
-    // Calculate Average for each timeframe
+    // Calculate Average for each timeframe using effective periods
     function calculateAverageBP_TR(period) {
-        const bpSum = buyingPressures.slice(-period).reduce((sum, bp) => sum + bp, 0);
-        const trSum = trueRanges.slice(-period).reduce((sum, tr) => sum + tr, 0);
+        const usePeriod = Math.min(period, buyingPressures.length);
+        const bpSum = buyingPressures.slice(-usePeriod).reduce((sum, bp) => sum + bp, 0);
+        const trSum = trueRanges.slice(-usePeriod).reduce((sum, tr) => sum + tr, 0);
         return trSum > 0 ? bpSum / trSum : 0;
     }
-    const avg7 = calculateAverageBP_TR(shortPeriod);
-    const avg14 = calculateAverageBP_TR(mediumPeriod);
-    const avg28 = calculateAverageBP_TR(longPeriod);
+    const avg7 = calculateAverageBP_TR(effectiveShortPeriod);
+    const avg14 = calculateAverageBP_TR(effectiveMediumPeriod);
+    const avg28 = calculateAverageBP_TR(effectiveLongPeriod);
     // Ultimate Oscillator = (4 × avg7 + 2 × avg14 + avg28) / (4 + 2 + 1)
     const rawUO = (4 * avg7) + (2 * avg14) + avg28;
     const ultimateOsc = rawUO / 7;

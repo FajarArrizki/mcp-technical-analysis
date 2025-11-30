@@ -1,36 +1,30 @@
 /**
  * Merged Volume Indicators Tool
- * Combines: chaikin_money_flow, chaikin_oscillator, klinger_oscillator,
- * volume_oscillator, ease_of_movement, price_volume_trend,
- * positive_volume_index, volume_roc, anchored_vwap, volume_zone_oscillator
+ * Combines: chaikin_money_flow, chaikin_oscillator,
+ * volume_oscillator, price_volume_trend,
+ * positive_volume_index, volume_roc, volume_zone_oscillator
  */
 
 import { z } from 'zod'
 import {
   calculateChaikinOscillator,
-  calculateKlingerOscillator,
   calculateMFI,
 } from '../signal-generation/technical-indicators'
 import { calculateChaikinMF } from '../signal-generation/technical-indicators/chaikin-mf'
 import { calculateVolumeOscillator } from '../signal-generation/technical-indicators/volume-oscillator'
-import { calculateEaseOfMovement } from '../signal-generation/technical-indicators/ease-of-movement'
 import { calculatePriceVolumeTrend } from '../signal-generation/technical-indicators/price-volume-trend'
 import { calculatePositiveVolumeIndex } from '../signal-generation/technical-indicators/positive-volume-index'
 import { calculateVolumeROC } from '../signal-generation/technical-indicators/volume-roc'
-import { calculateAnchoredVWAP } from '../signal-generation/technical-indicators/anchored-vwap'
 import { calculateVolumeZoneOscillator } from '../signal-generation/technical-indicators/volume-zone-oscillator'
 
 export const volumeIndicatorsInputSchema = z.object({
   type: z.enum([
     'chaikin_money_flow',
     'chaikin_oscillator',
-    'klinger_oscillator',
     'volume_oscillator',
-    'ease_of_movement',
     'price_volume_trend',
     'positive_volume_index',
     'volume_roc',
-    'anchored_vwap',
     'volume_zone_oscillator',
     'money_flow_index'
   ]).describe('Type of volume indicator to calculate'),
@@ -44,8 +38,6 @@ export const volumeIndicatorsInputSchema = z.object({
   // Oscillator specific
   fastPeriod: z.number().int().min(2).max(20).optional().describe('Fast period (default: 3)'),
   slowPeriod: z.number().int().min(5).max(50).optional().describe('Slow period (default: 10)'),
-  // Anchored VWAP specific
-  anchorIndex: z.number().int().min(0).optional().describe('Anchor index for VWAP (default: 0)'),
   // Volume Zone specific
   zonePeriod: z.number().int().min(5).max(50).optional().describe('Zone period (default: 14)'),
 })
@@ -57,7 +49,7 @@ export async function calculateVolumeIndicators(input: VolumeIndicatorsInput): P
     type, closes, highs, lows, volumes,
     period = 20,
     fastPeriod = 3, slowPeriod = 10,
-    anchorIndex = 0, zonePeriod = 14
+    zonePeriod = 14
   } = input
 
   switch (type) {
@@ -83,32 +75,10 @@ export async function calculateVolumeIndicators(input: VolumeIndicatorsInput): P
       return { type, ...result }
     }
 
-    case 'klinger_oscillator': {
-      if (!highs || !lows) {
-        throw new Error('Highs and lows arrays are required for Klinger Oscillator')
-      }
-      const result = calculateKlingerOscillator(highs, lows, closes, volumes)
-      if (!result) {
-        throw new Error(`Insufficient data for Klinger Oscillator`)
-      }
-      return { type, ...result }
-    }
-
     case 'volume_oscillator': {
       const result = calculateVolumeOscillator(volumes, fastPeriod, slowPeriod)
       if (!result) {
         throw new Error(`Insufficient data for Volume Oscillator`)
-      }
-      return { type, ...result }
-    }
-
-    case 'ease_of_movement': {
-      if (!highs || !lows) {
-        throw new Error('Highs and lows arrays are required for Ease of Movement')
-      }
-      const result = calculateEaseOfMovement(highs, lows, volumes, period)
-      if (!result) {
-        throw new Error(`Insufficient data for Ease of Movement`)
       }
       return { type, ...result }
     }
@@ -133,17 +103,6 @@ export async function calculateVolumeIndicators(input: VolumeIndicatorsInput): P
       const result = calculateVolumeROC(volumes, period)
       if (!result) {
         throw new Error(`Insufficient data for Volume ROC`)
-      }
-      return { type, ...result }
-    }
-
-    case 'anchored_vwap': {
-      if (!highs || !lows) {
-        throw new Error('Highs and lows arrays are required for Anchored VWAP')
-      }
-      const result = calculateAnchoredVWAP(highs, lows, closes, volumes, anchorIndex)
-      if (!result) {
-        throw new Error(`Insufficient data for Anchored VWAP`)
       }
       return { type, ...result }
     }
@@ -180,13 +139,10 @@ export function registerVolumeIndicatorsTool(server: any) {
       description: `Calculate various volume-based indicators. Supported types:
 - chaikin_money_flow: CMF - volume-weighted accumulation/distribution
 - chaikin_oscillator: Chaikin Oscillator - A/D line momentum
-- klinger_oscillator: Klinger Volume Oscillator - volume-based trend
 - volume_oscillator: Volume Oscillator - compares volume MAs
-- ease_of_movement: EMV - price movement vs volume
 - price_volume_trend: PVT - cumulative volume based on price change
 - positive_volume_index: PVI - tracks price on increasing volume days
 - volume_roc: Volume Rate of Change - volume momentum
-- anchored_vwap: Anchored VWAP - VWAP from specific point
 - volume_zone_oscillator: VZO - volume distribution analysis
 - money_flow_index: MFI - volume-weighted RSI`,
       inputSchema: volumeIndicatorsInputSchema,

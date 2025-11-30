@@ -21,7 +21,8 @@ export function calculateSuperTrend(
   atrPeriod: number = 14,
   multiplier: number = 3
 ): SuperTrendData {
-  if (highs.length < atrPeriod + 1 || lows.length < atrPeriod + 1 || closes.length < atrPeriod + 1) {
+  // Minimum 5 data points required
+  if (highs.length < 5 || lows.length < 5 || closes.length < 5) {
     return {
       superTrend: null,
       trend: null,
@@ -31,21 +32,31 @@ export function calculateSuperTrend(
       atr: null,
     }
   }
+  
+  // Use adaptive period
+  const effectiveAtrPeriod = Math.min(atrPeriod, closes.length - 1)
 
   // Calculate ATR
-  const atr = calculateATR(highs, lows, closes, atrPeriod)
-  const currentATR = atr[atr.length - 1]
-
-  if (!currentATR) {
-    return {
-      superTrend: null,
-      trend: null,
-      signal: null,
-      upperBand: null,
-      lowerBand: null,
-      atr: null,
+  const atr = calculateATR(highs, lows, closes, effectiveAtrPeriod)
+  
+  // Fallback if ATR calculation fails
+  if (atr.length === 0) {
+    // Calculate simple ATR manually
+    const simpleAtr: number[] = []
+    for (let i = 1; i < closes.length; i++) {
+      const tr = Math.max(
+        highs[i] - lows[i],
+        Math.abs(highs[i] - closes[i - 1]),
+        Math.abs(lows[i] - closes[i - 1])
+      )
+      simpleAtr.push(tr)
+    }
+    if (simpleAtr.length > 0) {
+      atr.push(...simpleAtr)
     }
   }
+  
+  const currentATR = atr[atr.length - 1] || (highs[highs.length - 1] - lows[lows.length - 1])
 
   // Calculate Basic Bands
   const basicUpperBands: number[] = []
@@ -53,11 +64,15 @@ export function calculateSuperTrend(
   const finalUpperBands: number[] = []
   const finalLowerBands: number[] = []
   const superTrends: number[] = []
+  
+  const startIdx = Math.min(effectiveAtrPeriod, closes.length - 1)
 
-  for (let i = atrPeriod; i < closes.length; i++) {
+  for (let i = startIdx; i < closes.length; i++) {
     const hl2 = (highs[i] + lows[i]) / 2
-    const basicUpper = hl2 + (multiplier * atr[i - atrPeriod + 1])
-    const basicLower = hl2 - (multiplier * atr[i - atrPeriod + 1])
+    const atrIdx = Math.max(0, i - startIdx)
+    const atrValue = atr[atrIdx] || currentATR
+    const basicUpper = hl2 + (multiplier * atrValue)
+    const basicLower = hl2 - (multiplier * atrValue)
 
     basicUpperBands.push(basicUpper)
     basicLowerBands.push(basicLower)
@@ -66,7 +81,7 @@ export function calculateSuperTrend(
     let finalUpper: number
     let finalLower: number
 
-    if (i === atrPeriod) {
+    if (i === startIdx) {
       // First calculation
       finalUpper = basicUpper
       finalLower = basicLower
@@ -85,7 +100,7 @@ export function calculateSuperTrend(
 
     // Calculate SuperTrend
     let superTrend: number
-    if (i === atrPeriod) {
+    if (i === startIdx) {
       // First SuperTrend
       superTrend = closes[i] > finalUpper ? finalLower : finalUpper
     } else {

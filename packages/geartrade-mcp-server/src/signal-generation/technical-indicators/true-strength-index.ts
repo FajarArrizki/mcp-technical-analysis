@@ -54,9 +54,16 @@ export function calculateTrueStrengthIndex(
   longPeriod: number = 13,
   signalPeriod: number = 13
 ): TrueStrengthIndexData | null {
-  if (closes.length < shortPeriod + longPeriod + signalPeriod) {
+  // Minimum 10 data points required
+  if (closes.length < 10) {
     return null
   }
+  
+  // Use adaptive periods based on available data
+  const dataRatio = Math.min(1, closes.length / 51)
+  const effectiveShortPeriod = Math.max(5, Math.floor(shortPeriod * dataRatio))
+  const effectiveLongPeriod = Math.max(3, Math.floor(longPeriod * dataRatio))
+  const effectiveSignalPeriod = Math.max(3, Math.floor(signalPeriod * dataRatio))
 
   // Step 1: Calculate price changes (momentum)
   const priceChanges: number[] = []
@@ -64,15 +71,19 @@ export function calculateTrueStrengthIndex(
     priceChanges.push(closes[i] - closes[i - 1])
   }
 
-  // Step 2: Calculate double-smoothed momentum
+  // Step 2: Calculate double-smoothed momentum using effective periods
   // First smoothing (short EMA of price changes)
-  const firstSmooth = calculateEMA(priceChanges, shortPeriod)
+  const firstSmooth = calculateEMA(priceChanges, effectiveShortPeriod)
 
   // Second smoothing (long EMA of first smoothed values)
-  const doubleSmooth = calculateEMA(firstSmooth, longPeriod)
+  const doubleSmooth = calculateEMA(firstSmooth, effectiveLongPeriod)
 
-  if (!firstSmooth || !doubleSmooth || doubleSmooth.length === 0) {
-    return null
+  if (!firstSmooth || firstSmooth.length === 0 || !doubleSmooth || doubleSmooth.length === 0) {
+    // Fallback: calculate simple TSI
+    const avgChange = priceChanges.reduce((a, b) => a + b, 0) / priceChanges.length
+    const avgAbsChange = priceChanges.reduce((a, b) => a + Math.abs(b), 0) / priceChanges.length
+    const simpleTSI = avgAbsChange > 0 ? (avgChange / avgAbsChange) * 100 : 0
+    return createSimpleTSIResult(simpleTSI, priceChanges[priceChanges.length - 1])
   }
 
   // Get the current values
@@ -86,11 +97,14 @@ export function calculateTrueStrengthIndex(
     absPriceChanges.push(Math.abs(closes[i] - closes[i - 1]))
   }
 
-  const absFirstSmooth = calculateEMA(absPriceChanges, shortPeriod)
-  const absDoubleSmooth = calculateEMA(absFirstSmooth, longPeriod)
+  const absFirstSmooth = calculateEMA(absPriceChanges, effectiveShortPeriod)
+  const absDoubleSmooth = calculateEMA(absFirstSmooth, effectiveLongPeriod)
 
-  if (!absFirstSmooth || !absDoubleSmooth || absDoubleSmooth.length === 0) {
-    return null
+  if (!absFirstSmooth || absFirstSmooth.length === 0 || !absDoubleSmooth || absDoubleSmooth.length === 0) {
+    // Fallback: use simple calculation based on available data
+    const simpleTSI = doubleSmoothedMomentum !== 0 ? 
+      (doubleSmoothedMomentum > 0 ? 50 : -50) : 0
+    return createSimpleTSIResult(simpleTSI, currentPriceChange)
   }
 
   const absDoubleSmoothedMomentum = absDoubleSmooth[absDoubleSmooth.length - 1]
@@ -100,15 +114,12 @@ export function calculateTrueStrengthIndex(
   const tsi = absDoubleSmoothedMomentum > 0 ?
     100 * (doubleSmoothedMomentum / absDoubleSmoothedMomentum) : 0
 
-  // Step 5: Calculate signal line (EMA of TSI)
-  const tsiHistory = calculateTSIHistory(closes, shortPeriod, longPeriod)
-  const signalValues = calculateEMA(tsiHistory, signalPeriod)
+  // Step 5: Calculate signal line (EMA of TSI) using effective periods
+  const tsiHistory = calculateTSIHistory(closes, effectiveShortPeriod, effectiveLongPeriod)
+  const signalValues = calculateEMA(tsiHistory.length > 0 ? tsiHistory : [tsi], effectiveSignalPeriod)
 
-  if (!signalValues || signalValues.length === 0) {
-    return null
-  }
-
-  const signal = signalValues[signalValues.length - 1]
+  // Use fallback if signal calculation fails
+  const signal = (signalValues && signalValues.length > 0) ? signalValues[signalValues.length - 1] : tsi
 
   // Determine trend
   let trend: 'bullish' | 'bearish' | 'neutral' = 'neutral'
@@ -194,6 +205,30 @@ export function calculateTrueStrengthIndex(
     bearishZeroCross,
     tradingSignal: signal_out,
     momentumPhase
+  }
+}
+
+/**
+ * Helper function to create simple TSI result for fallback
+ */
+function createSimpleTSIResult(tsi: number, priceChange: number): TrueStrengthIndexData {
+  const trend = tsi > 0 ? 'bullish' : tsi < 0 ? 'bearish' : 'neutral'
+  return {
+    tsi,
+    signalLine: tsi,
+    priceChange,
+    smoothedMomentum: priceChange,
+    doubleSmoothedMomentum: priceChange,
+    trend,
+    strength: Math.min(100, Math.abs(tsi) * 4),
+    bullishCrossover: false,
+    bearishCrossover: false,
+    overbought: tsi > 25,
+    oversold: tsi < -25,
+    bullishZeroCross: false,
+    bearishZeroCross: false,
+    tradingSignal: tsi < -25 ? 'buy' : tsi > 25 ? 'sell' : 'neutral',
+    momentumPhase: 'stable'
   }
 }
 

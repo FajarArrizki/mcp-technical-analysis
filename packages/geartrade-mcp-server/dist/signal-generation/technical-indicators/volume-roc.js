@@ -9,11 +9,14 @@
  * @returns VolumeROCData object
  */
 export function calculateVolumeROC(volumes, period = 12) {
-    if (volumes.length < period + 1) {
+    // Minimum 3 data points required
+    if (volumes.length < 3) {
         return null;
     }
+    // Use adaptive period
+    const effectivePeriod = Math.min(period, volumes.length - 1);
     const currentVolume = volumes[volumes.length - 1];
-    const previousVolume = volumes[volumes.length - 1 - period];
+    const previousVolume = volumes[volumes.length - 1 - effectivePeriod];
     // Calculate ROC: ((Current - Previous) / Previous) * 100
     const roc = previousVolume > 0 ? ((currentVolume - previousVolume) / previousVolume) * 100 : 0;
     // Determine trend

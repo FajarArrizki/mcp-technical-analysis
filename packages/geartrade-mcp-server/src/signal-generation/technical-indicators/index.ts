@@ -138,13 +138,10 @@ export * from './detrended-price'
 
 // VOLUME INDICATORS
 export * from './volume-profile'
-export * from './klinger-oscillator'
 export * from './volume-oscillator'
-export * from './ease-of-movement'
 export * from './price-volume-trend'
 export * from './positive-volume-index'
 export * from './volume-roc'
-export * from './anchored-vwap'
 
 // VOLATILITY INDICATORS
 export * from './chaikin-volatility'
@@ -160,7 +157,6 @@ export * from './correlation-coefficient'
 export * from './r-squared'
 
 // MARKET BREADTH INDICATORS
-export * from './advance-decline-line'
 export * from './mcclellan-oscillator'
 export * from './arms-index-trin'
 

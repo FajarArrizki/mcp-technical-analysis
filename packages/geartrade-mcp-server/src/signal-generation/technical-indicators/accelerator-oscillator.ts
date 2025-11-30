@@ -46,10 +46,10 @@ export function calculateAcceleratorOscillator(
     return null
   }
 
-  // Step 1: Calculate Awesome Oscillator (AO)
-  const ao = calculateAwesomeOscillator(highs, lows)
+  // Step 1: Calculate Awesome Oscillator (AO) with adaptive periods
+  const ao = calculateAwesomeOscillatorAdaptive(highs, lows)
 
-  if (!ao || ao.length < 6) {
+  if (!ao || ao.length < 3) {
     return null
   }
 
@@ -191,30 +191,33 @@ export function calculateAcceleratorOscillator(
 }
 
 /**
- * Helper function to calculate Awesome Oscillator
+ * Helper function to calculate Awesome Oscillator with adaptive periods
  */
-function calculateAwesomeOscillator(highs: number[], lows: number[]): number[] {
+function calculateAwesomeOscillatorAdaptive(highs: number[], lows: number[]): number[] {
   const ao: number[] = []
+  
+  // Adaptive slow period based on available data
+  const slowPeriod = Math.min(34, Math.floor(highs.length * 0.7))
+  const fastPeriod = Math.min(5, Math.floor(slowPeriod / 6))
 
   for (let i = 0; i < highs.length; i++) {
-    // Calculate median price
-    const median = (highs[i] + lows[i]) / 2
-
-    // Need at least 34 periods for AO calculation
-    if (i >= 33) {
-      // 5-period SMA of median
-      const sma5 = calculateSMA(
-        Array.from({ length: 5 }, (_, idx) => (highs[i - idx] + lows[i - idx]) / 2),
-        5
+    // Need at least slowPeriod for AO calculation
+    if (i >= slowPeriod - 1) {
+      // Fast SMA of median
+      const fastLen = Math.min(fastPeriod, i + 1)
+      const smaFast = calculateSMA(
+        Array.from({ length: fastLen }, (_, idx) => (highs[i - idx] + lows[i - idx]) / 2),
+        fastLen
       )
 
-      // 34-period SMA of median
-      const sma34 = calculateSMA(
-        Array.from({ length: 34 }, (_, idx) => (highs[i - idx] + lows[i - idx]) / 2),
-        34
+      // Slow SMA of median
+      const slowLen = Math.min(slowPeriod, i + 1)
+      const smaSlow = calculateSMA(
+        Array.from({ length: slowLen }, (_, idx) => (highs[i - idx] + lows[i - idx]) / 2),
+        slowLen
       )
 
-      ao.push(sma5 - sma34)
+      ao.push(smaFast - smaSlow)
     }
   }
 

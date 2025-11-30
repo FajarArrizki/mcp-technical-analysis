@@ -104,7 +104,8 @@ export function calculateAdvanceDeclineLine(advances, declines, prices) {
  * Helper function to analyze breadth divergence
  */
 function analyzeBreadthDivergence(advances, declines, prices) {
-    if (advances.length < 20 || prices.length < 20) {
+    // Adaptive minimum - need at least 5 data points
+    if (advances.length < 5 || prices.length < 5) {
         return 'none';
     }
     // Calculate ADL over the last 20 periods
@@ -114,9 +115,10 @@ function analyzeBreadthDivergence(advances, declines, prices) {
         cumulative += advances[i] - declines[i];
         adlValues.push(cumulative);
     }
-    // Find peaks and troughs in both ADL and price
-    const pricePeaks = findPeaks(prices.slice(-20));
-    const priceTroughs = findTroughs(prices.slice(-20));
+    // Find peaks and troughs in both ADL and price (adaptive)
+    const analysisLen = Math.min(20, prices.length);
+    const pricePeaks = findPeaks(prices.slice(-analysisLen));
+    const priceTroughs = findTroughs(prices.slice(-analysisLen));
     const adlPeaks = findPeaks(adlValues);
     const adlTroughs = findTroughs(adlValues);
     // Check for bearish divergence (price makes higher high, ADL makes lower high)
@@ -197,7 +199,8 @@ export function calculateAdvanceDeclineRatio(advances, declines) {
  * @returns Market breadth analysis
  */
 export function analyzeMarketBreadth(advances, declines, prices) {
-    if (advances.length < 20 || declines.length < 20) {
+    // Adaptive minimum - need at least 5 data points
+    if (advances.length < 5 || declines.length < 5) {
         return {
             breadthTrend: 'stable',
             breadthMomentum: 0,
@@ -212,9 +215,10 @@ export function analyzeMarketBreadth(advances, declines, prices) {
         const ratio = calculateAdvanceDeclineRatio(advances[i], declines[i]);
         breadthRatios.push(ratio);
     }
-    // Analyze trend in breadth ratios
-    const recentRatios = breadthRatios.slice(-10);
-    const olderRatios = breadthRatios.slice(-20, -10);
+    // Analyze trend in breadth ratios (adaptive)
+    const halfLen = Math.max(5, Math.floor(breadthRatios.length / 2));
+    const recentRatios = breadthRatios.slice(-Math.min(10, halfLen));
+    const olderRatios = breadthRatios.slice(-Math.min(20, breadthRatios.length), -Math.min(10, halfLen));
     const recentAvg = recentRatios.reduce((sum, r) => sum + r, 0) / recentRatios.length;
     const olderAvg = olderRatios.reduce((sum, r) => sum + r, 0) / olderRatios.length;
     let breadthTrend = 'stable';
@@ -234,11 +238,12 @@ export function analyzeMarketBreadth(advances, declines, prices) {
     else if (recentAvg < 0.67) {
         marketSentiment = 'pessimistic';
     }
-    // Calculate reliability based on consistency
-    const ratioVariance = breadthRatios.slice(-20).reduce((sum, ratio, i, arr) => {
+    // Calculate reliability based on consistency (adaptive)
+    const varianceLen = Math.min(20, breadthRatios.length);
+    const ratioVariance = breadthRatios.slice(-varianceLen).reduce((sum, ratio, i, arr) => {
         const mean = arr.reduce((s, r) => s + r, 0) / arr.length;
         return sum + Math.pow(ratio - mean, 2);
-    }, 0) / 20;
+    }, 0) / varianceLen;
     const reliability = Math.max(0, 100 - ratioVariance * 10);
     // Recommend action
     let recommendedAction = 'Monitor breadth indicators';

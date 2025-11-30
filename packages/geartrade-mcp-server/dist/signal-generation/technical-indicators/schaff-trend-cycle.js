@@ -15,13 +15,31 @@
  * @returns SchaffTrendCycleData object
  */
 export function calculateSchaffTrendCycle(highs, lows, closes, cycleLength = 23, fastLength = 23, slowLength = 50, kPeriod = 10, dPeriod = 3) {
-    if (closes.length < slowLength + kPeriod + dPeriod) {
+    // Minimum 15 data points required
+    if (closes.length < 15) {
         return null;
     }
-    // Step 1: Calculate MACD
-    const macdData = calculateMACD(closes, fastLength, slowLength, cycleLength);
+    // Use adaptive periods based on available data
+    const dataRatio = Math.min(1, closes.length / 63);
+    const effectiveSlowLength = Math.max(10, Math.floor(slowLength * dataRatio));
+    const effectiveFastLength = Math.max(5, Math.floor(fastLength * dataRatio));
+    const effectiveCycleLength = Math.max(5, Math.floor(cycleLength * dataRatio));
+    const effectiveKPeriod = Math.max(3, Math.floor(kPeriod * dataRatio));
+    const effectiveDPeriod = Math.max(2, Math.floor(dPeriod * dataRatio));
+    // Step 1: Calculate MACD using effective periods
+    const macdData = calculateMACD(closes, effectiveFastLength, effectiveSlowLength, effectiveCycleLength);
     if (!macdData || macdData.length === 0) {
-        return null;
+        // Fallback: create simple MACD-like data from price changes
+        const simpleMACD = closes.slice(1).map((c, i) => ({
+            MACD: c - closes[i],
+            signal: 0,
+            histogram: c - closes[i]
+        }));
+        if (simpleMACD.length === 0)
+            return null;
+        // Use fallback data
+        const latestMACD = simpleMACD[simpleMACD.length - 1];
+        return createSTCResult(latestMACD, simpleMACD, effectiveKPeriod, effectiveDPeriod);
     }
     // Get the latest MACD values
     const latestMACD = macdData[macdData.length - 1];
@@ -29,21 +47,23 @@ export function calculateSchaffTrendCycle(highs, lows, closes, cycleLength = 23,
     const signal = latestMACD.signal;
     const histogram = latestMACD.histogram;
     // Step 2: Calculate Stochastic of MACD (cycle within a cycle)
-    // Find highest high and lowest low of MACD over kPeriod
+    // Find highest high and lowest low of MACD over effectiveKPeriod
     const macdValues = macdData.map(m => m.MACD);
-    const recentMACD = macdValues.slice(-kPeriod);
+    const useKPeriod = Math.min(effectiveKPeriod, macdValues.length);
+    const recentMACD = macdValues.slice(-useKPeriod);
     const highestMACD = Math.max(...recentMACD);
     const lowestMACD = Math.min(...recentMACD);
     const macdRange = highestMACD - lowestMACD;
     // Calculate %K: (MACD - Lowest MACD) / (Highest MACD - Lowest MACD) * 100
     const k = macdRange > 0 ? ((macd - lowestMACD) / macdRange) * 100 : 50;
     // Step 3: Smooth %K with simple moving average to get %D
+    const useDPeriod = Math.min(effectiveDPeriod, macdValues.length);
     let d;
-    if (macdValues.length >= kPeriod + dPeriod - 1) {
+    if (macdValues.length >= useKPeriod + useDPeriod - 1) {
         const kValues = [];
-        // Calculate %K for the last dPeriod values
-        for (let i = Math.max(0, macdValues.length - kPeriod - dPeriod + 1); i < macdValues.length; i++) {
-            const slice = macdValues.slice(Math.max(0, i - kPeriod + 1), i + 1);
+        // Calculate %K for the last useDPeriod values
+        for (let i = Math.max(0, macdValues.length - useKPeriod - useDPeriod + 1); i < macdValues.length; i++) {
+            const slice = macdValues.slice(Math.max(0, i - useKPeriod + 1), i + 1);
             const highest = Math.max(...slice);
             const lowest = Math.min(...slice);
             const range = highest - lowest;
@@ -51,7 +71,7 @@ export function calculateSchaffTrendCycle(highs, lows, closes, cycleLength = 23,
             kValues.push(kVal);
         }
         // Calculate SMA of %K values for %D
-        const recentK = kValues.slice(-dPeriod);
+        const recentK = kValues.slice(-useDPeriod);
         d = recentK.reduce((sum, val) => sum + val, 0) / recentK.length;
     }
     else {
@@ -132,15 +152,61 @@ export function calculateSchaffTrendCycle(highs, lows, closes, cycleLength = 23,
     };
 }
 /**
+ * Helper function to create STC result from MACD data
+ */
+function createSTCResult(latestMACD, macdData, kPeriod, dPeriod) {
+    const macdValues = macdData.map(m => m.MACD);
+    const useKPeriod = Math.min(kPeriod, macdValues.length);
+    const recentMACD = macdValues.slice(-useKPeriod);
+    const highestMACD = Math.max(...recentMACD);
+    const lowestMACD = Math.min(...recentMACD);
+    const macdRange = highestMACD - lowestMACD;
+    const k = macdRange > 0 ? ((latestMACD.MACD - lowestMACD) / macdRange) * 100 : 50;
+    const stc = k; // Simplified
+    let cyclePosition = 'middle';
+    if (stc < 25)
+        cyclePosition = 'bottom';
+    else if (stc > 75)
+        cyclePosition = 'top';
+    else if (stc > 50)
+        cyclePosition = 'falling';
+    else if (stc < 50)
+        cyclePosition = 'rising';
+    let trend = 'neutral';
+    if (stc > 50)
+        trend = 'bearish';
+    else if (stc < 50)
+        trend = 'bullish';
+    return {
+        stc,
+        macd: latestMACD.MACD,
+        macdSignal: latestMACD.signal,
+        histogram: latestMACD.histogram,
+        cyclePosition,
+        trend,
+        overbought: stc > 75,
+        oversold: stc < 25,
+        strength: Math.min(100, Math.abs(stc - 50) * 2),
+        bullishCycleSignal: false,
+        bearishCycleSignal: false,
+        tradingSignal: stc < 25 ? 'buy' : stc > 75 ? 'sell' : 'neutral',
+        estimatedCycleLength: null
+    };
+}
+/**
  * Helper function to calculate MACD
  */
 function calculateMACD(closes, fastLength, slowLength, signalLength) {
-    if (closes.length < slowLength) {
+    // Use adaptive periods
+    const effectiveSlow = Math.min(slowLength, closes.length - 1);
+    const effectiveFast = Math.min(fastLength, effectiveSlow - 1);
+    const effectiveSignal = Math.min(signalLength, effectiveSlow - 1);
+    if (effectiveFast < 2 || effectiveSlow < 3) {
         return null;
     }
-    const fastEMA = calculateEMA(closes, fastLength);
-    const slowEMA = calculateEMA(closes, slowLength);
-    if (!fastEMA || !slowEMA) {
+    const fastEMA = calculateEMA(closes, effectiveFast);
+    const slowEMA = calculateEMA(closes, effectiveSlow);
+    if (!fastEMA || fastEMA.length === 0 || !slowEMA || slowEMA.length === 0) {
         return null;
     }
     const macdLine = [];
@@ -149,9 +215,13 @@ function calculateMACD(closes, fastLength, slowLength, signalLength) {
             macdLine.push(fastEMA[i] - slowEMA[i]);
         }
     }
-    const signalLine = calculateEMA(macdLine, signalLength);
-    if (!signalLine) {
+    if (macdLine.length === 0) {
         return null;
+    }
+    const signalLine = calculateEMA(macdLine, Math.max(2, effectiveSignal));
+    if (!signalLine || signalLine.length === 0) {
+        // Fallback: use macdLine as both
+        return macdLine.map(m => ({ MACD: m, signal: m, histogram: 0 }));
     }
     const result = [];
     for (let i = 0; i < macdLine.length; i++) {

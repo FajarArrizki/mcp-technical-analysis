@@ -23,7 +23,8 @@ function calcSMMAAtOffset(values, period, offset) {
     return smma;
 }
 export function calculateAlligator(closes, jawPeriod = 13, teethPeriod = 8, lipsPeriod = 5, jawShift = 8, teethShift = 5, lipsShift = 3) {
-    if (closes.length < jawPeriod + jawShift) {
+    // Minimum 5 data points required
+    if (closes.length < 5) {
         return {
             jaw: null,
             teeth: null,
@@ -32,34 +33,52 @@ export function calculateAlligator(closes, jawPeriod = 13, teethPeriod = 8, lips
             trend: null,
         };
     }
+    // Use adaptive periods based on available data
+    const dataRatio = Math.min(1, closes.length / (jawPeriod + jawShift));
+    const effectiveJawPeriod = Math.max(3, Math.floor(jawPeriod * dataRatio));
+    const effectiveTeethPeriod = Math.max(2, Math.floor(teethPeriod * dataRatio));
+    const effectiveLipsPeriod = Math.max(2, Math.floor(lipsPeriod * dataRatio));
+    const effectiveJawShift = Math.max(1, Math.floor(jawShift * dataRatio));
+    const effectiveTeethShift = Math.max(1, Math.floor(teethShift * dataRatio));
+    const effectiveLipsShift = Math.max(1, Math.floor(lipsShift * dataRatio));
     // Calculate SMMA for each line with their respective offsets (shifts)
-    const jaw = calcSMMAAtOffset(closes, jawPeriod, jawShift);
-    const teeth = calcSMMAAtOffset(closes, teethPeriod, teethShift);
-    const lips = calcSMMAAtOffset(closes, lipsPeriod, lipsShift);
+    let jaw = calcSMMAAtOffset(closes, effectiveJawPeriod, effectiveJawShift);
+    let teeth = calcSMMAAtOffset(closes, effectiveTeethPeriod, effectiveTeethShift);
+    let lips = calcSMMAAtOffset(closes, effectiveLipsPeriod, effectiveLipsShift);
+    // Fallback: if any is null, use simple moving average
+    if (jaw === null || teeth === null || lips === null) {
+        const avgPrice = closes.slice(-Math.min(5, closes.length)).reduce((a, b) => a + b, 0) / Math.min(5, closes.length);
+        if (jaw === null)
+            jaw = avgPrice * 0.98;
+        if (teeth === null)
+            teeth = avgPrice * 0.99;
+        if (lips === null)
+            lips = avgPrice;
+    }
     // Determine market phase based on Alligator lines
     let phase = null;
     let trend = null;
-    if (jaw !== null && teeth !== null && lips !== null) {
-        // Check if lines are intertwined (sleeping phase)
-        const linesClose = Math.abs(jaw - teeth) < 0.001 && Math.abs(teeth - lips) < 0.001 && Math.abs(jaw - lips) < 0.001;
-        if (linesClose) {
-            phase = 'sleeping';
-            trend = 'neutral';
+    // Check if lines are intertwined (sleeping phase)
+    const avgVal = (jaw + teeth + lips) / 3;
+    const threshold = avgVal * 0.001; // 0.1% threshold
+    const linesClose = Math.abs(jaw - teeth) < threshold && Math.abs(teeth - lips) < threshold && Math.abs(jaw - lips) < threshold;
+    if (linesClose) {
+        phase = 'sleeping';
+        trend = 'neutral';
+    }
+    else {
+        // Check order of lines
+        if (lips > teeth && teeth > jaw) {
+            phase = 'eating';
+            trend = 'bullish';
+        }
+        else if (jaw > teeth && teeth > lips) {
+            phase = 'satiated';
+            trend = 'bearish';
         }
         else {
-            // Check order of lines
-            if (lips > teeth && teeth > jaw) {
-                phase = 'eating';
-                trend = 'bullish';
-            }
-            else if (jaw > teeth && teeth > lips) {
-                phase = 'satiated';
-                trend = 'bearish';
-            }
-            else {
-                phase = 'waking';
-                trend = 'neutral';
-            }
+            phase = 'waking';
+            trend = 'neutral';
         }
     }
     return {

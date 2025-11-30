@@ -66,7 +66,7 @@ export async function getMarketData(assets: string[], metadata?: any): Promise<{
     // OPTIMIZATION FINAL: Cache all configuration constants at function start (avoid repeated checks per asset)
     // CRITICAL FIX: Increased to 75 candles minimum for better volume analysis and indicator accuracy
     // Volume analysis requires sufficient historical data to calculate POC, VAH/VAL, HVN/LVN, CVD, etc.
-    const CANDLES_COUNT = 75
+    const CANDLES_COUNT = 200
     // FUTURES / SCALPING MODE: default primary TF → 5m (lebih responsif untuk entry cepat)
     // Bisa override via env: PRIMARY_DATA_INTERVAL=10m/15m/1h, dll.
     const PRIMARY_INTERVAL = '5m'

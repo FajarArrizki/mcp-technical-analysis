@@ -14,9 +14,12 @@ export function calculateEaseOfMovement(highs, lows, volumes, smoothingPeriod = 
     if (highs.length !== lows.length || highs.length !== volumes.length) {
         return null;
     }
+    // Minimum 2 data points required
     if (highs.length < 2) {
         return null;
     }
+    // Use adaptive smoothing period
+    const effectiveSmoothingPeriod = Math.min(smoothingPeriod, highs.length - 1);
     // Calculate Distance Moved = (High + Low) / 2 - (High[-1] + Low[-1]) / 2
     const distanceMoved = ((highs[highs.length - 1] + lows[lows.length - 1]) / 2) -
         ((highs[highs.length - 2] + lows[lows.length - 2]) / 2);
@@ -27,9 +30,9 @@ export function calculateEaseOfMovement(highs, lows, volumes, smoothingPeriod = 
     const boxRatio = currentRange > 0 ? currentVolume / currentRange : 0;
     // Calculate EMV = Distance Moved / Box Ratio
     const emv = boxRatio > 0 ? distanceMoved / boxRatio : 0;
-    // Calculate smoothed EMV (14-period MA)
+    // Calculate smoothed EMV
     const emvHistory = calculateEMVHistory(highs, lows, volumes);
-    const smoothedEMV = calculateSMA(emvHistory, smoothingPeriod);
+    const smoothedEMV = emvHistory.length > 0 ? calculateSMA(emvHistory, Math.min(effectiveSmoothingPeriod, emvHistory.length)) : emv;
     // Determine trend based on smoothed EMV
     let trend = 'neutral';
     if (smoothedEMV > 0.001) {
@@ -43,8 +46,9 @@ export function calculateEaseOfMovement(highs, lows, volumes, smoothingPeriod = 
     // Check for zero line crossovers
     let bullishSignal = false;
     let bearishSignal = false;
-    if (emvHistory.length >= smoothingPeriod + 1) {
-        const prevSmoothedEMV = calculateSMA(emvHistory.slice(0, -1), smoothingPeriod);
+    if (emvHistory.length >= 2) {
+        const usePeriod = Math.min(effectiveSmoothingPeriod, emvHistory.length - 1);
+        const prevSmoothedEMV = calculateSMA(emvHistory.slice(0, -1), usePeriod);
         if (smoothedEMV > 0 && prevSmoothedEMV <= 0) {
             bullishSignal = true;
         }

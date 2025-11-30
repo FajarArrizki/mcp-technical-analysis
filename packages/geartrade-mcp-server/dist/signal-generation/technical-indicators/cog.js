@@ -4,25 +4,30 @@
  */
 import { calculateWMA } from './wma';
 export function calculateCOG(closes, period = 10) {
-    if (closes.length < period) {
+    // Minimum 3 data points required
+    if (closes.length < 3) {
         return {
             cog: null,
             signal: null,
             trend: null,
         };
     }
-    // Calculate WMA for each sub-period from 1 to period
+    // Use adaptive period
+    const effectivePeriod = Math.min(period, closes.length);
+    // Calculate WMA for each sub-period from 1 to effectivePeriod
     const wmaValues = [];
-    for (let i = 1; i <= period; i++) {
+    for (let i = 1; i <= effectivePeriod; i++) {
         const wma = calculateWMA(closes, i);
         if (wma.length > 0) {
             wmaValues.push(wma[wma.length - 1]);
         }
         else {
-            wmaValues.push(0);
+            // Fallback: use simple average
+            const avg = closes.slice(-i).reduce((a, b) => a + b, 0) / i;
+            wmaValues.push(avg);
         }
     }
-    if (wmaValues.length !== period) {
+    if (wmaValues.length === 0) {
         return {
             cog: null,
             signal: null,
@@ -32,7 +37,7 @@ export function calculateCOG(closes, period = 10) {
     // Calculate Center of Gravity: -∑(WMA(i) × i) / ∑WMA(i)
     let numerator = 0;
     let denominator = 0;
-    for (let i = 0; i < period; i++) {
+    for (let i = 0; i < wmaValues.length; i++) {
         const weight = i + 1; // i starts from 1 to period
         numerator += wmaValues[i] * weight;
         denominator += wmaValues[i];

@@ -28,8 +28,8 @@ export function calculateIchimokuCloud(
   senkouSpanBPeriod: number = 52,
   currentPrice?: number | null
 ): IchimokuCloud {
-  const maxPeriod = Math.max(tenkanPeriod, kijunPeriod, senkouSpanBPeriod)
-  if (highs.length < maxPeriod || lows.length < maxPeriod || closes.length < maxPeriod) {
+  // Minimum 5 data points required
+  if (highs.length < 5 || lows.length < 5 || closes.length < 5) {
     return {
       tenkanSen: null,
       kijunSen: null,
@@ -46,26 +46,32 @@ export function calculateIchimokuCloud(
       },
     }
   }
+  
+  // Use adaptive periods
+  const dataRatio = Math.min(1, highs.length / senkouSpanBPeriod)
+  const effectiveTenkanPeriod = Math.max(3, Math.floor(tenkanPeriod * dataRatio))
+  const effectiveKijunPeriod = Math.max(5, Math.floor(kijunPeriod * dataRatio))
+  const effectiveSenkouSpanBPeriod = Math.max(7, Math.floor(senkouSpanBPeriod * dataRatio))
 
   const currentIndex = closes.length - 1
   const price = currentPrice || closes[currentIndex]
 
   // Tenkan-sen (Conversion Line): (tenkanPeriod high + tenkanPeriod low) / 2
-  const tenkanHigh = Math.max(...highs.slice(-tenkanPeriod))
-  const tenkanLow = Math.min(...lows.slice(-tenkanPeriod))
+  const tenkanHigh = Math.max(...highs.slice(-effectiveTenkanPeriod))
+  const tenkanLow = Math.min(...lows.slice(-effectiveTenkanPeriod))
   const tenkanSen = (tenkanHigh + tenkanLow) / 2
 
   // Kijun-sen (Base Line): (kijunPeriod high + kijunPeriod low) / 2
-  const kijunHigh = Math.max(...highs.slice(-kijunPeriod))
-  const kijunLow = Math.min(...lows.slice(-kijunPeriod))
+  const kijunHigh = Math.max(...highs.slice(-effectiveKijunPeriod))
+  const kijunLow = Math.min(...lows.slice(-effectiveKijunPeriod))
   const kijunSen = (kijunHigh + kijunLow) / 2
 
   // Senkou Span A: (Tenkan-sen + Kijun-sen) / 2, plotted 26 periods ahead
   const senkouSpanA = (tenkanSen + kijunSen) / 2
 
   // Senkou Span B: (senkouSpanBPeriod high + senkouSpanBPeriod low) / 2, plotted kijunPeriod periods ahead
-  const senkouBHigh = Math.max(...highs.slice(-senkouSpanBPeriod))
-  const senkouBLow = Math.min(...lows.slice(-senkouSpanBPeriod))
+  const senkouBHigh = Math.max(...highs.slice(-effectiveSenkouSpanBPeriod))
+  const senkouBLow = Math.min(...lows.slice(-effectiveSenkouSpanBPeriod))
   const senkouSpanB = (senkouBHigh + senkouBLow) / 2
 
   // Chikou Span: Current close plotted kijunPeriod periods back

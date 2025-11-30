@@ -68,23 +68,23 @@ import { calculateAcceleratorOscillator, AcceleratorOscillatorData } from './sig
 import { calculateSchaffTrendCycle, SchaffTrendCycleData } from './signal-generation/technical-indicators/schaff-trend-cycle'
 import { calculateCoppockCurve, CoppockCurveData } from './signal-generation/technical-indicators/coppock-curve'
 import { calculateVolumeOscillator, VolumeOscillatorData } from './signal-generation/technical-indicators/volume-oscillator'
-import { calculateEaseOfMovement, EaseOfMovementData } from './signal-generation/technical-indicators/ease-of-movement'
+
 import { calculatePriceVolumeTrend, PriceVolumeTrendData } from './signal-generation/technical-indicators/price-volume-trend'
 import { calculatePositiveVolumeIndex, PositiveVolumeIndexData } from './signal-generation/technical-indicators/positive-volume-index'
 import { calculateVolumeROC, VolumeROCData } from './signal-generation/technical-indicators/volume-roc'
 import { calculateROC } from './signal-generation/technical-indicators/roc'
-import { calculateAnchoredVWAP, AnchoredVWAPData } from './signal-generation/technical-indicators/anchored-vwap'
+
 import { calculateChaikinMF, ChaikinMFData } from './signal-generation/technical-indicators/chaikin-mf'
 import { calculateVolumeZoneOscillator, VolumeZoneOscillatorData } from './signal-generation/technical-indicators/volume-zone-oscillator'
 import { calculateMassIndex, MassIndexData } from './signal-generation/technical-indicators/mass-index'
 import { calculateUlcerIndex, UlcerIndexData } from './signal-generation/technical-indicators/ulcer-index'
 // Import all remaining technical indicator functions
 import {
-  calculateGatorOscillator, calculateKlingerOscillator, calculateChaikinVolatility,
+  calculateGatorOscillator, calculateChaikinVolatility,
   calculateBBPercentB, calculateBBWidth, calculateHistoricalVolatility,
   calculateTRIX, calculateVortex, calculateCOG, calculateChaikinOscillator,
   calculateStochasticRSI, calculateMFI, calculateUltimateOscillator, calculateBOP,
-  calculateAdvanceDeclineLine, calculateMcClellanOscillator, calculateArmsIndex,
+  calculateMcClellanOscillator, calculateArmsIndex,
   calculateFractals, calculateZigZag, calculateHMA, calculateWMA, calculateSMMA,
   calculateDEMA, calculateTEMA, calculateKeltnerChannels, calculateDonchianChannels,
   calculateAlligator, calculateAwesomeOscillator, calculateIchimokuCloud,
@@ -1394,8 +1394,8 @@ server.registerTool(
 
     try {
       // Fetch market data with sufficient candles for volume analysis (75+ candles)
-      if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 75) {
-        process.env.CANDLES_COUNT = '75'
+      if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 200) {
+        process.env.CANDLES_COUNT = '200'
       }
       // Get market data for all tickers (fetched in parallel by getMarketData)
       const { marketDataMap } = await getMarketData(normalizedTickers)
@@ -1584,8 +1584,8 @@ server.registerTool(
 
     try {
       // Fetch market data with sufficient candles for volume analysis (75+ candles)
-      if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 75) {
-        process.env.CANDLES_COUNT = '75'
+      if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 200) {
+        process.env.CANDLES_COUNT = '200'
       }
       // Fetch market data for all tickers in parallel
       const { marketDataMap } = await getMarketData(normalizedTickers)
@@ -1813,8 +1813,8 @@ server.registerTool(
 
     try {
       // Fetch market data with sufficient candles for multi-timeframe analysis (75+ candles)
-      if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 75) {
-        process.env.CANDLES_COUNT = '75'
+      if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 200) {
+        process.env.CANDLES_COUNT = '200'
       }
       // Fetch market data for all tickers in parallel
       const { marketDataMap } = await getMarketData(normalizedTickers)
@@ -1987,8 +1987,8 @@ server.registerTool(
 
     try {
       // Fetch market data
-      if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 75) {
-        process.env.CANDLES_COUNT = '75'
+      if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 200) {
+        process.env.CANDLES_COUNT = '200'
       }
       // Fetch market data for all tickers in parallel
       const { marketDataMap } = await getMarketData(normalizedTickers)
@@ -2396,8 +2396,8 @@ server.registerTool(
       const totalCapital = capital || defaultCapital
 
       // Get market data for indicators and external data
-      if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 75) {
-        process.env.CANDLES_COUNT = '75'
+      if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 200) {
+        process.env.CANDLES_COUNT = '200'
       }
       const { marketDataMap } = await getMarketData([normalizedTicker])
       const assetData = marketDataMap.get(normalizedTicker)
@@ -2641,8 +2641,8 @@ server.registerTool(
     }
 
     try {
-      if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 75) {
-        process.env.CANDLES_COUNT = '75'
+      if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 200) {
+        process.env.CANDLES_COUNT = '200'
       }
       const { marketDataMap } = await getMarketData(normalizedTickers)
 
@@ -2842,8 +2842,8 @@ server.registerTool(
     }
 
     try {
-      if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 75) {
-        process.env.CANDLES_COUNT = '75'
+      if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 200) {
+        process.env.CANDLES_COUNT = '200'
       }
       const { marketDataMap } = await getMarketData(normalizedTickers)
 
@@ -3022,8 +3022,8 @@ server.registerTool(
     }
 
     try {
-      if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 75) {
-        process.env.CANDLES_COUNT = '75'
+      if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 200) {
+        process.env.CANDLES_COUNT = '200'
       }
       const { marketDataMap } = await getMarketData(normalizedTickers)
 
@@ -3366,8 +3366,8 @@ server.registerTool(
     }
 
     try {
-      if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 75) {
-        process.env.CANDLES_COUNT = '75'
+      if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 200) {
+        process.env.CANDLES_COUNT = '200'
       }
       const { marketDataMap } = await getMarketData(normalizedTickers)
 
@@ -3546,8 +3546,8 @@ server.registerTool(
     }
 
     try {
-      if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 75) {
-        process.env.CANDLES_COUNT = '75'
+      if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 200) {
+        process.env.CANDLES_COUNT = '200'
       }
       const { marketDataMap } = await getMarketData(normalizedTickers)
 
@@ -3773,8 +3773,8 @@ server.registerTool(
     }
 
     try {
-      if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 75) {
-        process.env.CANDLES_COUNT = '75'
+      if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 200) {
+        process.env.CANDLES_COUNT = '200'
       }
       const { marketDataMap } = await getMarketData(normalizedTickers)
 
@@ -3971,8 +3971,8 @@ server.registerTool(
     }
 
     try {
-      if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 75) {
-        process.env.CANDLES_COUNT = '75'
+      if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 200) {
+        process.env.CANDLES_COUNT = '200'
       }
       const { marketDataMap } = await getMarketData(normalizedTickers)
 

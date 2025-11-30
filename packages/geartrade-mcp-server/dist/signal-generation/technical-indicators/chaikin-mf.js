@@ -3,12 +3,15 @@
  * Volume-weighted measure of accumulation/distribution
  */
 export function calculateChaikinMF(highs, lows, closes, volumes, period = 21) {
-    if (highs.length < period || lows.length < period || closes.length < period || volumes.length < period) {
+    // Minimum 5 data points required
+    if (highs.length < 5 || lows.length < 5 || closes.length < 5 || volumes.length < 5) {
         return {
             cmf: null,
             signal: null,
         };
     }
+    // Use adaptive period
+    const effectivePeriod = Math.min(period, highs.length);
     // Calculate Money Flow Multiplier and Money Flow Volume
     const moneyFlowVolumes = [];
     let totalVolume = 0;
@@ -29,8 +32,8 @@ export function calculateChaikinMF(highs, lows, closes, volumes, period = 21) {
         }
         totalVolume += volume;
     }
-    // Calculate CMF for the specified period
-    const startIdx = closes.length - period;
+    // Calculate CMF for the specified period using effective period
+    const startIdx = Math.max(0, closes.length - effectivePeriod);
     let sumMoneyFlowVolume = 0;
     let sumVolume = 0;
     for (let i = startIdx; i < closes.length; i++) {

@@ -4,28 +4,31 @@
  */
 import { calculateSMA } from './moving-averages';
 export function calculateBBWidth(closes, period = 20, stdDev = 2) {
-    if (closes.length < period) {
+    // Minimum 5 data points required
+    if (closes.length < 5) {
         return {
             width: null,
             squeeze: null,
             trend: null,
         };
     }
+    // Use adaptive period
+    const effectivePeriod = Math.min(period, closes.length);
     // Calculate SMA for middle band
-    const sma = calculateSMA(closes, period);
+    const sma = calculateSMA(closes, effectivePeriod);
+    let middleBand;
     if (sma.length === 0) {
-        return {
-            width: null,
-            squeeze: null,
-            trend: null,
-        };
+        // Fallback: use simple average
+        middleBand = closes.slice(-effectivePeriod).reduce((a, b) => a + b, 0) / effectivePeriod;
     }
-    const middleBand = sma[sma.length - 1];
+    else {
+        middleBand = sma[sma.length - 1];
+    }
     // Calculate standard deviation
-    const recentData = closes.slice(-period);
+    const recentData = closes.slice(-effectivePeriod);
     const variance = recentData.reduce((sum, value) => {
         return sum + Math.pow(value - middleBand, 2);
-    }, 0) / period;
+    }, 0) / effectivePeriod;
     const standardDeviation = Math.sqrt(variance);
     // Calculate bands
     const upperBand = middleBand + (standardDeviation * stdDev);
@@ -44,15 +47,15 @@ export function calculateBBWidth(closes, period = 20, stdDev = 2) {
         squeeze = 'normal';
     // Determine trend (simplified - would need historical data for proper trend)
     let trend = null;
-    if (closes.length >= period * 2) {
+    if (closes.length >= effectivePeriod * 2) {
         // Compare with previous period
-        const prevData = closes.slice(-(period * 2), -period);
-        const prevSMA = calculateSMA(prevData, period);
-        if (prevSMA.length > 0) {
-            const prevMiddle = prevSMA[prevSMA.length - 1];
+        const prevData = closes.slice(-(effectivePeriod * 2), -effectivePeriod);
+        const prevSMA = calculateSMA(prevData, effectivePeriod);
+        const prevMiddle = prevSMA.length > 0 ? prevSMA[prevSMA.length - 1] : prevData.reduce((a, b) => a + b, 0) / prevData.length;
+        if (prevMiddle) {
             const prevVariance = prevData.reduce((sum, value) => {
                 return sum + Math.pow(value - prevMiddle, 2);
-            }, 0) / period;
+            }, 0) / effectivePeriod;
             const prevStdDev = Math.sqrt(prevVariance);
             const prevUpper = prevMiddle + (prevStdDev * stdDev);
             const prevLower = prevMiddle - (prevStdDev * stdDev);

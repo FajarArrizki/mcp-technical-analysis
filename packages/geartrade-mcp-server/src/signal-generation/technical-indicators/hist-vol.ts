@@ -14,13 +14,17 @@ export function calculateHistoricalVolatility(
   period: number = 20,
   annualizationFactor: number = 365 // Assuming daily data, annualize to yearly
 ): HistoricalVolatilityData {
-  if (closes.length < period + 1) {
+  // Minimum 5 data points required
+  if (closes.length < 5) {
     return {
       volatility: null,
       annualizedVolatility: null,
       volatilityLevel: null,
     }
   }
+  
+  // Use adaptive period
+  const effectivePeriod = Math.min(period, closes.length - 1)
 
   // Calculate logarithmic returns: ln(close_t / close_t-1)
   const returns: number[] = []
@@ -33,7 +37,7 @@ export function calculateHistoricalVolatility(
     }
   }
 
-  if (returns.length < period) {
+  if (returns.length < 2) {
     return {
       volatility: null,
       annualizedVolatility: null,
@@ -41,16 +45,17 @@ export function calculateHistoricalVolatility(
     }
   }
 
-  // Use the most recent 'period' returns
-  const recentReturns = returns.slice(-period)
+  // Use the most recent 'effectivePeriod' returns
+  const usePeriod = Math.min(effectivePeriod, returns.length)
+  const recentReturns = returns.slice(-usePeriod)
 
   // Calculate mean of returns
-  const meanReturn = recentReturns.reduce((sum, ret) => sum + ret, 0) / period
+  const meanReturn = recentReturns.reduce((sum, ret) => sum + ret, 0) / usePeriod
 
   // Calculate variance
   const variance = recentReturns.reduce((sum, ret) => {
     return sum + Math.pow(ret - meanReturn, 2)
-  }, 0) / period
+  }, 0) / usePeriod
 
   // Calculate standard deviation (volatility)
   const volatility = Math.sqrt(variance)

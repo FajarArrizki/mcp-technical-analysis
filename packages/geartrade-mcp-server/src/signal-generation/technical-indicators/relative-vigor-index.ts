@@ -50,9 +50,19 @@ export function calculateRelativeVigorIndex(
   period: number = 10,
   signalPeriod: number = 4
 ): RelativeVigorIndexData | null {
-  if (opens.length !== highs.length || opens.length !== lows.length || opens.length !== closes.length || opens.length < period + signalPeriod) {
+  // Validate input arrays
+  if (opens.length !== highs.length || opens.length !== lows.length || opens.length !== closes.length) {
     return null
   }
+  
+  // Minimum 5 data points required
+  if (opens.length < 5) {
+    return null
+  }
+  
+  // Use adaptive periods based on available data
+  const effectivePeriod = Math.min(period, Math.floor(opens.length * 0.7))
+  const effectiveSignalPeriod = Math.min(signalPeriod, Math.floor(effectivePeriod / 2))
 
   // Calculate RVI components for each period
   const rviComponents: { numerator: number; denominator: number }[] = []
@@ -64,12 +74,13 @@ export function calculateRelativeVigorIndex(
     rviComponents.push({ numerator, denominator })
   }
 
-  // Calculate RVI as SMA of (numerator/denominator) over period
+  // Calculate RVI as SMA of (numerator/denominator) over effective period
   let rvi = 0
   let totalWeight = 0
+  const usePeriod = Math.max(3, Math.min(effectivePeriod, rviComponents.length))
 
-  for (let i = Math.max(0, rviComponents.length - period); i < rviComponents.length; i++) {
-    const weight = i - Math.max(0, rviComponents.length - period) + 1
+  for (let i = Math.max(0, rviComponents.length - usePeriod); i < rviComponents.length; i++) {
+    const weight = i - Math.max(0, rviComponents.length - usePeriod) + 1
     const ratio = rviComponents[i].denominator > 0 ? rviComponents[i].numerator / rviComponents[i].denominator : 0
     rvi += ratio * weight
     totalWeight += weight
@@ -77,9 +88,10 @@ export function calculateRelativeVigorIndex(
 
   rvi = totalWeight > 0 ? rvi / totalWeight : 0
 
-  // Calculate signal line (SMA of RVI)
-  const rviValues = calculateRVIHistory(opens, highs, lows, closes, period)
-  const signalValues = calculateSMA(rviValues, signalPeriod)
+  // Calculate signal line (SMA of RVI) using effective periods
+  const rviValues = calculateRVIHistory(opens, highs, lows, closes, usePeriod)
+  const useSignalPeriod = Math.max(2, Math.min(effectiveSignalPeriod, rviValues.length))
+  const signalValues = calculateSMA(rviValues, useSignalPeriod)
   const signal = signalValues.length > 0 ? signalValues[signalValues.length - 1] : rvi
 
   // Get current components
@@ -100,9 +112,9 @@ export function calculateRelativeVigorIndex(
   let bullishCrossover = false
   let bearishCrossover = false
 
-  if (rviValues.length >= signalPeriod + 1) {
+  if (rviValues.length >= useSignalPeriod + 1) {
     const prevRVI = rviValues[rviValues.length - 2]
-    const prevSignalValues = calculateSMA(rviValues.slice(0, -1), signalPeriod)
+    const prevSignalValues = calculateSMA(rviValues.slice(0, -1), useSignalPeriod)
     const prevSignal = prevSignalValues.length > 0 ? prevSignalValues[prevSignalValues.length - 1] : 0
 
     if (prevRVI <= prevSignal && rvi > signal) {

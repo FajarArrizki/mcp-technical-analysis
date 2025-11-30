@@ -52,9 +52,15 @@ export function calculateMassIndex(
   emaPeriod: number = 9,
   sumPeriod: number = 25
 ): MassIndexData | null {
-  if (highs.length !== lows.length || highs.length < emaPeriod * 2 + sumPeriod) {
+  // Minimum 3 data points required
+  if (highs.length !== lows.length || highs.length < 3) {
     return null
   }
+  
+  // Use adaptive periods
+  const dataRatio = Math.min(1, highs.length / (emaPeriod * 2 + sumPeriod))
+  const effectiveEmaPeriod = Math.max(2, Math.floor(emaPeriod * dataRatio))
+  const effectiveSumPeriod = Math.max(3, Math.floor(sumPeriod * dataRatio))
 
   // Calculate High-Low ranges
   const ranges: number[] = []
@@ -63,23 +69,41 @@ export function calculateMassIndex(
   }
 
   // Calculate single EMA of ranges
-  const singleEMA = calculateEMA(ranges, emaPeriod)
+  const singleEMA = calculateEMA(ranges, effectiveEmaPeriod)
 
   // Calculate double EMA of ranges (EMA of single EMA)
-  const doubleEMA = calculateEMA(singleEMA, emaPeriod)
+  const doubleEMA = calculateEMA(singleEMA, effectiveEmaPeriod)
 
-  if (singleEMA.length < sumPeriod || doubleEMA.length < sumPeriod) {
-    return null
+  if (singleEMA.length < 1 || doubleEMA.length < 1) {
+    // Fallback: calculate simple mass index
+    const avgRange = ranges.reduce((a, b) => a + b, 0) / ranges.length
+    return {
+      massIndex: 25, // Neutral value
+      singleEMA: avgRange,
+      doubleEMA: avgRange,
+      currentRange: ranges[ranges.length - 1],
+      emaRatio: 1,
+      reversalSignal: false,
+      overbought: false,
+      trend: 'stable',
+      strength: 0,
+      signal: 'neutral',
+      reversalProbability: 'low'
+    }
   }
 
-  // Calculate EMA ratio and sum over sumPeriod
+  // Calculate EMA ratio and sum over effectiveSumPeriod
   let massIndex = 0
   let emaRatioSum = 0
+  const useSumPeriod = Math.min(effectiveSumPeriod, Math.min(singleEMA.length, doubleEMA.length))
 
-  for (let i = 0; i < sumPeriod; i++) {
-    const ratio = doubleEMA[doubleEMA.length - 1 - i] > 0 ?
-      singleEMA[singleEMA.length - 1 - i] / doubleEMA[doubleEMA.length - 1 - i] : 1
-    emaRatioSum += ratio
+  for (let i = 0; i < useSumPeriod; i++) {
+    const sIdx = singleEMA.length - 1 - i
+    const dIdx = doubleEMA.length - 1 - i
+    if (sIdx >= 0 && dIdx >= 0) {
+      const ratio = doubleEMA[dIdx] > 0 ? singleEMA[sIdx] / doubleEMA[dIdx] : 1
+      emaRatioSum += ratio
+    }
   }
 
   massIndex = emaRatioSum
@@ -240,14 +264,16 @@ export function analyzeMassIndexTrend(
   averageMassIndex: number
   trendStrength: number
 } {
-  if (highs.length < periods + 50) {
+  // Adaptive minimum - need at least 5 data points
+  if (highs.length < 5) {
     return { dominantTrend: 'neutral', reversalSignals: 0, averageMassIndex: 0, trendStrength: 0 }
   }
 
   const massData: MassIndexData[] = []
+  const startIdx = Math.max(5, Math.min(50, highs.length - 1))
 
   // Calculate Mass Index for multiple periods
-  for (let i = 50; i <= highs.length; i++) {
+  for (let i = startIdx; i <= highs.length; i++) {
     const sliceHighs = highs.slice(0, i)
     const sliceLows = lows.slice(0, i)
     const mass = calculateMassIndex(sliceHighs, sliceLows)

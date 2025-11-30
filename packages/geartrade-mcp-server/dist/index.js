@@ -1213,8 +1213,8 @@ server.registerTool('get_indicators', {
     }
     try {
         // Fetch market data with sufficient candles for volume analysis (75+ candles)
-        if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 75) {
-            process.env.CANDLES_COUNT = '75';
+        if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 200) {
+            process.env.CANDLES_COUNT = '200';
         }
         // Get market data for all tickers (fetched in parallel by getMarketData)
         const { marketDataMap } = await getMarketData(normalizedTickers);
@@ -1371,8 +1371,8 @@ server.registerTool('get_volume_analysis', {
     }
     try {
         // Fetch market data with sufficient candles for volume analysis (75+ candles)
-        if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 75) {
-            process.env.CANDLES_COUNT = '75';
+        if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 200) {
+            process.env.CANDLES_COUNT = '200';
         }
         // Fetch market data for all tickers in parallel
         const { marketDataMap } = await getMarketData(normalizedTickers);
@@ -1556,8 +1556,8 @@ server.registerTool('get_volume_analysis', {
         }
         try {
             // Fetch market data with sufficient candles for multi-timeframe analysis (75+ candles)
-            if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 75) {
-                process.env.CANDLES_COUNT = '75';
+            if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 200) {
+                process.env.CANDLES_COUNT = '200';
             }
             // Fetch market data for all tickers in parallel
             const { marketDataMap } = await getMarketData(normalizedTickers);
@@ -1696,8 +1696,8 @@ server.registerTool('get_External_data', {
     }
     try {
         // Fetch market data
-        if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 75) {
-            process.env.CANDLES_COUNT = '75';
+        if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 200) {
+            process.env.CANDLES_COUNT = '200';
         }
         // Fetch market data for all tickers in parallel
         const { marketDataMap } = await getMarketData(normalizedTickers);
@@ -2010,8 +2010,8 @@ server.registerTool('calculate_position_setup', {
         const defaultCapital = capital || parseFloat(process.env.PAPER_CAPITAL || '10000');
         const totalCapital = capital || defaultCapital;
         // Get market data for indicators and external data
-        if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 75) {
-            process.env.CANDLES_COUNT = '75';
+        if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 200) {
+            process.env.CANDLES_COUNT = '200';
         }
         const { marketDataMap } = await getMarketData([normalizedTicker]);
         const assetData = marketDataMap.get(normalizedTicker);
@@ -2197,8 +2197,8 @@ server.registerTool('get_orderbook_depth', {
         };
     }
     try {
-        if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 75) {
-            process.env.CANDLES_COUNT = '75';
+        if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 200) {
+            process.env.CANDLES_COUNT = '200';
         }
         const { marketDataMap } = await getMarketData(normalizedTickers);
         const results = [];
@@ -2363,8 +2363,8 @@ server.registerTool('get_volume_profile', {
         };
     }
     try {
-        if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 75) {
-            process.env.CANDLES_COUNT = '75';
+        if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 200) {
+            process.env.CANDLES_COUNT = '200';
         }
         const { marketDataMap } = await getMarketData(normalizedTickers);
         const results = [];
@@ -2503,8 +2503,8 @@ server.registerTool('get_market_structure', {
         };
     }
     try {
-        if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 75) {
-            process.env.CANDLES_COUNT = '75';
+        if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 200) {
+            process.env.CANDLES_COUNT = '200';
         }
         const { marketDataMap } = await getMarketData(normalizedTickers);
         const results = [];
@@ -2781,8 +2781,8 @@ server.registerTool('get_candlestick_patterns', {
         };
     }
     try {
-        if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 75) {
-            process.env.CANDLES_COUNT = '75';
+        if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 200) {
+            process.env.CANDLES_COUNT = '200';
         }
         const { marketDataMap } = await getMarketData(normalizedTickers);
         const results = [];
@@ -2926,8 +2926,8 @@ server.registerTool('get_divergence', {
         };
     }
     try {
-        if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 75) {
-            process.env.CANDLES_COUNT = '75';
+        if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 200) {
+            process.env.CANDLES_COUNT = '200';
         }
         const { marketDataMap } = await getMarketData(normalizedTickers);
         const results = [];
@@ -3113,8 +3113,8 @@ server.registerTool('get_liquidation_levels', {
         };
     }
     try {
-        if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 75) {
-            process.env.CANDLES_COUNT = '75';
+        if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 200) {
+            process.env.CANDLES_COUNT = '200';
         }
         const { marketDataMap } = await getMarketData(normalizedTickers);
         const results = [];
@@ -3275,8 +3275,8 @@ server.registerTool('get_long_short_ratio', {
         };
     }
     try {
-        if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 75) {
-            process.env.CANDLES_COUNT = '75';
+        if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 200) {
+            process.env.CANDLES_COUNT = '200';
         }
         const { marketDataMap } = await getMarketData(normalizedTickers);
         const results = [];

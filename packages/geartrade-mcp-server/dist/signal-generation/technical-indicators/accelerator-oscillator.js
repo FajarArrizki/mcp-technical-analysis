@@ -13,9 +13,9 @@ export function calculateAcceleratorOscillator(highs, lows, closes) {
     if (highs.length !== lows.length || highs.length !== closes.length || highs.length < 10) {
         return null;
     }
-    // Step 1: Calculate Awesome Oscillator (AO)
-    const ao = calculateAwesomeOscillator(highs, lows);
-    if (!ao || ao.length < 6) {
+    // Step 1: Calculate Awesome Oscillator (AO) with adaptive periods
+    const ao = calculateAwesomeOscillatorAdaptive(highs, lows);
+    if (!ao || ao.length < 3) {
         return null;
     }
     // Step 2: Calculate 5-period SMA of AO
@@ -146,20 +146,23 @@ export function calculateAcceleratorOscillator(highs, lows, closes) {
     };
 }
 /**
- * Helper function to calculate Awesome Oscillator
+ * Helper function to calculate Awesome Oscillator with adaptive periods
  */
-function calculateAwesomeOscillator(highs, lows) {
+function calculateAwesomeOscillatorAdaptive(highs, lows) {
     const ao = [];
+    // Adaptive slow period based on available data
+    const slowPeriod = Math.min(34, Math.floor(highs.length * 0.7));
+    const fastPeriod = Math.min(5, Math.floor(slowPeriod / 6));
     for (let i = 0; i < highs.length; i++) {
-        // Calculate median price
-        const median = (highs[i] + lows[i]) / 2;
-        // Need at least 34 periods for AO calculation
-        if (i >= 33) {
-            // 5-period SMA of median
-            const sma5 = calculateSMA(Array.from({ length: 5 }, (_, idx) => (highs[i - idx] + lows[i - idx]) / 2), 5);
-            // 34-period SMA of median
-            const sma34 = calculateSMA(Array.from({ length: 34 }, (_, idx) => (highs[i - idx] + lows[i - idx]) / 2), 34);
-            ao.push(sma5 - sma34);
+        // Need at least slowPeriod for AO calculation
+        if (i >= slowPeriod - 1) {
+            // Fast SMA of median
+            const fastLen = Math.min(fastPeriod, i + 1);
+            const smaFast = calculateSMA(Array.from({ length: fastLen }, (_, idx) => (highs[i - idx] + lows[i - idx]) / 2), fastLen);
+            // Slow SMA of median
+            const slowLen = Math.min(slowPeriod, i + 1);
+            const smaSlow = calculateSMA(Array.from({ length: slowLen }, (_, idx) => (highs[i - idx] + lows[i - idx]) / 2), slowLen);
+            ao.push(smaFast - smaSlow);
         }
     }
     return ao;

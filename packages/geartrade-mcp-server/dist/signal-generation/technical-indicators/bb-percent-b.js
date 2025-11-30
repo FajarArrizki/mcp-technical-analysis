@@ -4,29 +4,32 @@
  */
 import { calculateSMA } from './moving-averages';
 export function calculateBBPercentB(closes, period = 20, stdDev = 2) {
-    if (closes.length < period) {
+    // Minimum 5 data points required
+    if (closes.length < 5) {
         return {
             percentB: null,
             position: null,
             signal: null,
         };
     }
+    // Use adaptive period
+    const effectivePeriod = Math.min(period, closes.length);
     const currentPrice = closes[closes.length - 1];
     // Calculate SMA for middle band
-    const sma = calculateSMA(closes, period);
+    const sma = calculateSMA(closes, effectivePeriod);
+    let middleBand;
     if (sma.length === 0) {
-        return {
-            percentB: null,
-            position: null,
-            signal: null,
-        };
+        // Fallback: use simple average
+        middleBand = closes.slice(-effectivePeriod).reduce((a, b) => a + b, 0) / effectivePeriod;
     }
-    const middleBand = sma[sma.length - 1];
+    else {
+        middleBand = sma[sma.length - 1];
+    }
     // Calculate standard deviation
-    const recentData = closes.slice(-period);
+    const recentData = closes.slice(-effectivePeriod);
     const variance = recentData.reduce((sum, value) => {
         return sum + Math.pow(value - middleBand, 2);
-    }, 0) / period;
+    }, 0) / effectivePeriod;
     const standardDeviation = Math.sqrt(variance);
     // Calculate bands
     const upperBand = middleBand + (standardDeviation * stdDev);

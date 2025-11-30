@@ -11,18 +11,28 @@
  * @returns FibonacciRetracement object with levels and analysis
  */
 export function calculateFibonacciRetracement(closes, lookbackPeriod = 50) {
-    if (closes.length < lookbackPeriod) {
+    // Minimum 5 data points required
+    if (closes.length < 5) {
         return null;
     }
+    // Adjust lookback period if not enough data - use adaptive period
+    const effectiveLookback = Math.min(lookbackPeriod, closes.length);
     // Find swing high and swing low within lookback period using closes
-    const recentCloses = closes.slice(-lookbackPeriod);
+    const recentCloses = closes.slice(-effectiveLookback);
     // Use the highest and lowest close in the period
     const swingHigh = Math.max(...recentCloses);
     const swingLow = Math.min(...recentCloses);
     const range = swingHigh - swingLow;
-    if (range <= 0) {
-        return null;
+    // Handle zero or very small range (use small percentage of price as minimum range)
+    if (range <= 0 || range < swingLow * 0.0001) {
+        // Create minimal range based on price
+        const minRange = swingLow * 0.01; // 1% of price as minimum range
+        const adjustedSwingHigh = swingLow + minRange;
+        return createFibonacciResult(closes, adjustedSwingHigh, swingLow, minRange, effectiveLookback);
     }
+    return createFibonacciResult(closes, swingHigh, swingLow, range, effectiveLookback);
+}
+function createFibonacciResult(closes, swingHigh, swingLow, range, lookbackPeriod) {
     // Determine trend direction based on price movement
     const firstClose = closes[closes.length - lookbackPeriod];
     const lastClose = closes[closes.length - 1];

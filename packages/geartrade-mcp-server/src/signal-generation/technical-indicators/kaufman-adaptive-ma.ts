@@ -47,45 +47,47 @@ export function calculateKaufmanAdaptiveMA(
   fastPeriod: number = 2,
   slowPeriod: number = 30
 ): KaufmanAdaptiveMAData | null {
-  if (closes.length < slowPeriod + efficiencyPeriod) {
+  // Minimum 5 data points required
+  if (closes.length < 5) {
     return null
   }
+  
+  // Use adaptive periods based on available data
+  const dataRatio = Math.min(1, closes.length / 40)
+  const effectiveEfficiencyPeriod = Math.max(3, Math.min(efficiencyPeriod, Math.floor(efficiencyPeriod * dataRatio)))
+  const effectiveSlowPeriod = Math.max(5, Math.min(slowPeriod, Math.floor(slowPeriod * dataRatio)))
 
   // Step 1: Calculate Efficiency Ratio (ER)
   // ER = |Price - Price[n]| / Sum(|Price[i] - Price[i-1]| for i=1 to n)
   const currentPrice = closes[closes.length - 1]
-  const priceNPeriodsAgo = closes[closes.length - 1 - efficiencyPeriod]
+  const priceNPeriodsAgo = closes[Math.max(0, closes.length - 1 - effectiveEfficiencyPeriod)]
 
   let sumPriceChanges = 0
-  for (let i = closes.length - efficiencyPeriod; i < closes.length - 1; i++) {
+  for (let i = Math.max(0, closes.length - effectiveEfficiencyPeriod); i < closes.length - 1; i++) {
     sumPriceChanges += Math.abs(closes[i + 1] - closes[i])
   }
 
   const efficiencyRatio = sumPriceChanges > 0 ?
-    Math.abs(currentPrice - priceNPeriodsAgo) / sumPriceChanges : 0
+    Math.abs(currentPrice - priceNPeriodsAgo) / sumPriceChanges : 0.5
 
   // Step 2: Calculate Smoothing Constant (SC)
   // SC = [ER * (2/(fastPeriod+1) - 2/(slowPeriod+1)) + 2/(slowPeriod+1)]^2
   const fastSC = 2 / (fastPeriod + 1)
-  const slowSC = 2 / (slowPeriod + 1)
+  const slowSC = 2 / (effectiveSlowPeriod + 1)
 
   const smoothingConstant = Math.pow(efficiencyRatio * (fastSC - slowSC) + slowSC, 2)
 
-  // Step 3: Calculate KAMA recursively
+  // Step 3: Calculate KAMA iteratively (non-recursive to avoid stack overflow)
   let kama: number
-
-  if (closes.length === slowPeriod + efficiencyPeriod) {
-    // First calculation - use simple average
-    kama = closes.slice(-slowPeriod).reduce((sum, price) => sum + price, 0) / slowPeriod
-  } else {
-    // Recursive calculation: KAMA = KAMA[prev] + SC * (Price - KAMA[prev])
-    const prevKAMA = calculateKaufmanAdaptiveMA(closes.slice(0, -1), efficiencyPeriod, fastPeriod, slowPeriod)
-
-    if (prevKAMA) {
-      kama = prevKAMA.kama + smoothingConstant * (currentPrice - prevKAMA.kama)
-    } else {
-      kama = currentPrice // Fallback
-    }
+  
+  // Use simple average for initial KAMA
+  const initPeriod = Math.min(effectiveSlowPeriod, closes.length)
+  kama = closes.slice(-initPeriod).reduce((sum, price) => sum + price, 0) / initPeriod
+  
+  // Apply smoothing for recent prices
+  const smoothingStart = Math.max(0, closes.length - effectiveEfficiencyPeriod)
+  for (let i = smoothingStart; i < closes.length; i++) {
+    kama = kama + smoothingConstant * (closes[i] - kama)
   }
 
   // Determine trend

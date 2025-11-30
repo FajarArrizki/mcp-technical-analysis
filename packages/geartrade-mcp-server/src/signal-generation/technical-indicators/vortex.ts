@@ -16,7 +16,8 @@ export function calculateVortex(
   closes: number[],
   period: number = 14
 ): VortexData {
-  if (highs.length < period + 1 || lows.length < period + 1 || closes.length < period + 1) {
+  // Minimum 5 data points required
+  if (highs.length < 5 || lows.length < 5 || closes.length < 5) {
     return {
       vortexPlus: null,
       vortexMinus: null,
@@ -24,6 +25,9 @@ export function calculateVortex(
       strength: null,
     }
   }
+  
+  // Use adaptive period
+  const effectivePeriod = Math.min(period, highs.length - 1)
 
   // Calculate True Range and Directional Movement
   const trueRanges: number[] = []
@@ -62,7 +66,7 @@ export function calculateVortex(
     minusDMs.push(minusDM)
   }
 
-  if (trueRanges.length < period) {
+  if (trueRanges.length < 2) {
     return {
       vortexPlus: null,
       vortexMinus: null,
@@ -71,10 +75,11 @@ export function calculateVortex(
     }
   }
 
-  // Calculate sums for the period
-  const sumTR = trueRanges.slice(-period).reduce((sum, tr) => sum + tr, 0)
-  const sumPlusDM = plusDMs.slice(-period).reduce((sum, dm) => sum + dm, 0)
-  const sumMinusDM = minusDMs.slice(-period).reduce((sum, dm) => sum + dm, 0)
+  // Calculate sums for the effective period
+  const usePeriod = Math.min(effectivePeriod, trueRanges.length)
+  const sumTR = trueRanges.slice(-usePeriod).reduce((sum, tr) => sum + tr, 0)
+  const sumPlusDM = plusDMs.slice(-usePeriod).reduce((sum, dm) => sum + dm, 0)
+  const sumMinusDM = minusDMs.slice(-usePeriod).reduce((sum, dm) => sum + dm, 0)
 
   if (sumTR === 0) {
     return {

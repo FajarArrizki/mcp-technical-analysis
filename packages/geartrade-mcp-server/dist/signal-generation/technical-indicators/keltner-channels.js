@@ -5,7 +5,8 @@
 import { calculateEMA } from './moving-averages';
 import { calculateATR } from './volatility';
 export function calculateKeltnerChannels(highs, lows, closes, emaPeriod = 20, atrPeriod = 14, multiplier = 2) {
-    if (closes.length < Math.max(emaPeriod, atrPeriod + 1)) {
+    // Minimum 5 data points required
+    if (closes.length < 5) {
         return {
             middle: null,
             upper: null,
@@ -15,31 +16,27 @@ export function calculateKeltnerChannels(highs, lows, closes, emaPeriod = 20, at
             trend: null,
         };
     }
+    // Use adaptive periods
+    const effectiveEmaPeriod = Math.min(emaPeriod, closes.length);
+    const effectiveAtrPeriod = Math.min(atrPeriod, closes.length - 1);
     // Calculate EMA for middle line
-    const ema = calculateEMA(closes, emaPeriod);
-    const currentEMA = ema[ema.length - 1];
+    const ema = calculateEMA(closes, effectiveEmaPeriod);
+    let currentEMA = ema[ema.length - 1];
     if (!currentEMA) {
-        return {
-            middle: null,
-            upper: null,
-            lower: null,
-            bandwidth: null,
-            position: null,
-            trend: null,
-        };
+        // Fallback: use simple average
+        currentEMA = closes.slice(-effectiveEmaPeriod).reduce((a, b) => a + b, 0) / effectiveEmaPeriod;
     }
     // Calculate ATR
-    const atr = calculateATR(highs, lows, closes, atrPeriod);
-    const currentATR = atr[atr.length - 1];
+    const atr = calculateATR(highs, lows, closes, effectiveAtrPeriod);
+    let currentATR = atr[atr.length - 1];
     if (!currentATR) {
-        return {
-            middle: currentEMA,
-            upper: null,
-            lower: null,
-            bandwidth: null,
-            position: null,
-            trend: null,
-        };
+        // Fallback: calculate simple ATR
+        let trSum = 0;
+        for (let i = 1; i < Math.min(effectiveAtrPeriod + 1, closes.length); i++) {
+            const tr = Math.max(highs[i] - lows[i], Math.abs(highs[i] - closes[i - 1]), Math.abs(lows[i] - closes[i - 1]));
+            trSum += tr;
+        }
+        currentATR = trSum / Math.max(1, Math.min(effectiveAtrPeriod, closes.length - 1));
     }
     // Calculate channels
     const upper = currentEMA + (multiplier * currentATR);

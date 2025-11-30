@@ -14,9 +14,15 @@ export function calculateKlingerOscillator(highs, lows, closes, volumes) {
     if (highs.length !== lows.length || highs.length !== closes.length || highs.length !== volumes.length) {
         return null;
     }
-    if (highs.length < 55) { // Need at least 55 periods for long EMA
+    // Minimum 3 data points required
+    if (highs.length < 3) {
         return null;
     }
+    // Use adaptive periods based on available data
+    const dataRatio = Math.min(1, highs.length / 55);
+    const effectiveShortPeriod = Math.max(5, Math.floor(34 * dataRatio));
+    const effectiveLongPeriod = Math.max(8, Math.floor(55 * dataRatio));
+    const effectiveSignalPeriod = Math.max(3, Math.floor(13 * dataRatio));
     // Calculate Volume Force (VF) for each period
     const volumeForces = [];
     for (let i = 1; i < highs.length; i++) {
@@ -34,19 +40,21 @@ export function calculateKlingerOscillator(highs, lows, closes, volumes) {
             0;
         volumeForces.push(vf);
     }
-    // Calculate short-term EMA (34 periods) of VF
-    const shortEMA = calculateEMA(volumeForces, 34);
-    // Calculate long-term EMA (55 periods) of VF
-    const longEMA = calculateEMA(volumeForces, 55);
+    // Calculate short-term EMA using effective period
+    const shortEMA = calculateEMA(volumeForces, effectiveShortPeriod);
+    // Calculate long-term EMA using effective period
+    const longEMA = calculateEMA(volumeForces, effectiveLongPeriod);
     // Check for valid EMA values (0 is valid, undefined/NaN is not)
     if (shortEMA === undefined || longEMA === undefined || isNaN(shortEMA) || isNaN(longEMA)) {
-        return null;
+        // Fallback: use simple average
+        const avgVF = volumeForces.reduce((a, b) => a + b, 0) / volumeForces.length;
+        return createSimpleKlingerResult(avgVF, volumeForces[volumeForces.length - 1]);
     }
     // Klinger Oscillator = Short EMA - Long EMA
     const klinger = shortEMA - longEMA;
-    // Calculate signal line (13-period MA of Klinger)
-    const klingerHistory = calculateKlingerHistory(highs, lows, closes, volumes);
-    const signal = calculateSMA(klingerHistory, 13);
+    // Calculate signal line using effective signal period
+    const klingerHistory = calculateKlingerHistory(highs, lows, closes, volumes, effectiveShortPeriod, effectiveLongPeriod);
+    const signal = calculateSMA(klingerHistory, effectiveSignalPeriod);
     // Determine trend
     let trend = 'neutral';
     if (klinger > 0) {
@@ -58,9 +66,10 @@ export function calculateKlingerOscillator(highs, lows, closes, volumes) {
     // Check for crossovers
     let bullishCrossover = false;
     let bearishCrossover = false;
-    if (klingerHistory.length >= 14) {
+    if (klingerHistory.length >= 2) {
         const prevKlinger = klingerHistory[klingerHistory.length - 2];
-        const prevSignal = calculateSMA(klingerHistory.slice(0, -1), 13);
+        const signalPeriod = Math.min(13, klingerHistory.length - 1);
+        const prevSignal = calculateSMA(klingerHistory.slice(0, -1), signalPeriod);
         if (prevKlinger <= prevSignal && klinger > signal) {
             bullishCrossover = true;
         }
@@ -70,11 +79,13 @@ export function calculateKlingerOscillator(highs, lows, closes, volumes) {
     }
     // Simple divergence detection
     let divergence = 'none';
-    if (closes.length >= 60 && klingerHistory.length >= 30) {
-        const recentPrices = closes.slice(-30);
-        const prevPrices = closes.slice(-60, -30);
-        const recentKlinger = klingerHistory.slice(-30);
-        const prevKlinger = calculateKlingerHistory(highs.slice(-60, -30), lows.slice(-60, -30), closes.slice(-60, -30), volumes.slice(-60, -30));
+    // Adaptive divergence detection
+    const divPeriod = Math.min(30, Math.floor(closes.length / 2));
+    if (closes.length >= divPeriod * 2 && klingerHistory.length >= divPeriod) {
+        const recentPrices = closes.slice(-divPeriod);
+        const prevPrices = closes.slice(-divPeriod * 2, -divPeriod);
+        const recentKlinger = klingerHistory.slice(-divPeriod);
+        const prevKlinger = calculateKlingerHistory(highs.slice(-divPeriod * 2, -divPeriod), lows.slice(-divPeriod * 2, -divPeriod), closes.slice(-divPeriod * 2, -divPeriod), volumes.slice(-divPeriod * 2, -divPeriod));
         const recentPricePeak = Math.max(...recentPrices);
         const prevPricePeak = Math.max(...prevPrices);
         const recentKlingerPeak = Math.max(...recentKlinger);
@@ -122,10 +133,28 @@ export function calculateKlingerOscillator(highs, lows, closes, volumes) {
     };
 }
 /**
+ * Helper function to create simple Klinger result for fallback
+ */
+function createSimpleKlingerResult(klinger, volumeForce) {
+    return {
+        klinger,
+        shortEMA: klinger,
+        longEMA: 0,
+        volumeForce,
+        trend: klinger > 0 ? 'bullish' : klinger < 0 ? 'bearish' : 'neutral',
+        signalLine: klinger,
+        bullishCrossover: false,
+        bearishCrossover: false,
+        divergence: 'none',
+        tradingSignal: 'neutral'
+    };
+}
+/**
  * Helper function to calculate EMA
  */
 function calculateEMA(values, period) {
-    if (values.length < period)
+    const usePeriod = Math.min(period, values.length);
+    if (usePeriod < 1)
         return 0;
     const multiplier = 2 / (period + 1);
     let ema = values[0];
@@ -147,10 +176,12 @@ function calculateSMA(values, period) {
 /**
  * Helper function to calculate Klinger history (non-recursive)
  */
-function calculateKlingerHistory(highs, lows, closes, volumes) {
+function calculateKlingerHistory(highs, lows, closes, volumes, shortPeriod = 34, longPeriod = 55) {
     const klingerValues = [];
+    // Use adaptive minStart based on available data
+    const minStart = Math.min(Math.max(5, longPeriod), Math.max(5, highs.length - 1));
     // Start from where we have enough data
-    for (let i = 55; i <= highs.length; i++) {
+    for (let i = minStart; i <= highs.length; i++) {
         const sliceHighs = highs.slice(0, i);
         const sliceLows = lows.slice(0, i);
         const sliceCloses = closes.slice(0, i);
@@ -168,8 +199,8 @@ function calculateKlingerHistory(highs, lows, closes, volumes) {
             const vf = range > 0 ? volume * trend * (2 * (close - low) / range - 1) : 0;
             volumeForces.push(vf);
         }
-        const shortEMA = calculateEMA(volumeForces, 34);
-        const longEMA = calculateEMA(volumeForces, 55);
+        const shortEMA = calculateEMA(volumeForces, shortPeriod);
+        const longEMA = calculateEMA(volumeForces, longPeriod);
         if (shortEMA && longEMA) {
             const klinger = shortEMA - longEMA;
             klingerValues.push(klinger);

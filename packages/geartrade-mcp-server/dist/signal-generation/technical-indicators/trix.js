@@ -4,7 +4,8 @@
  */
 import { calculateEMA } from './moving-averages';
 export function calculateTRIX(closes, period = 15, signalPeriod = 9) {
-    if (closes.length < period * 3 + signalPeriod) {
+    // Minimum 10 data points required
+    if (closes.length < 10) {
         return {
             trix: null,
             trixLine: null,
@@ -12,17 +13,22 @@ export function calculateTRIX(closes, period = 15, signalPeriod = 9) {
             trend: null,
         };
     }
-    // Calculate triple EMA
-    const ema1 = calculateEMA(closes, period);
-    const ema2 = calculateEMA(ema1, period);
-    const ema3 = calculateEMA(ema2, period);
+    // Use adaptive periods
+    const dataRatio = Math.min(1, closes.length / 54);
+    const effectivePeriod = Math.max(3, Math.floor(period * dataRatio));
+    const effectiveSignalPeriod = Math.max(3, Math.floor(signalPeriod * dataRatio));
+    // Calculate triple EMA using effective period
+    const ema1 = calculateEMA(closes, effectivePeriod);
+    if (ema1.length < effectivePeriod) {
+        return createSimpleTRIXResult(closes);
+    }
+    const ema2 = calculateEMA(ema1, effectivePeriod);
+    if (ema2.length < 2) {
+        return createSimpleTRIXResult(closes);
+    }
+    const ema3 = calculateEMA(ema2, Math.min(effectivePeriod, ema2.length));
     if (ema3.length < 2) {
-        return {
-            trix: null,
-            trixLine: null,
-            signal: null,
-            trend: null,
-        };
+        return createSimpleTRIXResult(closes);
     }
     // Calculate TRIX line: (EMA3_t - EMA3_t-1) / EMA3_t-1
     const trixLine = [];
@@ -44,11 +50,12 @@ export function calculateTRIX(closes, period = 15, signalPeriod = 9) {
     }
     // Get current TRIX value
     const currentTrix = trixLine[trixLine.length - 1];
-    // Calculate signal using signal period
+    // Calculate signal using effective signal period
     let signal = null;
-    if (trixLine.length >= signalPeriod) {
-        const recentTrix = trixLine.slice(-signalPeriod);
-        const recentAvg = recentTrix.reduce((sum, val) => sum + val, 0) / signalPeriod;
+    const useSignalPeriod = Math.min(effectiveSignalPeriod, trixLine.length);
+    if (trixLine.length >= useSignalPeriod) {
+        const recentTrix = trixLine.slice(-useSignalPeriod);
+        const recentAvg = recentTrix.reduce((sum, val) => sum + val, 0) / useSignalPeriod;
         if (currentTrix > recentAvg * 1.01)
             signal = 'bullish'; // Above moving average
         else if (currentTrix < recentAvg * 0.99)
@@ -74,5 +81,22 @@ export function calculateTRIX(closes, period = 15, signalPeriod = 9) {
         trixLine: currentTrix,
         signal,
         trend,
+    };
+}
+/**
+ * Helper function to create simple TRIX result for fallback
+ */
+function createSimpleTRIXResult(closes) {
+    if (closes.length < 2) {
+        return { trix: null, trixLine: null, signal: null, trend: null };
+    }
+    const current = closes[closes.length - 1];
+    const previous = closes[closes.length - 2];
+    const trix = previous !== 0 ? ((current - previous) / previous) * 100 : 0;
+    return {
+        trix,
+        trixLine: trix,
+        signal: trix > 0 ? 'bullish' : trix < 0 ? 'bearish' : 'neutral',
+        trend: trix > 0 ? 'uptrend' : trix < 0 ? 'downtrend' : 'sideways',
     };
 }

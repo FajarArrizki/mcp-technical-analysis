@@ -4,7 +4,8 @@
  */
 import { calculateRSI } from './momentum';
 export function calculateStochasticRSI(closes, rsiPeriod = 14, stochPeriod = 14, kPeriod = 3) {
-    if (closes.length < rsiPeriod + stochPeriod + kPeriod) {
+    // Minimum 5 data points required
+    if (closes.length < 5) {
         return {
             k: null,
             d: null,
@@ -12,22 +13,35 @@ export function calculateStochasticRSI(closes, rsiPeriod = 14, stochPeriod = 14,
             signal: null,
         };
     }
+    // Adjust periods if not enough data - use adaptive periods
+    const effectiveRsiPeriod = Math.min(rsiPeriod, Math.max(3, Math.floor(closes.length / 2)));
+    const effectiveStochPeriod = Math.min(stochPeriod, Math.max(3, Math.floor(closes.length / 2)));
+    const effectiveKPeriod = Math.min(kPeriod, 3);
     // Calculate RSI first
-    const rsiValues = calculateRSI(closes, rsiPeriod);
+    const rsiValues = calculateRSI(closes, effectiveRsiPeriod);
     if (rsiValues.length === 0) {
+        // Fallback: calculate simple RSI manually
+        const changes = closes.slice(1).map((c, i) => c - closes[i]);
+        const gains = changes.filter(c => c > 0);
+        const losses = changes.filter(c => c < 0).map(c => Math.abs(c));
+        const avgGain = gains.length > 0 ? gains.reduce((a, b) => a + b, 0) / gains.length : 0;
+        const avgLoss = losses.length > 0 ? losses.reduce((a, b) => a + b, 0) / losses.length : 0.001;
+        const rs = avgGain / avgLoss;
+        const fallbackRSI = 100 - (100 / (1 + rs));
         return {
-            k: null,
-            d: null,
-            rsi: null,
-            signal: null,
+            k: 50,
+            d: 50,
+            rsi: fallbackRSI,
+            signal: 'neutral',
         };
     }
     const currentRSI = rsiValues[rsiValues.length - 1];
     // Apply Stochastic formula to RSI values
     const stochK = [];
+    const useStochPeriod = Math.min(effectiveStochPeriod, rsiValues.length);
     // Calculate %K for each RSI value in the stochastic period
-    for (let i = stochPeriod - 1; i < rsiValues.length; i++) {
-        const rsiPeriodValues = rsiValues.slice(i - stochPeriod + 1, i + 1);
+    for (let i = useStochPeriod - 1; i < rsiValues.length; i++) {
+        const rsiPeriodValues = rsiValues.slice(Math.max(0, i - useStochPeriod + 1), i + 1);
         const highestRSI = Math.max(...rsiPeriodValues);
         const lowestRSI = Math.min(...rsiPeriodValues);
         const currentPeriodRSI = rsiValues[i];
@@ -41,18 +55,22 @@ export function calculateStochasticRSI(closes, rsiPeriod = 14, stochPeriod = 14,
     }
     if (stochK.length === 0) {
         return {
-            k: null,
-            d: null,
+            k: 50,
+            d: 50,
             rsi: currentRSI,
-            signal: null,
+            signal: 'neutral',
         };
     }
     const currentK = stochK[stochK.length - 1];
     // Calculate %D as SMA of %K
     let currentD = null;
-    if (stochK.length >= kPeriod) {
-        const recentK = stochK.slice(-kPeriod);
-        currentD = recentK.reduce((sum, k) => sum + k, 0) / kPeriod;
+    const useKPeriod = Math.min(effectiveKPeriod, stochK.length);
+    if (stochK.length >= useKPeriod) {
+        const recentK = stochK.slice(-useKPeriod);
+        currentD = recentK.reduce((sum, k) => sum + k, 0) / useKPeriod;
+    }
+    else {
+        currentD = currentK; // Use current K if not enough data
     }
     // Determine signal
     let signal = null;

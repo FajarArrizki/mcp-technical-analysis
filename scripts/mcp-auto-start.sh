@@ -17,15 +17,15 @@ is_server_running() {
 }
 
 # Always use localhost - simplified configuration
-echo "🌐 Using localhost configuration"
+echo "Using localhost configuration"
 PREFERRED_URL="http://localhost:${SERVER_PORT}"
 
 # Check if server is already running
 if is_server_running "$PREFERRED_URL"; then
     SERVER_URL="$PREFERRED_URL"
-    echo "✅ MCP Server already running at ${SERVER_URL}"
+    echo "[SUCCESS] MCP Server already running at ${SERVER_URL}"
 else
-    echo "🚀 Starting MCP Server..."
+    echo "Starting MCP Server..."
 
     # Start server in background using tsx to run TypeScript directly
     cd "${PROJECT_DIR}/packages/geartrade-mcp-server"
@@ -33,27 +33,28 @@ else
     SERVER_PID=$!
 
     # Wait for server to be ready (max 15 seconds)
-    echo "⏳ Waiting for server to start..."
-    for i in {1..30}; do
+    echo "Waiting for server to start..."
+    for i in {1..15}; do
         if is_server_running "$PREFERRED_URL"; then
             SERVER_URL="$PREFERRED_URL"
-            echo "✅ MCP Server started successfully (PID: ${SERVER_PID})"
-            echo "🌐 Using: ${SERVER_URL}"
+            echo "[SUCCESS] MCP Server started successfully (PID: ${SERVER_PID})"
+            echo "[SUCCESS] Using: ${SERVER_URL}"
             break
         fi
-        sleep 0.5
+        echo "  Loading... [${i}/15]"
+        sleep 1
     done
 
     if [ -z "$SERVER_URL" ]; then
-        echo "❌ Failed to start MCP Server" >&2
-        echo "📋 Check logs: ${LOG_FILE}" >&2
+        echo "[ERROR] Failed to start MCP Server" >&2
+        echo "Check logs: ${LOG_FILE}" >&2
         exit 1
     fi
 fi
 
 # Server is ready - output the URL for client connection
-echo "🔗 MCP Server ready at: ${SERVER_URL}/mcp"
-echo "✅ Connect your MCP client to: ${SERVER_URL}/mcp"
+echo "[SUCCESS] MCP Server ready at: ${SERVER_URL}/mcp"
+echo "[SUCCESS] Connect your MCP client to: ${SERVER_URL}/mcp"
 
 # Keep script running to maintain server process
 wait

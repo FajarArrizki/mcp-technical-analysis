@@ -11,22 +11,44 @@
  * @returns ChaikinVolatilityData object
  */
 export function calculateChaikinVolatility(highs, lows, rocPeriod = 10, smoothingPeriod = 10) {
-    if (highs.length !== lows.length || highs.length < rocPeriod + smoothingPeriod) {
+    // Minimum 3 data points required
+    if (highs.length !== lows.length || highs.length < 3) {
         return null;
     }
+    // Use adaptive periods
+    const dataRatio = Math.min(1, highs.length / (rocPeriod + smoothingPeriod));
+    const effectiveRocPeriod = Math.max(2, Math.floor(rocPeriod * dataRatio));
+    const effectiveSmoothingPeriod = Math.max(2, Math.floor(smoothingPeriod * dataRatio));
     // Calculate trading ranges (High - Low)
     const ranges = [];
     for (let i = 0; i < highs.length; i++) {
         ranges.push(highs[i] - lows[i]);
     }
     // Smooth the ranges with EMA
-    const smoothedRanges = calculateEMA(ranges, smoothingPeriod);
-    if (smoothedRanges.length < rocPeriod + 1) {
-        return null;
+    const smoothedRanges = calculateEMA(ranges, effectiveSmoothingPeriod);
+    if (smoothedRanges.length < 2) {
+        // Fallback: use raw ranges
+        const currentRange = ranges[ranges.length - 1];
+        const previousRange = ranges[Math.max(0, ranges.length - effectiveRocPeriod - 1)];
+        const volatility = previousRange > 0 ? ((currentRange - previousRange) / previousRange) * 100 : 0;
+        return {
+            volatility,
+            currentRange,
+            previousRange,
+            rocPeriod: effectiveRocPeriod,
+            trend: volatility > 5 ? 'increasing' : volatility < -5 ? 'decreasing' : 'stable',
+            strength: Math.min(100, Math.abs(volatility) * 3),
+            potentialBreakout: volatility > 15,
+            overbought: volatility > 30,
+            oversold: volatility < -30,
+            signal: 'neutral',
+            phase: volatility > 10 ? 'expansion' : volatility < -10 ? 'contraction' : 'stable'
+        };
     }
     // Calculate rate of change of smoothed ranges
+    const useRocPeriod = Math.min(effectiveRocPeriod, smoothedRanges.length - 1);
     const currentRange = smoothedRanges[smoothedRanges.length - 1];
-    const previousRange = smoothedRanges[smoothedRanges.length - 1 - rocPeriod];
+    const previousRange = smoothedRanges[Math.max(0, smoothedRanges.length - 1 - useRocPeriod)];
     // Chaikin Volatility = ((Current Range - Previous Range) / Previous Range) * 100
     const volatility = previousRange > 0 ? ((currentRange - previousRange) / previousRange) * 100 : 0;
     // Determine trend
@@ -67,7 +89,7 @@ export function calculateChaikinVolatility(highs, lows, rocPeriod = 10, smoothin
         volatility,
         currentRange,
         previousRange,
-        rocPeriod,
+        rocPeriod: effectiveRocPeriod,
         trend,
         strength,
         potentialBreakout,
@@ -138,7 +160,8 @@ export function getChaikinVolatilityInterpretation(vol) {
  * @returns Volatility trend analysis
  */
 export function analyzeVolatilityTrends(highs, lows, periods = 20) {
-    if (highs.length < periods + 20) {
+    // Adaptive minimum - need at least 5 data points
+    if (highs.length < 5) {
         return { overallTrend: 'stable', breakoutProbability: 50, recommendedAction: 'Insufficient data' };
     }
     const volatilityData = calculateMultipleChaikinVolatility(highs, lows, [10, 20, 30]);

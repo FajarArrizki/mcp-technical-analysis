@@ -9,20 +9,23 @@
  * @returns DetrendedPriceData object
  */
 export function calculateDetrendedPrice(prices, period = 20) {
-    if (prices.length < period * 2) {
+    // Minimum 10 data points required
+    if (prices.length < 10) {
         return null;
     }
+    // Use adaptive period based on available data
+    const effectivePeriod = Math.min(period, Math.floor(prices.length * 0.4));
     // Calculate the displaced moving average
     // DPO uses SMA displaced by (period/2 + 1) periods back
-    const displacement = Math.floor(period / 2) + 1;
-    if (prices.length < period + displacement) {
-        return null;
-    }
+    const displacement = Math.floor(effectivePeriod / 2) + 1;
     // Get the price from (period + displacement) periods ago for the MA calculation
-    const maStartIndex = prices.length - period - displacement;
-    const maEndIndex = prices.length - displacement;
-    if (maStartIndex < 0) {
-        return null;
+    const maStartIndex = Math.max(0, prices.length - effectivePeriod - displacement);
+    const maEndIndex = Math.max(effectivePeriod, prices.length - displacement);
+    if (maEndIndex <= maStartIndex) {
+        // Fallback: use simple calculation
+        const avgPrice = prices.reduce((sum, p) => sum + p, 0) / prices.length;
+        const currentPrice = prices[prices.length - 1];
+        return createSimpleDPOResult(currentPrice - avgPrice, avgPrice);
     }
     const maPrices = prices.slice(maStartIndex, maEndIndex);
     const ma = maPrices.reduce((sum, price) => sum + price, 0) / maPrices.length;
@@ -32,12 +35,12 @@ export function calculateDetrendedPrice(prices, period = 20) {
     const dpo = currentPrice - ma;
     // Determine cycle position (non-recursive)
     let cyclePosition = 'neutral';
-    if (prices.length >= period + displacement + 2) {
+    if (prices.length >= effectivePeriod + displacement + 2) {
         // Calculate previous DPO values directly without recursion
-        const prevMaStartIndex = prices.length - 1 - period - displacement;
-        const prevMaEndIndex = prices.length - 1 - displacement;
-        const prevPrevMaStartIndex = prices.length - 2 - period - displacement;
-        const prevPrevMaEndIndex = prices.length - 2 - displacement;
+        const prevMaStartIndex = Math.max(0, prices.length - 1 - effectivePeriod - displacement);
+        const prevMaEndIndex = Math.max(0, prices.length - 1 - displacement);
+        const prevPrevMaStartIndex = Math.max(0, prices.length - 2 - effectivePeriod - displacement);
+        const prevPrevMaEndIndex = Math.max(0, prices.length - 2 - displacement);
         if (prevMaStartIndex >= 0 && prevPrevMaStartIndex >= 0) {
             const prevMaPrices = prices.slice(prevMaStartIndex, prevMaEndIndex);
             const prevMa = prevMaPrices.reduce((sum, price) => sum + price, 0) / prevMaPrices.length;
@@ -111,6 +114,22 @@ export function calculateDetrendedPrice(prices, period = 20) {
         detrendedStrength,
         signal,
         estimatedCycleLength
+    };
+}
+/**
+ * Helper function to create simple DPO result for fallback
+ */
+function createSimpleDPOResult(dpo, ma) {
+    return {
+        dpo,
+        ma,
+        cyclePosition: dpo > 0 ? 'rising' : dpo < 0 ? 'falling' : 'neutral',
+        overbought: dpo > ma * 0.02,
+        oversold: dpo < -ma * 0.02,
+        zeroCross: 'none',
+        detrendedStrength: Math.min(100, Math.abs(dpo / ma) * 500),
+        signal: dpo < -ma * 0.02 ? 'buy' : dpo > ma * 0.02 ? 'sell' : 'neutral',
+        estimatedCycleLength: null
     };
 }
 /**

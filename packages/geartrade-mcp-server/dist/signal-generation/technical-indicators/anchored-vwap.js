@@ -24,7 +24,8 @@ export function calculateAnchoredVWAP(highs, lows, closes, volumes, anchorIndex 
     const anchoredLows = lows.slice(anchorIndex);
     const anchoredCloses = closes.slice(anchorIndex);
     const anchoredVolumes = volumes.slice(anchorIndex);
-    if (anchoredHighs.length < 2) {
+    // Minimum 1 data point after anchor
+    if (anchoredHighs.length < 1) {
         return null;
     }
     // Calculate VWAP from anchor point

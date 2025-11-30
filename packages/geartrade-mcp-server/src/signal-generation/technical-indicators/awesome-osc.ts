@@ -17,13 +17,18 @@ export function calculateAwesomeOscillator(
   fastPeriod: number = 5,
   slowPeriod: number = 34
 ): AwesomeOscillatorData {
-  if (highs.length < slowPeriod || lows.length < slowPeriod) {
+  // Minimum 10 data points required
+  if (highs.length < 10 || lows.length < 10) {
     return {
       ao: null,
       signal: null,
       histogram: null,
     }
   }
+  
+  // Use adaptive periods if not enough data
+  const effectiveSlowPeriod = Math.min(slowPeriod, Math.floor(highs.length * 0.8))
+  const effectiveFastPeriod = Math.min(fastPeriod, Math.floor(effectiveSlowPeriod / 6))
 
   // Calculate median price (H+L)/2
   const medianPrices: number[] = []
@@ -31,9 +36,9 @@ export function calculateAwesomeOscillator(
     medianPrices.push((highs[i] + lows[i]) / 2)
   }
 
-  // Calculate fast and slow SMA of median prices
-  const fastSMA = calculateSMA(medianPrices, fastPeriod)
-  const slowSMA = calculateSMA(medianPrices, slowPeriod)
+  // Calculate fast and slow SMA of median prices using effective periods
+  const fastSMA = calculateSMA(medianPrices, Math.max(2, effectiveFastPeriod))
+  const slowSMA = calculateSMA(medianPrices, Math.max(5, effectiveSlowPeriod))
 
   if (fastSMA.length === 0 || slowSMA.length === 0) {
     return {

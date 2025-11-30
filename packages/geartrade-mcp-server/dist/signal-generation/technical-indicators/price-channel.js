@@ -11,12 +11,15 @@
  * @returns PriceChannelData object
  */
 export function calculatePriceChannel(highs, lows, closes, period = 20) {
-    if (highs.length < period || lows.length < period || closes.length < period) {
+    // Minimum 3 data points required
+    if (highs.length < 3 || lows.length < 3 || closes.length < 3) {
         return null;
     }
-    // Use the most recent 'period' data points
-    const recentHighs = highs.slice(-period);
-    const recentLows = lows.slice(-period);
+    // Use adaptive period
+    const effectivePeriod = Math.min(period, highs.length);
+    // Use the most recent 'effectivePeriod' data points
+    const recentHighs = highs.slice(-effectivePeriod);
+    const recentLows = lows.slice(-effectivePeriod);
     // Calculate channel boundaries
     const upperChannel = Math.max(...recentHighs);
     const lowerChannel = Math.min(...recentLows);
@@ -55,14 +58,12 @@ export function calculatePriceChannel(highs, lows, closes, period = 20) {
     const distanceFromLower = ((lowerChannel - currentPrice) / lowerChannel) * 100;
     // Determine trend based on channel slope
     let trend = 'sideways';
-    if (highs.length >= period + period && lows.length >= period + period) {
+    if (highs.length >= effectivePeriod * 2 && lows.length >= effectivePeriod * 2) {
         // Compare with previous channel
-        const prevHighs = highs.slice(-period * 2, -period);
-        const prevLows = lows.slice(-period * 2, -period);
+        const prevHighs = highs.slice(-effectivePeriod * 2, -effectivePeriod);
+        const prevLows = lows.slice(-effectivePeriod * 2, -effectivePeriod);
         const prevUpperChannel = Math.max(...prevHighs);
         const prevLowerChannel = Math.min(...prevLows);
-        const currentSlope = (upperChannel - lowerChannel) / period;
-        const prevSlope = (prevUpperChannel - prevLowerChannel) / period;
         if (upperChannel > prevUpperChannel && lowerChannel > prevLowerChannel) {
             trend = 'uptrend';
         }

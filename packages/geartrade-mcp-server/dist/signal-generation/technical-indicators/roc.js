@@ -3,14 +3,17 @@
  * Percentage change in price over a specified period
  */
 export function calculateROC(closes, period = 14) {
-    if (closes.length < period + 1) {
+    // Minimum 3 data points required
+    if (closes.length < 3) {
         return {
             roc: null,
             signal: null,
         };
     }
+    // Use adaptive period
+    const effectivePeriod = Math.min(period, closes.length - 1);
     const currentClose = closes[closes.length - 1];
-    const pastClose = closes[closes.length - period - 1];
+    const pastClose = closes[closes.length - effectivePeriod - 1] ?? closes[0];
     if (!pastClose || pastClose === 0) {
         return {
             roc: null,

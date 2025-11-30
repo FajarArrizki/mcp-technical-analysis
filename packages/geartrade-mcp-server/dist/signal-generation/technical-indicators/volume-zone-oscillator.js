@@ -10,9 +10,12 @@
  * @returns VolumeZoneOscillatorData object
  */
 export function calculateVolumeZoneOscillator(closes, volumes, period = 14) {
-    if (closes.length !== volumes.length || closes.length < period + 1) {
+    // Minimum 5 data points required
+    if (closes.length !== volumes.length || closes.length < 5) {
         return null;
     }
+    // Use adaptive period
+    const effectivePeriod = Math.min(period, closes.length - 1);
     // Calculate volume flow (rising volume on up day = positive, etc.)
     const volumeFlows = [];
     let totalBuyingPressure = 0;
@@ -35,7 +38,7 @@ export function calculateVolumeZoneOscillator(closes, volumes, period = 14) {
         volumeFlows.push(volumeFlow);
     }
     // Calculate VZO as EMA of volume flow
-    const vzo = calculateEMA(volumeFlows, period);
+    const vzo = calculateEMA(volumeFlows, effectivePeriod);
     if (!vzo) {
         return null;
     }
@@ -57,9 +60,9 @@ export function calculateVolumeZoneOscillator(closes, volumes, period = 14) {
     // Check zero line crosses
     let bullishSignal = false;
     let bearishSignal = false;
-    if (volumeFlows.length >= period + 1) {
-        const prevVolumeFlows = volumeFlows.slice(-period - 1, -1);
-        const prevVzo = calculateEMA(prevVolumeFlows, period);
+    if (volumeFlows.length >= effectivePeriod + 1) {
+        const prevVolumeFlows = volumeFlows.slice(-effectivePeriod - 1, -1);
+        const prevVzo = calculateEMA(prevVolumeFlows, effectivePeriod);
         if (prevVzo && prevVzo <= 0 && finalVzo > 0) {
             bullishSignal = true;
         }

@@ -4,7 +4,8 @@
  */
 import { calculateEMA } from './moving-averages';
 export function calculateChaikinOscillator(highs, lows, closes, volumes, fastPeriod = 3, slowPeriod = 10) {
-    if (highs.length < slowPeriod || lows.length < slowPeriod || closes.length < slowPeriod || volumes.length < slowPeriod) {
+    // Minimum 5 data points required
+    if (highs.length < 5 || lows.length < 5 || closes.length < 5 || volumes.length < 5) {
         return {
             chaikinOsc: null,
             fastEMA: null,
@@ -12,6 +13,9 @@ export function calculateChaikinOscillator(highs, lows, closes, volumes, fastPer
             signal: null,
         };
     }
+    // Use adaptive periods
+    const effectiveSlowPeriod = Math.min(slowPeriod, Math.floor(highs.length * 0.7));
+    const effectiveFastPeriod = Math.min(fastPeriod, Math.floor(effectiveSlowPeriod / 3));
     // Calculate Accumulation/Distribution Line first
     const adl = [];
     let adlValue = 0;
@@ -32,9 +36,9 @@ export function calculateChaikinOscillator(highs, lows, closes, volumes, fastPer
             adl.push(adlValue);
         }
     }
-    // Calculate EMAs of ADL
-    const fastEMA_ADL = calculateEMA(adl, fastPeriod);
-    const slowEMA_ADL = calculateEMA(adl, slowPeriod);
+    // Calculate EMAs of ADL using effective periods
+    const fastEMA_ADL = calculateEMA(adl, Math.max(2, effectiveFastPeriod));
+    const slowEMA_ADL = calculateEMA(adl, Math.max(3, effectiveSlowPeriod));
     if (fastEMA_ADL.length === 0 || slowEMA_ADL.length === 0) {
         return {
             chaikinOsc: null,

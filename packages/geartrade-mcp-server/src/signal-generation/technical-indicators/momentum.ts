@@ -6,7 +6,11 @@
 import { calculateEMA } from './moving-averages'
 
 export function calculateRSI(closes: number[], period: number = 14): number[] {
-  if (closes.length < period + 1) return []
+  // Minimum 5 data points required
+  if (closes.length < 5) return []
+  
+  // Use adaptive period
+  const effectivePeriod = Math.min(period, closes.length - 1)
   
   const rsi: number[] = []
   const gains: number[] = []
@@ -19,12 +23,12 @@ export function calculateRSI(closes: number[], period: number = 14): number[] {
     losses.push(change < 0 ? Math.abs(change) : 0)
   }
   
-  // Calculate initial average gain and loss
-  let avgGain = gains.slice(0, period).reduce((a, b) => a + b, 0) / period
-  let avgLoss = losses.slice(0, period).reduce((a, b) => a + b, 0) / period
+  // Calculate initial average gain and loss using effective period
+  let avgGain = gains.slice(0, effectivePeriod).reduce((a, b) => a + b, 0) / effectivePeriod
+  let avgLoss = losses.slice(0, effectivePeriod).reduce((a, b) => a + b, 0) / effectivePeriod
   
   // Calculate RSI
-  for (let i = period; i < gains.length; i++) {
+  for (let i = effectivePeriod; i < gains.length; i++) {
     if (avgLoss === 0) {
       rsi.push(100)
     } else {
@@ -34,8 +38,8 @@ export function calculateRSI(closes: number[], period: number = 14): number[] {
     }
     
     // Update averages
-    avgGain = (avgGain * (period - 1) + gains[i]) / period
-    avgLoss = (avgLoss * (period - 1) + losses[i]) / period
+    avgGain = (avgGain * (effectivePeriod - 1) + gains[i]) / effectivePeriod
+    avgLoss = (avgLoss * (effectivePeriod - 1) + losses[i]) / effectivePeriod
   }
   
   return rsi
@@ -53,14 +57,23 @@ export function calculateMACD(
   slowPeriod: number = 26,
   signalPeriod: number = 9
 ): MACDResult[] {
-  if (closes.length < slowPeriod + signalPeriod) return []
+  // Minimum 10 data points required
+  if (closes.length < 10) return []
   
-  const fastEMA = calculateEMA(closes, fastPeriod)
-  const slowEMA = calculateEMA(closes, slowPeriod)
+  // Use adaptive periods
+  const dataRatio = Math.min(1, closes.length / 35)
+  const effectiveSlowPeriod = Math.max(5, Math.floor(slowPeriod * dataRatio))
+  const effectiveFastPeriod = Math.max(3, Math.floor(fastPeriod * dataRatio))
+  const effectiveSignalPeriod = Math.max(3, Math.floor(signalPeriod * dataRatio))
+  
+  const fastEMA = calculateEMA(closes, effectiveFastPeriod)
+  const slowEMA = calculateEMA(closes, effectiveSlowPeriod)
+  
+  if (fastEMA.length === 0 || slowEMA.length === 0) return []
   
   // Align arrays (slowEMA starts later)
   const macdLine: number[] = []
-  const startIdx = slowPeriod - fastPeriod
+  const startIdx = Math.max(0, effectiveSlowPeriod - effectiveFastPeriod)
   
   for (let i = 0; i < slowEMA.length; i++) {
     if (fastEMA[startIdx + i] !== undefined) {
@@ -68,12 +81,19 @@ export function calculateMACD(
     }
   }
   
-  // Calculate signal line (EMA of MACD line)
-  const signalLine = calculateEMA(macdLine, signalPeriod)
+  if (macdLine.length === 0) return []
+  
+  // Calculate signal line (EMA of MACD line) using effective period
+  const signalLine = calculateEMA(macdLine, effectiveSignalPeriod)
+  
+  if (signalLine.length === 0) {
+    // Fallback: return MACD without signal
+    return macdLine.map(m => ({ MACD: m, signal: m, histogram: 0 }))
+  }
   
   // Calculate histogram
   const histogram: MACDResult[] = []
-  const signalStartIdx = signalPeriod - 1
+  const signalStartIdx = Math.max(0, effectiveSignalPeriod - 1)
   for (let i = 0; i < signalLine.length; i++) {
     if (macdLine[signalStartIdx + i] !== undefined) {
       histogram.push({
@@ -94,17 +114,22 @@ export function calculateStochastic(
   kPeriod: number = 14,
   dPeriod: number = 3
 ): { k: number[]; d: number[] } {
-  if (highs.length < kPeriod || lows.length < kPeriod || closes.length < kPeriod) {
+  // Minimum 5 data points required
+  if (highs.length < 5 || lows.length < 5 || closes.length < 5) {
     return { k: [], d: [] }
   }
+  
+  // Use adaptive periods
+  const effectiveKPeriod = Math.min(kPeriod, highs.length)
+  const effectiveDPeriod = Math.min(dPeriod, Math.floor(effectiveKPeriod / 3))
   
   const stochK: number[] = []
   const stochD: number[] = []
   
   // Calculate %K (Stochastic %K)
-  for (let i = kPeriod - 1; i < closes.length; i++) {
-    const periodHighs = highs.slice(i - kPeriod + 1, i + 1)
-    const periodLows = lows.slice(i - kPeriod + 1, i + 1)
+  for (let i = effectiveKPeriod - 1; i < closes.length; i++) {
+    const periodHighs = highs.slice(i - effectiveKPeriod + 1, i + 1)
+    const periodLows = lows.slice(i - effectiveKPeriod + 1, i + 1)
     const highestHigh = Math.max(...periodHighs)
     const lowestLow = Math.min(...periodLows)
     const currentClose = closes[i]
@@ -118,10 +143,11 @@ export function calculateStochastic(
   }
   
   // Calculate %D (Stochastic %D) as SMA of %K
-  if (stochK.length >= dPeriod) {
-    for (let i = dPeriod - 1; i < stochK.length; i++) {
-      const sum = stochK.slice(i - dPeriod + 1, i + 1).reduce((a, b) => a + b, 0)
-      stochD.push(sum / dPeriod)
+  const useDPeriod = Math.max(2, effectiveDPeriod)
+  if (stochK.length >= useDPeriod) {
+    for (let i = useDPeriod - 1; i < stochK.length; i++) {
+      const sum = stochK.slice(i - useDPeriod + 1, i + 1).reduce((a, b) => a + b, 0)
+      stochD.push(sum / useDPeriod)
     }
   }
   
@@ -137,24 +163,28 @@ export function calculateCCI(
   closes: number[],
   period: number = 20
 ): number[] {
-  if (highs.length < period || lows.length < period || closes.length < period) {
+  // Minimum 5 data points required
+  if (highs.length < 5 || lows.length < 5 || closes.length < 5) {
     return []
   }
   
+  // Use adaptive period
+  const effectivePeriod = Math.min(period, highs.length)
+  
   const cci: number[] = []
   
-  for (let i = period - 1; i < closes.length; i++) {
+  for (let i = effectivePeriod - 1; i < closes.length; i++) {
     const typicalPrices: number[] = []
-    for (let j = i - period + 1; j <= i; j++) {
+    for (let j = i - effectivePeriod + 1; j <= i; j++) {
       const tp = (highs[j] + lows[j] + closes[j]) / 3
       typicalPrices.push(tp)
     }
     
-    const sma = typicalPrices.reduce((a, b) => a + b, 0) / period
+    const sma = typicalPrices.reduce((a, b) => a + b, 0) / effectivePeriod
     const currentTP = (highs[i] + lows[i] + closes[i]) / 3
     
     // Calculate Mean Deviation
-    const meanDeviation = typicalPrices.reduce((sum, tp) => sum + Math.abs(tp - sma), 0) / period
+    const meanDeviation = typicalPrices.reduce((sum, tp) => sum + Math.abs(tp - sma), 0) / effectivePeriod
     
     if (meanDeviation !== 0) {
       const cciValue = (currentTP - sma) / (0.015 * meanDeviation)
@@ -173,15 +203,19 @@ export function calculateWilliamsR(
   closes: number[],
   period: number = 14
 ): number[] {
-  if (highs.length < period || lows.length < period || closes.length < period) {
+  // Minimum 5 data points required
+  if (highs.length < 5 || lows.length < 5 || closes.length < 5) {
     return []
   }
   
+  // Use adaptive period
+  const effectivePeriod = Math.min(period, highs.length)
+  
   const williamsR: number[] = []
   
-  for (let i = period - 1; i < closes.length; i++) {
-    const periodHighs = highs.slice(i - period + 1, i + 1)
-    const periodLows = lows.slice(i - period + 1, i + 1)
+  for (let i = effectivePeriod - 1; i < closes.length; i++) {
+    const periodHighs = highs.slice(i - effectivePeriod + 1, i + 1)
+    const periodLows = lows.slice(i - effectivePeriod + 1, i + 1)
     const highestHigh = Math.max(...periodHighs)
     const lowestLow = Math.min(...periodLows)
     const currentClose = closes[i]

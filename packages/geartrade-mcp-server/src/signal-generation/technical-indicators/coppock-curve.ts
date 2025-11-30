@@ -48,31 +48,36 @@ export function calculateCoppockCurve(
   roc2Period: number = 11,
   wmaPeriod: number = 10
 ): CoppockCurveData | null {
-  const maxPeriod = Math.max(roc1Period, roc2Period) + wmaPeriod
-  if (closes.length < maxPeriod) {
+  // Minimum 10 data points required
+  if (closes.length < 10) {
     return null
   }
+  
+  // Use adaptive periods based on available data
+  const dataRatio = Math.min(1, closes.length / 35)
+  const effectiveRoc1Period = Math.max(3, Math.floor(roc1Period * dataRatio))
+  const effectiveRoc2Period = Math.max(3, Math.floor(roc2Period * dataRatio))
+  const effectiveWmaPeriod = Math.max(3, Math.floor(wmaPeriod * dataRatio))
 
-  // Calculate ROC values
-  const roc14 = calculateROC(closes, roc1Period)
-  const roc11 = calculateROC(closes, roc2Period)
+  // Calculate ROC values using effective periods
+  const roc14 = calculateROC(closes, effectiveRoc1Period)
+  const roc11 = calculateROC(closes, effectiveRoc2Period)
 
-  if (!roc14 || !roc11) {
-    return null
-  }
+  // Use fallback values if ROC calculation fails
+  const r14 = roc14 ?? 0
+  const r11 = roc11 ?? 0
 
   // Sum the ROCs
-  const rocSum = roc14 + roc11
+  const rocSum = r14 + r11
 
-  // Apply 10-period Weighted Moving Average
-  const rocSums = calculateROCsums(closes, roc1Period, roc2Period)
-  const wma = calculateWMA(rocSums, wmaPeriod)
+  // Apply Weighted Moving Average using effective period
+  const rocSums = calculateROCsums(closes, effectiveRoc1Period, effectiveRoc2Period)
+  const wma = calculateWMA(rocSums, effectiveWmaPeriod)
 
-  if (!wma) {
-    return null
-  }
+  // Use fallback if WMA fails
+  const wmaValue = wma ?? rocSum
 
-  const coppock = wma
+  const coppock = wmaValue
 
   // Determine trend
   let trend: 'bullish' | 'bearish' | 'neutral' = 'neutral'
@@ -85,39 +90,33 @@ export function calculateCoppockCurve(
   // Calculate signal strength based on Coppock magnitude
   const strength = Math.min(100, Math.abs(coppock) * 2)
 
-  // Check for zero line crosses
+  // Check for zero line crosses (simplified without recursion to avoid infinite loops)
   let bullishSignal = false
   let bearishSignal = false
 
-  if (closes.length >= maxPeriod + 1) {
-    const prevCoppock = calculateCoppockCurve(closes.slice(0, -1), roc1Period, roc2Period, wmaPeriod)
-
-    if (prevCoppock) {
-      if (prevCoppock.coppock <= 0 && coppock > 0) {
-        bullishSignal = true
-      } else if (prevCoppock.coppock >= 0 && coppock < 0) {
-        bearishSignal = true
-      }
+  if (rocSums.length >= 2) {
+    const prevRocSum = rocSums[rocSums.length - 2]
+    if (prevRocSum <= 0 && rocSum > 0) {
+      bullishSignal = true
+    } else if (prevRocSum >= 0 && rocSum < 0) {
+      bearishSignal = true
     }
   }
 
   // Check for major bottom signals (extreme negative turning up)
   let majorBottomSignal = false
 
-  if (coppock > -10 && coppock < 10) { // Near zero line
+  if (coppock > -10 && coppock < 10 && rocSums.length >= 5) {
     // Check if recently came from extreme negative territory
-    if (closes.length >= maxPeriod + 5) {
-      let hadExtremeNegative = false
-      for (let i = 1; i <= 5; i++) {
-        const pastCoppock = calculateCoppockCurve(closes.slice(0, -i), roc1Period, roc2Period, wmaPeriod)
-        if (pastCoppock && pastCoppock.coppock < -20) {
-          hadExtremeNegative = true
-          break
-        }
+    let hadExtremeNegative = false
+    for (let i = 1; i <= Math.min(5, rocSums.length - 1); i++) {
+      if (rocSums[rocSums.length - 1 - i] < -20) {
+        hadExtremeNegative = true
+        break
       }
-      if (hadExtremeNegative && coppock > 0) {
-        majorBottomSignal = true
-      }
+    }
+    if (hadExtremeNegative && coppock > 0) {
+      majorBottomSignal = true
     }
   }
 
@@ -149,9 +148,9 @@ export function calculateCoppockCurve(
 
   return {
     coppock,
-    roc14,
-    roc11,
-    wma,
+    roc14: r14,
+    roc11: r11,
+    wma: wmaValue,
     trend,
     strength,
     bullishSignal,

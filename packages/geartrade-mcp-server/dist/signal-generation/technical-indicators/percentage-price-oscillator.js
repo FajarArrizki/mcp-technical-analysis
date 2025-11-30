@@ -11,12 +11,17 @@
  * @returns PercentagePriceOscillatorData object
  */
 export function calculatePercentagePriceOscillator(closes, fastPeriod = 12, slowPeriod = 26, signalPeriod = 9) {
-    if (closes.length < slowPeriod + signalPeriod) {
+    // Minimum 10 data points required
+    if (closes.length < 10) {
         return null;
     }
-    // Calculate fast and slow EMAs
-    const fastEMA = calculateEMA(closes, fastPeriod);
-    const slowEMA = calculateEMA(closes, slowPeriod);
+    // Adjust periods if not enough data - use adaptive periods
+    const effectiveSlowPeriod = Math.min(slowPeriod, Math.floor(closes.length * 0.6));
+    const effectiveFastPeriod = Math.min(fastPeriod, Math.floor(effectiveSlowPeriod / 2));
+    const effectiveSignalPeriod = Math.min(signalPeriod, Math.floor(closes.length * 0.2));
+    // Calculate fast and slow EMAs using effective periods
+    const fastEMA = calculateEMA(closes, effectiveFastPeriod);
+    const slowEMA = calculateEMA(closes, effectiveSlowPeriod);
     if (!fastEMA || !slowEMA || fastEMA.length === 0 || slowEMA.length === 0) {
         return null;
     }
@@ -28,9 +33,9 @@ export function calculatePercentagePriceOscillator(closes, fastPeriod = 12, slow
         return null;
     }
     const ppo = ((lastFastEMA - lastSlowEMA) / lastSlowEMA) * 100;
-    // Calculate signal line (EMA of PPO values)
-    const ppoHistory = calculatePPOHistory(closes, fastPeriod, slowPeriod);
-    const signalValues = calculateEMA(ppoHistory, signalPeriod);
+    // Calculate signal line (EMA of PPO values) using effective periods
+    const ppoHistory = calculatePPOHistory(closes, effectiveFastPeriod, effectiveSlowPeriod);
+    const signalValues = calculateEMA(ppoHistory, Math.max(2, effectiveSignalPeriod));
     if (!signalValues || signalValues.length === 0) {
         return null;
     }

@@ -40,7 +40,14 @@ export function calculateChandeMomentum(
   prices: number[],
   period: number = 14
 ): ChandeMomentumData | null {
-  if (prices.length < period + 1) {
+  // Minimum 5 prices required
+  if (prices.length < 5) {
+    return null
+  }
+  
+  // Adjust period if not enough data - use adaptive period
+  const effectivePeriod = Math.min(period, prices.length - 1)
+  if (effectivePeriod < 3) {
     return null
   }
 
@@ -50,12 +57,11 @@ export function calculateChandeMomentum(
     changes.push(prices[i] - prices[i - 1])
   }
 
-  if (changes.length < period) {
-    return null
-  }
+  // Use effective period for calculation
+  const usePeriod = Math.min(effectivePeriod, changes.length)
 
   // Calculate sum of up moves and down moves over the period
-  const recentChanges = changes.slice(-period)
+  const recentChanges = changes.slice(-usePeriod)
   let sumUp = 0
   let sumDown = 0
 

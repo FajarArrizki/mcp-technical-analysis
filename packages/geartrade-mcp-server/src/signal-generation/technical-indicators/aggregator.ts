@@ -60,14 +60,11 @@ import { calculateVolumeProfile, VolumeProfileData } from './volume-profile'
 import { calculateBullBearPower, BullBearPowerData } from './bull-bear-power'
 import { calculateChandeMomentum, ChandeMomentumData } from './chande-momentum'
 import { calculateDetrendedPrice, DetrendedPriceData } from './detrended-price'
-import { calculateKlingerOscillator, KlingerOscillatorData } from './klinger-oscillator'
 import { calculateVolumeOscillator, VolumeOscillatorData } from './volume-oscillator'
-import { calculateEaseOfMovement, EaseOfMovementData } from './ease-of-movement'
 import { calculatePriceVolumeTrend, PriceVolumeTrendData } from './price-volume-trend'
 import { calculatePositiveVolumeIndex } from './positive-volume-index'
 import { calculateNegativeVolumeIndex } from './positive-volume-index'
 import { calculateVolumeROC, VolumeROCData } from './volume-roc'
-import { calculateAnchoredVWAP, AnchoredVWAPData } from './anchored-vwap'
 import { calculateChaikinVolatility, ChaikinVolatilityData } from './chaikin-volatility'
 import { calculateMassIndex, MassIndexData } from './mass-index'
 import { calculateUlcerIndex, UlcerIndexData } from './ulcer-index'
@@ -75,7 +72,6 @@ import { calculateRelativeVigorIndex, RelativeVigorIndexData } from './relative-
 import { calculateGatorOscillator, GatorOscillatorData } from './gator-oscillator'
 import { calculateCorrelationCoefficient, CorrelationCoefficientData } from './correlation-coefficient'
 import { calculateRSquared, RSquaredData } from './r-squared'
-import { calculateAdvanceDeclineLine, AdvanceDeclineLineData } from './advance-decline-line'
 import { calculateMcClellanOscillator, McClellanOscillatorData } from './mcclellan-oscillator'
 import { calculateArmsIndex, ArmsIndexData } from './arms-index-trin'
 
@@ -173,12 +169,9 @@ export interface TechnicalIndicators {
   bullBearPower: BullBearPowerData | null
   chandeMomentum: ChandeMomentumData | null
   detrendedPrice: DetrendedPriceData | null
-  klingerOscillator: KlingerOscillatorData | null
   volumeOscillator: VolumeOscillatorData | null
-  easeOfMovement: EaseOfMovementData | null
   priceVolumeTrend: PriceVolumeTrendData | null
   volumeROC: VolumeROCData | null
-  anchoredVWAP: AnchoredVWAPData | null
   chaikinVolatility: ChaikinVolatilityData | null
   massIndex: MassIndexData | null
   ulcerIndex: UlcerIndexData | null
@@ -186,7 +179,6 @@ export interface TechnicalIndicators {
   gatorOscillator: GatorOscillatorData | null
   correlationCoefficient: CorrelationCoefficientData | null
   rSquared: RSquaredData | null
-  advanceDeclineLine: AdvanceDeclineLineData | null
   mcclellanOscillator: McClellanOscillatorData | null
   armsIndex: ArmsIndexData | null
   price: number
@@ -815,25 +807,11 @@ export function calculateTechnicalIndicators(
     console.warn(`Detrended Price calculation failed: ${error.message}`)
   }
 
-  let klingerOscillator = null
-  try {
-    klingerOscillator = calculateKlingerOscillator(highs, lows, closes, volumes)
-  } catch (error: any) {
-    console.warn(`Klinger Oscillator calculation failed: ${error.message}`)
-  }
-
   let volumeOscillator = null
   try {
     volumeOscillator = calculateVolumeOscillator(volumes, 14, 28)
   } catch (error: any) {
     console.warn(`Volume Oscillator calculation failed: ${error.message}`)
-  }
-
-  let easeOfMovement = null
-  try {
-    easeOfMovement = calculateEaseOfMovement(highs, lows, volumes, 14)
-  } catch (error: any) {
-    console.warn(`Ease of Movement calculation failed: ${error.message}`)
   }
 
   let priceVolumeTrend = null
@@ -848,15 +826,6 @@ export function calculateTechnicalIndicators(
     volumeROC = calculateVolumeROC(volumes, 12)
   } catch (error: any) {
     console.warn(`Volume ROC calculation failed: ${error.message}`)
-  }
-
-  let anchoredVWAP = null
-  try {
-    // Use a recent swing low as anchor (simplified)
-    const anchorIndex = Math.max(0, Math.floor(highs.length * 0.7)) // Use 70% back as anchor
-    anchoredVWAP = calculateAnchoredVWAP(highs, lows, closes, volumes, anchorIndex)
-  } catch (error: any) {
-    console.warn(`Anchored VWAP calculation failed: ${error.message}`)
   }
 
   let chaikinVolatility = null
@@ -909,16 +878,6 @@ export function calculateTechnicalIndicators(
     rSquared = calculateRSquared(closes, closes)
   } catch (error: any) {
     console.warn(`R-Squared calculation failed: ${error.message}`)
-  }
-
-  let advanceDeclineLine = null
-  try {
-    // Simplified ADL calculation - would need actual advance/decline data
-    const advances = closes.map(() => Math.floor(Math.random() * 1000) + 500) // Mock data
-    const declines = closes.map(() => Math.floor(Math.random() * 1000) + 500) // Mock data
-    advanceDeclineLine = calculateAdvanceDeclineLine(advances, declines, closes)
-  } catch (error: any) {
-    console.warn(`Advance Decline Line calculation failed: ${error.message}`)
   }
 
   let mcclellanOscillator = null
@@ -1034,12 +993,9 @@ export function calculateTechnicalIndicators(
     bullBearPower,
     chandeMomentum,
     detrendedPrice,
-    klingerOscillator,
     volumeOscillator,
-    easeOfMovement,
     priceVolumeTrend,
     volumeROC,
-    anchoredVWAP,
     chaikinVolatility,
     massIndex,
     ulcerIndex,
@@ -1047,7 +1003,6 @@ export function calculateTechnicalIndicators(
     gatorOscillator,
     correlationCoefficient,
     rSquared,
-    advanceDeclineLine,
     mcclellanOscillator,
     armsIndex,
     price: currentPrice || closes[closes.length - 1],
