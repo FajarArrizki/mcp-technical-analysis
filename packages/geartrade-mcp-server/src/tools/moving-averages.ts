@@ -101,42 +101,47 @@ export async function calculateMovingAverages(input: MovingAveragesInput): Promi
 
     case 'hull_ma': {
       const result = calculateHMA(prices, period)
-      if (!result) {
+      if (!result || result.length === 0) {
         throw new Error(`Insufficient data: need at least ${period} prices, got ${prices.length}`)
       }
-      return { type, ...result }
+      const hullValue = result[result.length - 1]
+      return { type, hull: hullValue, values: result }
     }
 
     case 'weighted_ma': {
       const result = calculateWMA(prices, period)
-      if (!result) {
+      if (!result || result.length === 0) {
         throw new Error(`Insufficient data: need at least ${period} prices, got ${prices.length}`)
       }
-      return { type, ...result }
+      const wmaValue = result[result.length - 1]
+      return { type, weighted: wmaValue, values: result }
     }
 
     case 'smoothed_ma': {
       const result = calculateSMMA(prices, period)
-      if (!result) {
+      if (!result || result.length === 0) {
         throw new Error(`Insufficient data: need at least ${period} prices, got ${prices.length}`)
       }
-      return { type, ...result }
+      const smmaValue = result[result.length - 1]
+      return { type, smoothed: smmaValue, values: result }
     }
 
     case 'double_ema': {
       const result = calculateDEMA(prices, period)
-      if (!result) {
+      if (!result || result.length === 0) {
         throw new Error(`Insufficient data: need at least ${period} prices, got ${prices.length}`)
       }
-      return { type, ...result }
+      const demaValue = result[result.length - 1]
+      return { type, double: demaValue, values: result }
     }
 
     case 'triple_ema': {
       const result = calculateTEMA(prices, period)
-      if (!result) {
+      if (!result || result.length === 0) {
         throw new Error(`Insufficient data: need at least ${period} prices, got ${prices.length}`)
       }
-      return { type, ...result }
+      const temaValue = result[result.length - 1]
+      return { type, triple: temaValue, values: result }
     }
 
     default:

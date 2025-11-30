@@ -3,6 +3,7 @@
  */
 export * from './binance';
 export * from './hyperliquid';
+export * from './hyperscreener';
 export * from './historical-data';
 export * from './market-data';
 export * from './blockchain';

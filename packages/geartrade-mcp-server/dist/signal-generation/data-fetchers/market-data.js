@@ -1,9 +1,11 @@
 /**
  * Market Data Fetcher
  * getMarketData function - fetches comprehensive market data including technical indicators
+ * Enhanced with Hyperliquid API and HyperScreener data
  */
 import { log } from '../utils/logger';
-import { getAssetMetadata } from './hyperliquid';
+import { getAssetMetadata, getAllMids, getL2OrderBook } from './hyperliquid';
+import { getLiquidations, getWhalePositions, getLongShortRatio as getHyperscreenerLongShortRatio, getTopGainers, getTopLosers, getLargeTrades, getMarketsOverview, getTopTradersRanking } from './hyperscreener';
 import { getHistoricalData, getMultiTimeframeData } from './historical-data';
 import { calculateTechnicalIndicators } from '../technical-indicators';
 import { calculateMultiTimeframeIndicators, checkTrendAlignment } from '../utils/multi-timeframe';
@@ -13,19 +15,154 @@ import { calculateSessionVolumeProfile, calculateCompositeVolumeProfile } from '
 import { detectChangeOfCharacter } from '../analysis/market-structure';
 import { performComprehensiveVolumeAnalysis } from '../analysis/volume-analysis';
 import { fetchFuturesData } from './binance-futures';
+import { calculateCVD } from '../analysis/volume-analysis';
 // Stub functions for removed modules
-function calculateCumulativeVolumeDelta(_data, _price) { return null; }
 function formatPrice(price, _asset, _priceString) { return price.toString(); }
 function calculateBTCCorrelation(_data, _btcData) { return null; }
 function analyzeWhaleActivity(_data) { return null; }
+let hyperscreenerCache = null;
+const HYPERSCREENER_CACHE_TTL = 60000; // 1 minute cache
+// Function to fetch and cache HyperScreener data
+async function fetchHyperscreenerData() {
+    const now = Date.now();
+    // Return cached data if still valid
+    if (hyperscreenerCache && (now - hyperscreenerCache.timestamp) < HYPERSCREENER_CACHE_TTL) {
+        return hyperscreenerCache;
+    }
+    // Fetch all HyperScreener data in parallel
+    const [liquidationsData, whalePositionsData, longShortData, largeTradesData, marketsData, topGainersData, topLosersData, topTradersData] = await Promise.all([
+        getLiquidations('notional_volume', 'desc', 100).catch(() => []),
+        getWhalePositions('position_value', 'desc', 100).catch(() => []),
+        getHyperscreenerLongShortRatio('long_short_ratio', 'desc', 100).catch(() => []),
+        getLargeTrades(50000, 'desc', 100).catch(() => []),
+        getMarketsOverview(undefined, 200).catch(() => []),
+        getTopGainers('24h', 50).catch(() => []),
+        getTopLosers('24h', 50).catch(() => []),
+        getTopTradersRanking('D', 'pnl', 'desc', 50).catch(() => [])
+    ]);
+    // Create lookup maps
+    const liquidationsMap = new Map();
+    const whalePositionsMap = new Map();
+    const longShortRatiosMap = new Map();
+    const largeTradesMap = new Map();
+    const marketsOverviewMap = new Map();
+    // Process liquidations
+    if (Array.isArray(liquidationsData)) {
+        for (const liq of liquidationsData) {
+            const symbol = (liq.symbol || liq.coin || '').toUpperCase();
+            if (symbol) {
+                if (!liquidationsMap.has(symbol)) {
+                    liquidationsMap.set(symbol, []);
+                }
+                liquidationsMap.get(symbol).push(liq);
+            }
+        }
+    }
+    // Process whale positions
+    if (Array.isArray(whalePositionsData)) {
+        for (const whale of whalePositionsData) {
+            const symbol = (whale.symbol || whale.coin || '').toUpperCase();
+            if (symbol) {
+                if (!whalePositionsMap.has(symbol)) {
+                    whalePositionsMap.set(symbol, []);
+                }
+                whalePositionsMap.get(symbol).push(whale);
+            }
+        }
+    }
+    // Process long/short ratios
+    if (Array.isArray(longShortData)) {
+        for (const ls of longShortData) {
+            const symbol = (ls.symbol || ls.coin || '').toUpperCase();
+            const ratio = ls.long_short_ratio || ls.longShortRatio || ls.ratio;
+            if (symbol && ratio !== undefined) {
+                longShortRatiosMap.set(symbol, parseFloat(ratio));
+            }
+        }
+    }
+    // Process large trades
+    if (Array.isArray(largeTradesData)) {
+        for (const trade of largeTradesData) {
+            const symbol = (trade.symbol || trade.coin || '').toUpperCase();
+            if (symbol) {
+                if (!largeTradesMap.has(symbol)) {
+                    largeTradesMap.set(symbol, []);
+                }
+                largeTradesMap.get(symbol).push(trade);
+            }
+        }
+    }
+    // Process markets overview
+    if (Array.isArray(marketsData)) {
+        for (const market of marketsData) {
+            const symbol = (market.symbol || market.coin || market.name || '').toUpperCase();
+            if (symbol) {
+                marketsOverviewMap.set(symbol, market);
+            }
+        }
+    }
+    // Update cache
+    hyperscreenerCache = {
+        liquidations: liquidationsMap,
+        whalePositions: whalePositionsMap,
+        longShortRatios: longShortRatiosMap,
+        largeTrades: largeTradesMap,
+        marketsOverview: marketsOverviewMap,
+        topGainers: Array.isArray(topGainersData) ? topGainersData : [],
+        topLosers: Array.isArray(topLosersData) ? topLosersData : [],
+        topTraders: Array.isArray(topTradersData) ? topTradersData : [],
+        timestamp: now
+    };
+    log(`   📊 HyperScreener cache updated: ${liquidationsMap.size} liquidations, ${whalePositionsMap.size} whale positions, ${longShortRatiosMap.size} L/S ratios`, 'cyan');
+    return hyperscreenerCache;
+}
+// Function to fetch L2 order book with caching
+const l2BookCache = new Map();
+const L2_BOOK_CACHE_TTL = 5000; // 5 seconds cache for order book
+async function fetchL2OrderBook(asset) {
+    const now = Date.now();
+    const cached = l2BookCache.get(asset);
+    if (cached && (now - cached.timestamp) < L2_BOOK_CACHE_TTL) {
+        return cached.data;
+    }
+    try {
+        const l2Book = await getL2OrderBook(asset, 3); // 3 significant figures
+        l2BookCache.set(asset, { data: l2Book, timestamp: now });
+        return l2Book;
+    }
+    catch (error) {
+        return null;
+    }
+}
+// Function to fetch all mid prices
+let allMidsCache = null;
+const ALL_MIDS_CACHE_TTL = 3000; // 3 seconds cache
+async function fetchAllMids() {
+    const now = Date.now();
+    if (allMidsCache && (now - allMidsCache.timestamp) < ALL_MIDS_CACHE_TTL) {
+        return allMidsCache.data;
+    }
+    try {
+        const mids = await getAllMids();
+        allMidsCache = { data: mids, timestamp: now };
+        return mids;
+    }
+    catch (error) {
+        return {};
+    }
+}
 // Cache for funding rate and open interest trends
 const fundingRateCache = new Map();
 const openInterestCache = new Map();
 const FUNDING_OI_CACHE_TTL = 600000; // 10 minutes default
 export async function getMarketData(assets, metadata) {
     try {
-        // OPTIMIZATION: Use provided metadata if available (avoid duplicate API call)
-        const hyperliquidMetadata = metadata || await getAssetMetadata();
+        // OPTIMIZATION: Fetch Hyperliquid metadata, all mids, and HyperScreener data in parallel
+        const [hyperliquidMetadata, allMids, hsData] = await Promise.all([
+            metadata || getAssetMetadata(),
+            fetchAllMids(),
+            fetchHyperscreenerData()
+        ]);
         const marketData = new Map();
         // Hyperliquid returns array: [metaObject, assetCtxsArray]
         let assetCtxs = [];
@@ -291,7 +428,7 @@ export async function getMarketData(assets, metadata) {
                         ? detectChangeOfCharacter(historicalData, price)
                         : null;
                     const cumulativeVolumeDelta = USE_MARKET_STRUCTURE && historicalData && historicalData.length >= 20
-                        ? calculateCumulativeVolumeDelta(historicalData, price)
+                        ? calculateCVD(historicalData)
                         : null;
                     // OPTIMIZATION FINAL: Use cached USE_COMPREHENSIVE_VOLUME_ANALYSIS instead of repeated process.env check
                     // CRITICAL FIX: Comprehensive Volume Analysis enabled by default for better confidence calculation
@@ -340,6 +477,45 @@ export async function getMarketData(assets, metadata) {
                             // Silent fail - whale detection is optional
                         }
                     }
+                    // Fetch L2 order book from Hyperliquid (real-time)
+                    const l2BookData = await fetchL2OrderBook(asset);
+                    let l2Book = null;
+                    if (l2BookData && l2BookData.levels) {
+                        const bids = (l2BookData.levels[0] || []).slice(0, 20).map((level) => ({
+                            price: parseFloat(level.px),
+                            size: parseFloat(level.sz)
+                        }));
+                        const asks = (l2BookData.levels[1] || []).slice(0, 20).map((level) => ({
+                            price: parseFloat(level.px),
+                            size: parseFloat(level.sz)
+                        }));
+                        const totalBidSize = bids.reduce((sum, b) => sum + b.size, 0);
+                        const totalAskSize = asks.reduce((sum, a) => sum + a.size, 0);
+                        const bidAskImbalance = totalBidSize + totalAskSize > 0
+                            ? (totalBidSize - totalAskSize) / (totalBidSize + totalAskSize)
+                            : 0;
+                        l2Book = {
+                            bids,
+                            asks,
+                            totalBidSize,
+                            totalAskSize,
+                            bidAskImbalance,
+                            bestBid: bids.length > 0 ? bids[0].price : null,
+                            bestAsk: asks.length > 0 ? asks[0].price : null,
+                            spread: bids.length > 0 && asks.length > 0 ? asks[0].price - bids[0].price : null,
+                            spreadPercent: bids.length > 0 && asks.length > 0 && bids[0].price > 0
+                                ? ((asks[0].price - bids[0].price) / bids[0].price) * 100
+                                : null
+                        };
+                    }
+                    // Get HyperScreener data for this asset
+                    const hsLiquidations = hsData.liquidations.get(asset) || [];
+                    const hsWhalePositions = hsData.whalePositions.get(asset) || [];
+                    const hsLongShortRatio = hsData.longShortRatios.get(asset) || null;
+                    const hsLargeTrades = hsData.largeTrades.get(asset) || [];
+                    const hsMarketOverview = hsData.marketsOverview.get(asset) || null;
+                    // Get real-time mid price from allMids
+                    const midPriceFromAllMids = allMids[asset] ? parseFloat(allMids[asset]) : null;
                     // OPTIMIZATION FINAL: Reuse cached assetTimestamp for all timestamp fields
                     const externalData = {
                         hyperliquid: {
@@ -350,10 +526,22 @@ export async function getMarketData(assets, metadata) {
                             premium: premium,
                             oraclePx: oraclePx,
                             midPx: midPx,
+                            midPxRealtime: midPriceFromAllMids, // Real-time mid price from allMids endpoint
                             impactPxs: impactPxs,
                             prevDayPx: prevDayPx,
                             dayBaseVlm: dayBaseVlm,
                             maxLeverage: maxLeverage,
+                            l2Book: l2Book, // L2 order book data
+                            timestamp: assetTimestamp
+                        },
+                        hyperscreener: {
+                            liquidations: hsLiquidations.slice(0, 10),
+                            whalePositions: hsWhalePositions.slice(0, 10),
+                            longShortRatio: hsLongShortRatio,
+                            largeTrades: hsLargeTrades.slice(0, 10),
+                            marketOverview: hsMarketOverview,
+                            isTopGainer: hsData.topGainers.some((g) => (g.symbol || g.coin || '').toUpperCase() === asset),
+                            isTopLoser: hsData.topLosers.some((l) => (l.symbol || l.coin || '').toUpperCase() === asset),
                             timestamp: assetTimestamp
                         },
                         blockchain: blockchainData || {
@@ -463,11 +651,18 @@ export async function getMarketData(assets, metadata) {
                 marketData.set(result.asset, result.data);
             }
         }
-        log(`   ✅ Fetched market data for ${results.length} assets`, 'green');
-        return { marketDataMap: marketData, allowedAssets: assets };
+        log(`   ✅ Fetched market data for ${results.length} assets with HyperScreener data`, 'green');
+        return {
+            marketDataMap: marketData,
+            allowedAssets: assets,
+            hyperscreenerData: hsData
+        };
     }
     catch (error) {
         log(`   ❌ Error: ${error.message}`, 'red');
         throw new Error(`Failed to fetch market data: ${error.message}`);
     }
 }
+// Export helper functions for direct use
+export { fetchL2OrderBook, fetchAllMids };
+// Note: fetchHyperscreenerData is internal, use getMarketData().hyperscreenerData instead

@@ -126,3 +126,590 @@ export async function getRealTimePrice(asset: string, metadata?: any): Promise<n
     return null
   }
 }
+
+// ============================================================================
+// MARKET DATA - Price and Order Book
+// ============================================================================
+
+/**
+ * Fetch mid prices for all coins
+ * Returns object with coin symbols as keys and mid prices as values
+ */
+export async function getAllMids(): Promise<Record<string, string>> {
+  try {
+    const result = await fetchHyperliquid('/info', { type: 'allMids' })
+    return result
+  } catch (error: any) {
+    console.error('Error fetching all mids:', error)
+    throw new Error(`Failed to fetch all mids: ${error.message}`)
+  }
+}
+
+/**
+ * Fetch L2 order book snapshot for a specific coin
+ * @param coin - Coin symbol (e.g., 'BTC', 'ETH')
+ * @param nSigFigs - Significant figures for price aggregation (2, 3, 4, 5, or null for full precision)
+ */
+export async function getL2OrderBook(
+  coin: string,
+  nSigFigs?: number | null
+): Promise<any> {
+  try {
+    const params: any = { type: 'l2Book', coin }
+    if (nSigFigs !== undefined && nSigFigs !== null) {
+      params.nSigFigs = nSigFigs
+    }
+    const result = await fetchHyperliquid('/info', params)
+    return result
+  } catch (error: any) {
+    console.error(`Error fetching L2 order book for ${coin}:`, error)
+    throw new Error(`Failed to fetch L2 order book: ${error.message}`)
+  }
+}
+
+/**
+ * Fetch candle/OHLCV data for a specific coin
+ * @param coin - Coin symbol (e.g., 'BTC', 'ETH')
+ * @param interval - Candle interval: 1m, 3m, 5m, 15m, 30m, 1h, 2h, 4h, 8h, 12h, 1d, 3d, 1w, 1M
+ * @param startTime - Start time in milliseconds
+ * @param endTime - End time in milliseconds (optional)
+ */
+export async function getCandleSnapshot(
+  coin: string,
+  interval: string,
+  startTime: number,
+  endTime?: number
+): Promise<any[]> {
+  try {
+    const req: any = { coin, interval, startTime }
+    if (endTime) {
+      req.endTime = endTime
+    }
+    const result = await fetchHyperliquid('/info', { type: 'candleSnapshot', req })
+    return result
+  } catch (error: any) {
+    console.error(`Error fetching candle snapshot for ${coin}:`, error)
+    throw new Error(`Failed to fetch candle snapshot: ${error.message}`)
+  }
+}
+
+// ============================================================================
+// USER DATA - Orders, Fills, Positions
+// ============================================================================
+
+/**
+ * Fetch user's open orders
+ * @param address - User wallet address
+ */
+export async function getUserOpenOrders(address: string): Promise<any[]> {
+  try {
+    const result = await fetchHyperliquid('/info', {
+      type: 'openOrders',
+      user: address
+    })
+    return result
+  } catch (error: any) {
+    console.error(`Error fetching open orders for ${address}:`, error)
+    throw new Error(`Failed to fetch open orders: ${error.message}`)
+  }
+}
+
+/**
+ * Fetch user's open orders with additional frontend info
+ * @param address - User wallet address
+ */
+export async function getUserFrontendOpenOrders(address: string): Promise<any[]> {
+  try {
+    const result = await fetchHyperliquid('/info', {
+      type: 'frontendOpenOrders',
+      user: address
+    })
+    return result
+  } catch (error: any) {
+    console.error(`Error fetching frontend open orders for ${address}:`, error)
+    throw new Error(`Failed to fetch frontend open orders: ${error.message}`)
+  }
+}
+
+/**
+ * Fetch user's fills (trade history)
+ * Returns at most 2000 most recent fills
+ * @param address - User wallet address
+ * @param aggregateByTime - When true, partial fills are combined
+ */
+export async function getUserFills(
+  address: string,
+  aggregateByTime: boolean = false
+): Promise<any[]> {
+  try {
+    const result = await fetchHyperliquid('/info', {
+      type: 'userFills',
+      user: address,
+      aggregateByTime
+    })
+    return result
+  } catch (error: any) {
+    console.error(`Error fetching user fills for ${address}:`, error)
+    throw new Error(`Failed to fetch user fills: ${error.message}`)
+  }
+}
+
+/**
+ * Fetch user's fills by time range
+ * @param address - User wallet address
+ * @param startTime - Start time in milliseconds
+ * @param endTime - End time in milliseconds (optional)
+ * @param aggregateByTime - When true, partial fills are combined
+ */
+export async function getUserFillsByTime(
+  address: string,
+  startTime: number,
+  endTime?: number,
+  aggregateByTime: boolean = false
+): Promise<any[]> {
+  try {
+    const params: any = {
+      type: 'userFillsByTime',
+      user: address,
+      startTime,
+      aggregateByTime
+    }
+    if (endTime) {
+      params.endTime = endTime
+    }
+    const result = await fetchHyperliquid('/info', params)
+    return result
+  } catch (error: any) {
+    console.error(`Error fetching user fills by time for ${address}:`, error)
+    throw new Error(`Failed to fetch user fills by time: ${error.message}`)
+  }
+}
+
+/**
+ * Fetch user's historical orders
+ * Returns at most 2000 most recent historical orders
+ * @param address - User wallet address
+ */
+export async function getUserHistoricalOrders(address: string): Promise<any[]> {
+  try {
+    const result = await fetchHyperliquid('/info', {
+      type: 'historicalOrders',
+      user: address
+    })
+    return result
+  } catch (error: any) {
+    console.error(`Error fetching historical orders for ${address}:`, error)
+    throw new Error(`Failed to fetch historical orders: ${error.message}`)
+  }
+}
+
+/**
+ * Query order status by order ID or client order ID
+ * @param address - User wallet address
+ * @param oid - Order ID (number) or client order ID (string)
+ */
+export async function getOrderStatus(
+  address: string,
+  oid: number | string
+): Promise<any> {
+  try {
+    const result = await fetchHyperliquid('/info', {
+      type: 'orderStatus',
+      user: address,
+      oid
+    })
+    return result
+  } catch (error: any) {
+    console.error(`Error fetching order status:`, error)
+    throw new Error(`Failed to fetch order status: ${error.message}`)
+  }
+}
+
+/**
+ * Query user rate limits
+ * @param address - User wallet address
+ */
+export async function getUserRateLimit(address: string): Promise<any> {
+  try {
+    const result = await fetchHyperliquid('/info', {
+      type: 'userRateLimit',
+      user: address
+    })
+    return result
+  } catch (error: any) {
+    console.error(`Error fetching user rate limit:`, error)
+    throw new Error(`Failed to fetch user rate limit: ${error.message}`)
+  }
+}
+
+// ============================================================================
+// PORTFOLIO & ACCOUNT DATA
+// ============================================================================
+
+/**
+ * Query user's portfolio (account value history, PnL history)
+ * @param address - User wallet address
+ */
+export async function getUserPortfolio(address: string): Promise<any> {
+  try {
+    const result = await fetchHyperliquid('/info', {
+      type: 'portfolio',
+      user: address
+    })
+    return result
+  } catch (error: any) {
+    console.error(`Error fetching user portfolio for ${address}:`, error)
+    throw new Error(`Failed to fetch user portfolio: ${error.message}`)
+  }
+}
+
+/**
+ * Query user's role (user, agent, vault, subAccount, missing)
+ * @param address - User wallet address
+ */
+export async function getUserRole(address: string): Promise<any> {
+  try {
+    const result = await fetchHyperliquid('/info', {
+      type: 'userRole',
+      user: address
+    })
+    return result
+  } catch (error: any) {
+    console.error(`Error fetching user role for ${address}:`, error)
+    throw new Error(`Failed to fetch user role: ${error.message}`)
+  }
+}
+
+/**
+ * Fetch user's subaccounts
+ * @param address - User wallet address
+ */
+export async function getUserSubaccounts(address: string): Promise<any[]> {
+  try {
+    const result = await fetchHyperliquid('/info', {
+      type: 'subAccounts',
+      user: address
+    })
+    return result
+  } catch (error: any) {
+    console.error(`Error fetching user subaccounts for ${address}:`, error)
+    throw new Error(`Failed to fetch user subaccounts: ${error.message}`)
+  }
+}
+
+/**
+ * Query user's fees (fee schedule, rates, discounts)
+ * @param address - User wallet address
+ */
+export async function getUserFees(address: string): Promise<any> {
+  try {
+    const result = await fetchHyperliquid('/info', {
+      type: 'userFees',
+      user: address
+    })
+    return result
+  } catch (error: any) {
+    console.error(`Error fetching user fees for ${address}:`, error)
+    throw new Error(`Failed to fetch user fees: ${error.message}`)
+  }
+}
+
+// ============================================================================
+// REFERRAL DATA
+// ============================================================================
+
+/**
+ * Query user's referral information
+ * @param address - User wallet address
+ */
+export async function getUserReferral(address: string): Promise<any> {
+  try {
+    const result = await fetchHyperliquid('/info', {
+      type: 'referral',
+      user: address
+    })
+    return result
+  } catch (error: any) {
+    console.error(`Error fetching user referral for ${address}:`, error)
+    throw new Error(`Failed to fetch user referral: ${error.message}`)
+  }
+}
+
+// ============================================================================
+// VAULT DATA
+// ============================================================================
+
+/**
+ * Fetch vault details
+ * @param vaultAddress - Vault wallet address
+ * @param userAddress - Optional user address to get user-specific vault info
+ */
+export async function getVaultDetails(
+  vaultAddress: string,
+  userAddress?: string
+): Promise<any> {
+  try {
+    const params: any = {
+      type: 'vaultDetails',
+      vaultAddress
+    }
+    if (userAddress) {
+      params.user = userAddress
+    }
+    const result = await fetchHyperliquid('/info', params)
+    return result
+  } catch (error: any) {
+    console.error(`Error fetching vault details for ${vaultAddress}:`, error)
+    throw new Error(`Failed to fetch vault details: ${error.message}`)
+  }
+}
+
+/**
+ * Fetch user's vault deposits/equities
+ * @param address - User wallet address
+ */
+export async function getUserVaultEquities(address: string): Promise<any[]> {
+  try {
+    const result = await fetchHyperliquid('/info', {
+      type: 'userVaultEquities',
+      user: address
+    })
+    return result
+  } catch (error: any) {
+    console.error(`Error fetching user vault equities for ${address}:`, error)
+    throw new Error(`Failed to fetch user vault equities: ${error.message}`)
+  }
+}
+
+// ============================================================================
+// STAKING DATA
+// ============================================================================
+
+/**
+ * Query user's staking delegations
+ * @param address - User wallet address
+ */
+export async function getUserDelegations(address: string): Promise<any[]> {
+  try {
+    const result = await fetchHyperliquid('/info', {
+      type: 'delegations',
+      user: address
+    })
+    return result
+  } catch (error: any) {
+    console.error(`Error fetching user delegations for ${address}:`, error)
+    throw new Error(`Failed to fetch user delegations: ${error.message}`)
+  }
+}
+
+/**
+ * Query user's staking summary
+ * @param address - User wallet address
+ */
+export async function getUserDelegatorSummary(address: string): Promise<any> {
+  try {
+    const result = await fetchHyperliquid('/info', {
+      type: 'delegatorSummary',
+      user: address
+    })
+    return result
+  } catch (error: any) {
+    console.error(`Error fetching delegator summary for ${address}:`, error)
+    throw new Error(`Failed to fetch delegator summary: ${error.message}`)
+  }
+}
+
+/**
+ * Query user's staking history
+ * @param address - User wallet address
+ */
+export async function getUserDelegatorHistory(address: string): Promise<any[]> {
+  try {
+    const result = await fetchHyperliquid('/info', {
+      type: 'delegatorHistory',
+      user: address
+    })
+    return result
+  } catch (error: any) {
+    console.error(`Error fetching delegator history for ${address}:`, error)
+    throw new Error(`Failed to fetch delegator history: ${error.message}`)
+  }
+}
+
+/**
+ * Query user's staking rewards
+ * @param address - User wallet address
+ */
+export async function getUserDelegatorRewards(address: string): Promise<any[]> {
+  try {
+    const result = await fetchHyperliquid('/info', {
+      type: 'delegatorRewards',
+      user: address
+    })
+    return result
+  } catch (error: any) {
+    console.error(`Error fetching delegator rewards for ${address}:`, error)
+    throw new Error(`Failed to fetch delegator rewards: ${error.message}`)
+  }
+}
+
+// ============================================================================
+// SPOT MARKET DATA
+// ============================================================================
+
+/**
+ * Fetch spot market metadata
+ */
+export async function getSpotMetadata(): Promise<any> {
+  try {
+    const result = await fetchHyperliquid('/info', { type: 'spotMeta' })
+    return result
+  } catch (error: any) {
+    console.error('Error fetching spot metadata:', error)
+    throw new Error(`Failed to fetch spot metadata: ${error.message}`)
+  }
+}
+
+/**
+ * Fetch spot market metadata and asset contexts
+ */
+export async function getSpotMetaAndAssetCtxs(): Promise<any> {
+  try {
+    const result = await fetchHyperliquid('/info', { type: 'spotMetaAndAssetCtxs' })
+    return result
+  } catch (error: any) {
+    console.error('Error fetching spot meta and asset contexts:', error)
+    throw new Error(`Failed to fetch spot meta and asset contexts: ${error.message}`)
+  }
+}
+
+/**
+ * Fetch user's spot token balances
+ * @param address - User wallet address
+ */
+export async function getUserSpotBalances(address: string): Promise<any> {
+  try {
+    const result = await fetchHyperliquid('/info', {
+      type: 'spotClearinghouseState',
+      user: address
+    })
+    return result
+  } catch (error: any) {
+    console.error(`Error fetching spot balances for ${address}:`, error)
+    throw new Error(`Failed to fetch spot balances: ${error.message}`)
+  }
+}
+
+// ============================================================================
+// PERPETUALS METADATA
+// ============================================================================
+
+/**
+ * Fetch perpetuals metadata (universe, margin tables)
+ * @param dex - Optional DEX name (defaults to first perp dex)
+ */
+export async function getPerpMetadata(dex?: string): Promise<any> {
+  try {
+    const params: any = { type: 'meta' }
+    if (dex) {
+      params.dex = dex
+    }
+    const result = await fetchHyperliquid('/info', params)
+    return result
+  } catch (error: any) {
+    console.error('Error fetching perp metadata:', error)
+    throw new Error(`Failed to fetch perp metadata: ${error.message}`)
+  }
+}
+
+/**
+ * Fetch all perpetual DEXs
+ */
+export async function getPerpDexs(): Promise<any[]> {
+  try {
+    const result = await fetchHyperliquid('/info', { type: 'perpDexs' })
+    return result
+  } catch (error: any) {
+    console.error('Error fetching perp dexs:', error)
+    throw new Error(`Failed to fetch perp dexs: ${error.message}`)
+  }
+}
+
+// ============================================================================
+// FUNDING DATA
+// ============================================================================
+
+/**
+ * Fetch funding history for a coin
+ * @param coin - Coin symbol (e.g., 'BTC', 'ETH')
+ * @param startTime - Start time in milliseconds
+ * @param endTime - End time in milliseconds (optional)
+ */
+export async function getFundingHistory(
+  coin: string,
+  startTime: number,
+  endTime?: number
+): Promise<any[]> {
+  try {
+    const params: any = {
+      type: 'fundingHistory',
+      coin,
+      startTime
+    }
+    if (endTime) {
+      params.endTime = endTime
+    }
+    const result = await fetchHyperliquid('/info', params)
+    return result
+  } catch (error: any) {
+    console.error(`Error fetching funding history for ${coin}:`, error)
+    throw new Error(`Failed to fetch funding history: ${error.message}`)
+  }
+}
+
+// ============================================================================
+// TWAP DATA
+// ============================================================================
+
+/**
+ * Fetch user's TWAP slice fills
+ * @param address - User wallet address
+ */
+export async function getUserTwapSliceFills(address: string): Promise<any[]> {
+  try {
+    const result = await fetchHyperliquid('/info', {
+      type: 'userTwapSliceFills',
+      user: address
+    })
+    return result
+  } catch (error: any) {
+    console.error(`Error fetching TWAP slice fills for ${address}:`, error)
+    throw new Error(`Failed to fetch TWAP slice fills: ${error.message}`)
+  }
+}
+
+// ============================================================================
+// BUILDER FEE DATA
+// ============================================================================
+
+/**
+ * Check builder fee approval
+ * @param userAddress - User wallet address
+ * @param builderAddress - Builder wallet address
+ */
+export async function getMaxBuilderFee(
+  userAddress: string,
+  builderAddress: string
+): Promise<number> {
+  try {
+    const result = await fetchHyperliquid('/info', {
+      type: 'maxBuilderFee',
+      user: userAddress,
+      builder: builderAddress
+    })
+    return result
+  } catch (error: any) {
+    console.error('Error fetching max builder fee:', error)
+    throw new Error(`Failed to fetch max builder fee: ${error.message}`)
+  }
+}

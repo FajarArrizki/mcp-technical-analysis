@@ -21,8 +21,8 @@ export function calculateSuperTrend(
   atrPeriod: number = 14,
   multiplier: number = 3
 ): SuperTrendData {
-  // Minimum 5 data points required
-  if (highs.length < 5 || lows.length < 5 || closes.length < 5) {
+  // Minimum 3 data points required for basic calculation
+  if (highs.length < 3 || lows.length < 3 || closes.length < 3) {
     return {
       superTrend: null,
       trend: null,
@@ -33,15 +33,14 @@ export function calculateSuperTrend(
     }
   }
   
-  // Use adaptive period
-  const effectiveAtrPeriod = Math.min(atrPeriod, closes.length - 1)
+  // Use adaptive period - ensure we can calculate at least something
+  const effectiveAtrPeriod = Math.min(atrPeriod, Math.max(2, closes.length - 1))
 
   // Calculate ATR
-  const atr = calculateATR(highs, lows, closes, effectiveAtrPeriod)
+  let atr = calculateATR(highs, lows, closes, effectiveAtrPeriod)
   
-  // Fallback if ATR calculation fails
+  // Fallback if ATR calculation fails or returns empty
   if (atr.length === 0) {
-    // Calculate simple ATR manually
     const simpleAtr: number[] = []
     for (let i = 1; i < closes.length; i++) {
       const tr = Math.max(
@@ -51,12 +50,10 @@ export function calculateSuperTrend(
       )
       simpleAtr.push(tr)
     }
-    if (simpleAtr.length > 0) {
-      atr.push(...simpleAtr)
-    }
+    atr = simpleAtr.length > 0 ? simpleAtr : [highs[highs.length - 1] - lows[lows.length - 1]]
   }
   
-  const currentATR = atr[atr.length - 1] || (highs[highs.length - 1] - lows[lows.length - 1])
+  const currentATR = atr[atr.length - 1] || Math.abs(highs[highs.length - 1] - lows[lows.length - 1]) || 1
 
   // Calculate Basic Bands
   const basicUpperBands: number[] = []
@@ -65,12 +62,13 @@ export function calculateSuperTrend(
   const finalLowerBands: number[] = []
   const superTrends: number[] = []
   
-  // Start from index 1 at minimum, but prefer effectiveAtrPeriod if we have enough data
-  const startIdx = Math.min(Math.max(1, effectiveAtrPeriod), closes.length - 1)
+  // Start from index 1 to ensure we have previous close
+  const startIdx = 1
 
   for (let i = startIdx; i < closes.length; i++) {
     const hl2 = (highs[i] + lows[i]) / 2
-    const atrIdx = Math.max(0, i - startIdx)
+    // Map to ATR index - ATR array starts from index 0 representing TR from index 1
+    const atrIdx = Math.min(i - 1, atr.length - 1)
     const atrValue = atr[atrIdx] || currentATR
     const basicUpper = hl2 + (multiplier * atrValue)
     const basicLower = hl2 - (multiplier * atrValue)
@@ -82,12 +80,10 @@ export function calculateSuperTrend(
     let finalUpper: number
     let finalLower: number
 
-    if (i === startIdx) {
-      // First calculation
+    if (finalUpperBands.length === 0) {
       finalUpper = basicUpper
       finalLower = basicLower
     } else {
-      // Subsequent calculations
       const prevFinalUpper = finalUpperBands[finalUpperBands.length - 1]
       const prevFinalLower = finalLowerBands[finalLowerBands.length - 1]
       const prevClose = closes[i - 1]
@@ -101,20 +97,16 @@ export function calculateSuperTrend(
 
     // Calculate SuperTrend
     let superTrend: number
-    if (i === startIdx) {
-      // First SuperTrend
+    if (superTrends.length === 0) {
       superTrend = closes[i] > finalUpper ? finalLower : finalUpper
     } else {
-      // Subsequent SuperTrends
       const prevSuperTrend = superTrends[superTrends.length - 1]
       const prevFinalUpper = finalUpperBands[finalUpperBands.length - 2]
       const currentClose = closes[i]
 
       if (prevSuperTrend === prevFinalUpper) {
-        // Previous trend was bearish
         superTrend = currentClose > finalUpper ? finalLower : finalUpper
       } else {
-        // Previous trend was bullish
         superTrend = currentClose < finalLower ? finalUpper : finalLower
       }
     }
@@ -122,17 +114,17 @@ export function calculateSuperTrend(
     superTrends.push(superTrend)
   }
 
-  // Ensure we have calculated values
+  // Final fallback if still no values
   if (superTrends.length === 0 || finalUpperBands.length === 0 || finalLowerBands.length === 0) {
-    // Fallback: calculate simple values
     const hl2 = (highs[highs.length - 1] + lows[lows.length - 1]) / 2
     const fallbackUpper = hl2 + (multiplier * currentATR)
     const fallbackLower = hl2 - (multiplier * currentATR)
-    const fallbackSuperTrend = closes[closes.length - 1] > hl2 ? fallbackLower : fallbackUpper
+    const lastClose = closes[closes.length - 1]
+    const fallbackSuperTrend = lastClose > hl2 ? fallbackLower : fallbackUpper
     return {
       superTrend: fallbackSuperTrend,
-      trend: closes[closes.length - 1] > hl2 ? 'bullish' : 'bearish',
-      signal: closes[closes.length - 1] > hl2 ? 'buy' : 'sell',
+      trend: lastClose > hl2 ? 'bullish' : 'bearish',
+      signal: lastClose > hl2 ? 'buy' : 'sell',
       upperBand: fallbackUpper,
       lowerBand: fallbackLower,
       atr: currentATR,
@@ -144,19 +136,16 @@ export function calculateSuperTrend(
   const currentLowerBand = finalLowerBands[finalLowerBands.length - 1]
   const currentClose = closes[closes.length - 1]
 
-  // Determine trend and signal
-  let trend: 'bullish' | 'bearish' | null = null
-  let signal: 'buy' | 'sell' | 'hold' | null = null
+  // Determine trend and signal based on price position relative to SuperTrend
+  let trend: 'bullish' | 'bearish'
+  let signal: 'buy' | 'sell'
 
-  if (currentSuperTrend === currentLowerBand) {
+  if (currentClose > currentSuperTrend) {
     trend = 'bullish'
     signal = 'buy'
-  } else if (currentSuperTrend === currentUpperBand) {
+  } else {
     trend = 'bearish'
     signal = 'sell'
-  } else {
-    trend = null
-    signal = 'hold'
   }
 
   return {

@@ -47,7 +47,7 @@ export type TrendIndicatorsInput = z.infer<typeof trendIndicatorsInputSchema>
 
 export async function calculateTrendIndicators(input: TrendIndicatorsInput): Promise<any> {
   const {
-    type, closes, highs, lows,
+    type,
     period = 14,
     multiplier = 3,
     jawPeriod = 13, teethPeriod = 8, lipsPeriod = 5,
@@ -55,9 +55,24 @@ export async function calculateTrendIndicators(input: TrendIndicatorsInput): Pro
     tenkanPeriod = 9, kijunPeriod = 26, senkouPeriod = 52
   } = input
 
+  // Parse arrays if they're passed as strings (MCP compatibility)
+  let closes = input.closes
+  let highs = input.highs
+  let lows = input.lows
+
+  if (typeof closes === 'string') {
+    try { closes = JSON.parse(closes) } catch { closes = [] }
+  }
+  if (typeof highs === 'string') {
+    try { highs = JSON.parse(highs as any) } catch { highs = undefined }
+  }
+  if (typeof lows === 'string') {
+    try { lows = JSON.parse(lows as any) } catch { lows = undefined }
+  }
+
   switch (type) {
     case 'supertrend': {
-      if (!highs || !lows) {
+      if (!highs || !lows || !Array.isArray(highs) || !Array.isArray(lows)) {
         throw new Error('Highs and lows arrays are required for SuperTrend')
       }
       const result = calculateSuperTrend(highs, lows, closes, period, multiplier)
@@ -76,7 +91,7 @@ export async function calculateTrendIndicators(input: TrendIndicatorsInput): Pro
     }
 
     case 'ichimoku_cloud': {
-      if (!highs || !lows) {
+      if (!highs || !lows || !Array.isArray(highs) || !Array.isArray(lows)) {
         throw new Error('Highs and lows arrays are required for Ichimoku Cloud')
       }
       const result = calculateIchimokuCloud(highs, lows, closes, tenkanPeriod, kijunPeriod, senkouPeriod)
@@ -87,7 +102,7 @@ export async function calculateTrendIndicators(input: TrendIndicatorsInput): Pro
     }
 
     case 'vortex': {
-      if (!highs || !lows) {
+      if (!highs || !lows || !Array.isArray(highs) || !Array.isArray(lows)) {
         throw new Error('Highs and lows arrays are required for Vortex')
       }
       const result = calculateVortex(highs, lows, closes, period)

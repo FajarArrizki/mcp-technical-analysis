@@ -222,22 +222,33 @@ export function calculateAroon(
     const highestHigh = Math.max(...periodHighs)
     const lowestLow = Math.min(...periodLows)
     
-    // Find position of highest high and lowest low
-    let highestIndex = -1
-    let lowestIndex = -1
+    // Find position of highest high and lowest low (most recent occurrence)
+    let highestIndex = 0
+    let lowestIndex = 0
     
+    // Search from most recent to oldest to find the most recent occurrence
     for (let j = periodHighs.length - 1; j >= 0; j--) {
-      if (periodHighs[j] === highestHigh && highestIndex === -1) {
+      // Use tolerance for floating point comparison
+      if (Math.abs(periodHighs[j] - highestHigh) < 0.0000001) {
         highestIndex = j
+        break
       }
-      if (periodLows[j] === lowestLow && lowestIndex === -1) {
+    }
+    
+    for (let j = periodLows.length - 1; j >= 0; j--) {
+      if (Math.abs(periodLows[j] - lowestLow) < 0.0000001) {
         lowestIndex = j
+        break
       }
     }
     
     // Calculate Aroon Up and Down
-    const aroonUpValue = ((period - 1 - highestIndex) / (period - 1)) * 100
-    const aroonDownValue = ((period - 1 - lowestIndex) / (period - 1)) * 100
+    // Aroon Up = ((period - periods since highest high) / period) * 100
+    const periodsSinceHigh = (period - 1) - highestIndex
+    const periodsSinceLow = (period - 1) - lowestIndex
+    
+    const aroonUpValue = ((period - periodsSinceHigh) / period) * 100
+    const aroonDownValue = ((period - periodsSinceLow) / period) * 100
     
     aroonUp.push(aroonUpValue)
     aroonDown.push(aroonDownValue)

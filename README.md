@@ -35,7 +35,33 @@ A comprehensive Model Context Protocol (MCP) server that bridges AI assistants w
 - 📚 **22 Resources** - Comprehensive analysis documentation with usage patterns guide
 - 🔄 **Streaming Support** - HTTP/SSE for real-time updates
 - 💹 **Hyperliquid Trading** - Testnet & Mainnet futures execution with slippage protection
-- ✅ **Fully Tested** - All tools validated and working
+- 🐋 **HyperScreener Integration** - Whale positions, liquidations, top traders, large trades data
+- 📈 **Enhanced L2 Order Book** - Real-time bids/asks with depth and imbalance from Hyperliquid
+- ✅ **Fully Tested** - All 52 tools validated and working (November 2024)
+
+## 📋 Recent Updates (November 2024)
+
+### Bug Fixes
+- ✅ **CVD (Cumulative Volume Delta)** - Fixed null data issue, now returns cvdTrend and cvdDelta
+- ✅ **HyperScreener API Integration** - Fixed URL construction bug that caused all HyperScreener data to return null
+- ✅ **API Response Handling** - Fixed array response parsing (API returns `[]` not `{value:[]}`)
+- ✅ **Parameter Corrections** - Fixed `position_value` → `notional_value`, `long_short_ratio` → `notional_value`
+
+### New HyperScreener Endpoints
+- `/node/market/summary` - All symbols with price change + liquidations
+- `/node/market/summary/{SYMBOL}` - Per symbol market summary  
+- `/market-data/funding-rates` - Funding rates per symbol
+- `/market-data/open-interest` - Open interest per symbol
+- `/market-data/volume` - Volume 24h per symbol
+- `/market-data/stats/24h` - 24h aggregate stats
+
+### Data Now Available
+| Tool | Data Status |
+|------|-------------|
+| `get_External_data` | ✅ longShortRatio, whalePositions, recentLiquidations, largeTrades, marketOverview |
+| `get_long_short_ratio` | ✅ hyperscreenerRatio, whalePositions, topTradersOverall |
+| `get_liquidation_levels` | ✅ liquidationHeatmap with price levels, recentLiquidations |
+| `get_volume_analysis` | ✅ CVD (cvdTrend, cvdDelta) |
 
 🏠 **Local Development:** Run the MCP server locally for full control and privacy  
 🌐 **HTTP Streaming:** Remote MCP connection via `mcp-remote` for Cursor IDE
@@ -233,16 +259,16 @@ nameserver 1.0.0.1
 | 2 | `get_indicators` | Get comprehensive technical analysis indicators for multiple trading tickers at once |
 | 3 | `get_volume_analysis` | Get comprehensive volume analysis for multiple trading tickers at once |
 | 4 | `get_Multitimeframe` | Get multi-timeframe trend alignment analysis (Daily, 4H, 1H) |
-| 5 | `get_External_data` | Get external market data (funding rate, open interest, etc.) |
+| 5 | `get_External_data` | Get external market data (funding rate, open interest, liquidations, whale positions, top traders, large trades from HyperScreener) |
 | | **Order Book & Market Analysis** | |
-| 6 | `get_orderbook_depth` | Get order book depth analysis with support/resistance zones |
+| 6 | `get_orderbook_depth` | Get real-time L2 order book depth from Hyperliquid (bids/asks, spread, imbalance) |
 | 7 | `get_volume_profile` | Get volume profile analysis (POC, VAH, VAL, HVN, LVN) |
 | 8 | `get_market_structure` | Get market structure analysis (swing highs/lows, COC) |
 | 9 | `get_market_regime` | Get market regime analysis (trending/ranging/volatile) |
 | 10 | `get_candlestick_patterns` | Get candlestick pattern detection (doji, engulfing, etc.) |
 | 11 | `get_divergence` | Get RSI/price divergence detection |
-| 12 | `get_liquidation_levels` | Get liquidation level analysis and risk zones |
-| 13 | `get_long_short_ratio` | Get long/short ratio analysis for market sentiment |
+| 12 | `get_liquidation_levels` | Get liquidation level analysis with heatmap data from HyperScreener |
+| 13 | `get_long_short_ratio` | Get long/short ratio with whale positions and top traders from HyperScreener |
 | | **Risk Management** | |
 | 14 | `calculate_risk_management` | Calculate stop loss, take profit, and risk/reward ratio |
 | 15 | `calculate_position_setup` | Calculate position size, leverage, margin, and quantity |
@@ -416,8 +442,8 @@ nameserver 1.0.0.1
 ║  │  │   Market Data APIs    │  │    Analysis Components        │   │  ║
 ║  │  │  ┌───────────────────┐│  │  ┌─────────────────────────┐  │   │  ║
 ║  │  │  │ Hyperliquid       ││  │  │ Analysis Engine         │  │   │  ║
-║  │  │  │ Binance           ││  │  │ Technical Indicators    │  │   │  ║
-║  │  │  │ Real-time Data    ││  │  │ Market Intelligence     │  │   │  ║
+║  │  │  │ HyperScreener     ││  │  │ Technical Indicators    │  │   │  ║
+║  │  │  │ Binance           ││  │  │ Market Intelligence     │  │   │  ║
 ║  │  │  └───────────────────┘│  │  └─────────────────────────┘  │   │  ║
 ║  │  └───────────────────────┘  └───────────────────────────────┘   │  ║
 ║  └─────────────────────────────────────────────────────────────────┘  ║
@@ -473,9 +499,57 @@ nameserver 1.0.0.1
 
 **🌐 Data Integration**
 - **Real-time Market Data**: Live price feeds from Hyperliquid and Binance
+- **HyperScreener Data**: Liquidations, whale positions, long/short ratio, large trades, top traders
+- **L2 Order Book**: Real-time bids/asks from Hyperliquid with spread and imbalance analysis
 - **Advanced Analytics**: Comprehensive technical analysis and market intelligence
 - **Streaming Architecture**: Server-sent events for real-time data updates
 - **Cloud Deployment**: Global CDN distribution via Cloudflare Workers
+- **Parallel Fetching**: Hyperliquid metadata, allMids, and HyperScreener data fetched in parallel
+- **Smart Caching**: HyperScreener (60s), L2 Order Book (5s), AllMids (3s)
+
+## 🐋 HyperScreener Integration
+
+The server integrates data from [HyperScreener](https://hyperscreener.asxn.xyz/) API (`https://api-hyperliquid.asxn.xyz/api`) to provide whale and liquidation intelligence:
+
+| Data Type | Description | Tools Using This Data |
+|-----------|-------------|----------------------|
+| **Liquidations** | Recent liquidation events per asset | `get_External_data`, `get_liquidation_levels` |
+| **Whale Positions** | Large trader positions per asset | `get_External_data`, `get_long_short_ratio` |
+| **Long/Short Ratio** | Market sentiment ratio (calculated from positions) | `get_External_data`, `get_long_short_ratio` |
+| **Large Trades** | Trades >$50K per asset | `get_External_data` |
+| **Top Traders** | PnL-ranked traders (daily) | `get_long_short_ratio` |
+| **Liquidation Heatmap** | 24h liquidation distribution by price level | `get_liquidation_levels` |
+| **Market Overview** | Total positions, traders, OI, net PnL | `get_External_data` |
+| **Top Gainers/Losers** | PnL-based rankings | `get_External_data` |
+| **Platform Stats** | Overall platform statistics | `get_External_data` |
+
+### HyperScreener API Endpoints
+
+| Category | Endpoint | Description |
+|----------|----------|-------------|
+| **Liquidations** | `/node/liquidations` | All liquidations (sort_by, sort_order, limit) |
+| | `/node/liquidations/{SYMBOL}` | Liquidations by symbol (limit, timeframe) |
+| | `/node/liquidations/summary` | 24h summary stats |
+| | `/node/liquidations/stats/symbols` | Stats grouped by symbol |
+| **Positions** | `/node/positions` | All positions (sort_by, sort_order, limit) |
+| | `/node/positions/{SYMBOL}` | Positions by symbol |
+| | `/node/positions/{SYMBOL}/long` | Long positions only |
+| | `/node/positions/{SYMBOL}/short` | Short positions only |
+| **Market Summary** | `/node/market/summary` | All symbols with price change + liquidations |
+| | `/node/market/summary/{SYMBOL}` | Per symbol market summary |
+| **Market Data** | `/market-data/funding-rates` | Funding rates per symbol |
+| | `/market-data/open-interest` | Open interest per symbol |
+| | `/market-data/volume` | Volume 24h per symbol |
+| | `/market-data/stats/24h` | 24h aggregate stats |
+
+### Enhanced Hyperliquid Data
+
+| Data Type | Description | Tools Using This Data |
+|-----------|-------------|----------------------|
+| **L2 Order Book** | Real-time bids/asks with depth | `get_orderbook_depth` |
+| **All Mid Prices** | Real-time mid prices for all coins | All market data tools |
+| **Bid-Ask Spread** | Spread calculation and analysis | `get_orderbook_depth` |
+| **Order Book Imbalance** | Buy/sell pressure ratio | `get_orderbook_depth` |
 
 ## 📁 Project Structure
 
@@ -528,7 +602,7 @@ GEARTRADE/
 | 5 | `packages/geartrade-mcp-server/src/signal-generation/` | Core analysis engine with market intelligence and indicators |
 | 6 | `packages/geartrade-mcp-server/src/signal-generation/analysis/` | Market analysis modules for pattern recognition |
 | 7 | `packages/geartrade-mcp-server/src/signal-generation/technical-indicators/` | Technical indicator implementations (70+ indicators) |
-| 8 | `packages/geartrade-mcp-server/src/signal-generation/data-fetchers/` | Multi-source market data fetchers (Hyperliquid, Binance, etc.) |
+| 8 | `packages/geartrade-mcp-server/src/signal-generation/data-fetchers/` | Multi-source market data fetchers (Hyperliquid, HyperScreener, Binance) |
 | 9 | `packages/geartrade-mcp-server/src/signal-generation/risk-management/` | Risk assessment and position sizing calculations |
 | 10 | `packages/geartrade-mcp-server/src/signal-generation/ai/` | Market analysis utilities |
 | 11 | `packages/geartrade-mcp-server/src/signal-generation/monitoring/` | Real-time market monitoring and alerts |

@@ -11,10 +11,32 @@ import "dotenv/config";
 import { z } from 'zod'
 
 // Import existing functionality from signal-generation
-import { getRealTimePrice } from './signal-generation/data-fetchers/hyperliquid'
+import { 
+  getRealTimePrice, 
+  getAllMids, 
+  getL2OrderBook, 
+  getFundingHistory,
+  getPerpMetadata
+} from './signal-generation/data-fetchers/hyperliquid'
+import {
+  getLiquidations,
+  getTopTraders,
+  getWhalePositions,
+  getFundingRates as getHyperscreenerFundingRates,
+  getOpenInterest as getHyperscreenerOpenInterest,
+  getLongShortRatio as getHyperscreenerLongShortRatio,
+  getTopGainers,
+  getTopLosers,
+  getLargeTrades,
+  getMarketOverview,
+  getLiquidationHeatmap,
+  getMarketsOverview,
+  getTopTradersRanking,
+  getPlatformStats
+} from './signal-generation/data-fetchers/hyperscreener'
 import { getMarketData } from './signal-generation/data-fetchers/market-data'
 import type { ComprehensiveVolumeAnalysis } from './signal-generation/analysis/volume-analysis'
-import { performComprehensiveVolumeAnalysis } from './signal-generation/analysis/volume-analysis'
+import { performComprehensiveVolumeAnalysis, calculateCVD } from './signal-generation/analysis/volume-analysis'
 import { getActivePositions } from './signal-generation/position-management/positions'
 import type { Position } from './signal-generation/position-management/positions'
 import { calculateMAE } from './signal-generation/risk-management/mae'
@@ -1622,7 +1644,11 @@ server.registerTool(
           const volumeProfileData = externalData.volumeProfile || {}
           const sessionVolumeProfile = volumeProfileData.session || assetData.sessionVolumeProfile || assetData.data?.sessionVolumeProfile
           const compositeVolumeProfile = volumeProfileData.composite || assetData.compositeVolumeProfile || assetData.data?.compositeVolumeProfile
-          const cumulativeVolumeDelta = externalData.volumeDelta || assetData.volumeDelta || assetData.data?.volumeDelta
+          let cumulativeVolumeDelta = externalData.volumeDelta || assetData.volumeDelta || assetData.data?.volumeDelta
+          // Calculate CVD if not available from external data
+          if (!cumulativeVolumeDelta && historicalData && historicalData.length >= 10) {
+            cumulativeVolumeDelta = calculateCVD(historicalData)
+          }
           
           try {
             finalVolumeAnalysis = performComprehensiveVolumeAnalysis(
@@ -1900,12 +1926,17 @@ server.registerTool(
   'get_External_data',
   {
     title: 'Get External Data',
-    description: 'Get external market data for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"])',
+    description: 'Get comprehensive external market data including funding rates, open interest, liquidations, whale positions, and top traders for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"])',
     inputSchema: {
       tickers: z
         .array(z.string())
         .min(1)
         .describe('Array of asset ticker symbols (e.g., ["BTC", "ETH", "SOL"])'),
+      includeHyperscreener: z
+        .boolean()
+        .optional()
+        .default(true)
+        .describe('Include additional data from HyperScreener (liquidations, whales, top traders). Default: true'),
     },
     outputSchema: z.object({
       results: z.array(
@@ -1924,8 +1955,21 @@ server.registerTool(
             })
             .nullable()
             .optional(),
+          hyperscreenerData: z
+            .object({
+              longShortRatio: z.number().nullable().optional(),
+              recentLiquidations: z.array(z.any()).nullable().optional(),
+              whalePositions: z.array(z.any()).nullable().optional(),
+              largeTrades: z.array(z.any()).nullable().optional(),
+            })
+            .nullable()
+            .optional(),
         })
       ),
+      marketOverview: z.any().nullable().optional(),
+      topGainers: z.array(z.any()).nullable().optional(),
+      topLosers: z.array(z.any()).nullable().optional(),
+      platformStats: z.any().nullable().optional(),
       summary: z
         .object({
           total: z.number(),
@@ -1935,7 +1979,7 @@ server.registerTool(
         .optional(),
     }),
   },
-  async ({ tickers }: { tickers: string[] }) => {
+  async ({ tickers, includeHyperscreener = true }: { tickers: string[], includeHyperscreener?: boolean }) => {
     if (!Array.isArray(tickers) || tickers.length === 0) {
       return {
         content: [
@@ -1990,14 +2034,97 @@ server.registerTool(
       if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 200) {
         process.env.CANDLES_COUNT = '200'
       }
-      // Fetch market data for all tickers in parallel
-      const { marketDataMap } = await getMarketData(normalizedTickers)
+      
+      // Fetch all data in parallel
+      const [
+        { marketDataMap },
+        hyperscreenerLiquidations,
+        hyperscreenerWhales,
+        hyperscreenerLongShort,
+        hyperscreenerLargeTrades,
+        hyperscreenerMarketOverview,
+        hyperscreenerTopGainers,
+        hyperscreenerTopLosers,
+        hyperscreenerPlatformStats
+      ] = await Promise.all([
+        getMarketData(normalizedTickers),
+        includeHyperscreener ? getLiquidations('notional_volume', 'desc', 20).catch(() => null) : Promise.resolve(null),
+        includeHyperscreener ? getWhalePositions('notional_value', 'desc', 20).catch(() => null) : Promise.resolve(null),
+        includeHyperscreener ? getHyperscreenerLongShortRatio('notional_value', 'desc', 50).catch(() => null) : Promise.resolve(null),
+        includeHyperscreener ? getLargeTrades(50000, 'desc', 20).catch(() => null) : Promise.resolve(null),
+        includeHyperscreener ? getMarketOverview().catch(() => null) : Promise.resolve(null),
+        includeHyperscreener ? getTopGainers('24h', 10).catch(() => null) : Promise.resolve(null),
+        includeHyperscreener ? getTopLosers('24h', 10).catch(() => null) : Promise.resolve(null),
+        includeHyperscreener ? getPlatformStats().catch(() => null) : Promise.resolve(null),
+      ])
+
+      // Create lookup maps for HyperScreener data
+      const liquidationsMap = new Map<string, any[]>()
+      const whalesMap = new Map<string, any[]>()
+      const longShortMap = new Map<string, number>()
+      const largeTradesMap = new Map<string, any[]>()
+
+      // Process liquidations data
+      if (hyperscreenerLiquidations && Array.isArray(hyperscreenerLiquidations)) {
+        for (const liq of hyperscreenerLiquidations) {
+          const symbol = (liq.symbol || liq.coin || '').toUpperCase()
+          if (symbol) {
+            if (!liquidationsMap.has(symbol)) {
+              liquidationsMap.set(symbol, [])
+            }
+            liquidationsMap.get(symbol)!.push(liq)
+          }
+        }
+      }
+
+      // Process whale positions data
+      if (hyperscreenerWhales && Array.isArray(hyperscreenerWhales)) {
+        for (const whale of hyperscreenerWhales) {
+          const symbol = (whale.symbol || whale.coin || '').toUpperCase()
+          if (symbol) {
+            if (!whalesMap.has(symbol)) {
+              whalesMap.set(symbol, [])
+            }
+            whalesMap.get(symbol)!.push(whale)
+          }
+        }
+      }
+
+      // Process long/short ratio data
+      if (hyperscreenerLongShort && Array.isArray(hyperscreenerLongShort)) {
+        for (const ls of hyperscreenerLongShort) {
+          const symbol = (ls.symbol || ls.coin || '').toUpperCase()
+          const ratio = ls.long_short_ratio || ls.longShortRatio || ls.ratio
+          if (symbol && ratio !== undefined) {
+            longShortMap.set(symbol, parseFloat(ratio))
+          }
+        }
+      }
+
+      // Process large trades data
+      if (hyperscreenerLargeTrades && Array.isArray(hyperscreenerLargeTrades)) {
+        for (const trade of hyperscreenerLargeTrades) {
+          const symbol = (trade.symbol || trade.coin || '').toUpperCase()
+          if (symbol) {
+            if (!largeTradesMap.has(symbol)) {
+              largeTradesMap.set(symbol, [])
+            }
+            largeTradesMap.get(symbol)!.push(trade)
+          }
+        }
+      }
 
       const results: Array<{
         ticker: string
         price: number | null
         timestamp?: string
         externalData: ReturnType<typeof formatExternalData>
+        hyperscreenerData: {
+          longShortRatio: number | null
+          recentLiquidations: any[] | null
+          whalePositions: any[] | null
+          largeTrades: any[] | null
+        } | null
       }> = []
 
       for (const ticker of normalizedTickers) {
@@ -2009,6 +2136,12 @@ server.registerTool(
             price: null,
             timestamp: new Date().toISOString(),
             externalData: null,
+            hyperscreenerData: includeHyperscreener ? {
+              longShortRatio: longShortMap.get(ticker) || null,
+              recentLiquidations: liquidationsMap.get(ticker)?.slice(0, 5) || null,
+              whalePositions: whalesMap.get(ticker)?.slice(0, 5) || null,
+              largeTrades: largeTradesMap.get(ticker)?.slice(0, 5) || null,
+            } : null,
           })
           continue
         }
@@ -2021,6 +2154,12 @@ server.registerTool(
           price,
           timestamp: new Date().toISOString(),
           externalData: formattedExternalData,
+          hyperscreenerData: includeHyperscreener ? {
+            longShortRatio: longShortMap.get(ticker) || null,
+            recentLiquidations: liquidationsMap.get(ticker)?.slice(0, 5) || null,
+            whalePositions: whalesMap.get(ticker)?.slice(0, 5) || null,
+            largeTrades: largeTradesMap.get(ticker)?.slice(0, 5) || null,
+          } : null,
         })
       }
 
@@ -2029,6 +2168,10 @@ server.registerTool(
 
       const result = {
         results,
+        marketOverview: hyperscreenerMarketOverview || null,
+        topGainers: hyperscreenerTopGainers || null,
+        topLosers: hyperscreenerTopLosers || null,
+        platformStats: hyperscreenerPlatformStats || null,
         summary: {
           total: normalizedTickers.length,
           found,
@@ -2538,12 +2681,19 @@ server.registerTool(
   'get_orderbook_depth',
   {
     title: 'Get Order Book Depth',
-    description: 'Get order book depth analysis for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"])',
+    description: 'Get real-time L2 order book depth analysis from Hyperliquid for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"])',
     inputSchema: {
       tickers: z
         .array(z.string())
         .min(1)
         .describe('Array of asset ticker symbols (e.g., ["BTC", "ETH", "SOL"])'),
+      nSigFigs: z
+        .number()
+        .int()
+        .min(2)
+        .max(5)
+        .optional()
+        .describe('Significant figures for price aggregation (2-5). Optional, defaults to full precision'),
     },
     outputSchema: z.object({
       results: z.array(
@@ -2580,6 +2730,16 @@ server.registerTool(
             })
             .nullable()
             .optional(),
+          l2Book: z
+            .object({
+              bids: z.array(z.object({ price: z.string(), size: z.string() })),
+              asks: z.array(z.object({ price: z.string(), size: z.string() })),
+              totalBidSize: z.number(),
+              totalAskSize: z.number(),
+              bidAskImbalance: z.number(),
+            })
+            .nullable()
+            .optional(),
         })
       ),
       summary: z
@@ -2591,7 +2751,7 @@ server.registerTool(
         .optional(),
     }),
   },
-  async ({ tickers }: { tickers: string[] }) => {
+  async ({ tickers, nSigFigs }: { tickers: string[], nSigFigs?: number }) => {
     if (!Array.isArray(tickers) || tickers.length === 0) {
       return {
         content: [
@@ -2644,27 +2804,71 @@ server.registerTool(
       if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 200) {
         process.env.CANDLES_COUNT = '200'
       }
-      const { marketDataMap } = await getMarketData(normalizedTickers)
+      
+      // Fetch market data and L2 order books in parallel
+      const [{ marketDataMap }, ...l2Books] = await Promise.all([
+        getMarketData(normalizedTickers),
+        ...normalizedTickers.map(ticker => 
+          getL2OrderBook(ticker, nSigFigs).catch(() => null)
+        )
+      ])
 
       const results: Array<{
         ticker: string
         price: number | null
         timestamp?: string
         orderBookDepth: ReturnType<typeof formatOrderBookDepth>
+        l2Book: {
+          bids: Array<{ price: string; size: string }>
+          asks: Array<{ price: string; size: string }>
+          totalBidSize: number
+          totalAskSize: number
+          bidAskImbalance: number
+        } | null
       }> = []
 
-      for (const ticker of normalizedTickers) {
+      for (let i = 0; i < normalizedTickers.length; i++) {
+        const ticker = normalizedTickers[i]
         const assetData = marketDataMap.get(ticker)
+        const l2BookData = l2Books[i]
         const price = await getRealTimePrice(ticker).catch(() => null)
 
         const orderBookDepth = assetData?.externalData?.orderBook || assetData?.data?.externalData?.orderBook || null
         const formattedOrderBook = formatOrderBookDepth(orderBookDepth)
+
+        // Process L2 order book data
+        let l2Book = null
+        if (l2BookData && l2BookData.levels) {
+          const bids = (l2BookData.levels[0] || []).slice(0, 20).map((level: any) => ({
+            price: level.px,
+            size: level.sz
+          }))
+          const asks = (l2BookData.levels[1] || []).slice(0, 20).map((level: any) => ({
+            price: level.px,
+            size: level.sz
+          }))
+          
+          const totalBidSize = bids.reduce((sum: number, b: any) => sum + parseFloat(b.size), 0)
+          const totalAskSize = asks.reduce((sum: number, a: any) => sum + parseFloat(a.size), 0)
+          const bidAskImbalance = totalBidSize + totalAskSize > 0 
+            ? (totalBidSize - totalAskSize) / (totalBidSize + totalAskSize) 
+            : 0
+
+          l2Book = {
+            bids,
+            asks,
+            totalBidSize,
+            totalAskSize,
+            bidAskImbalance
+          }
+        }
 
         results.push({
           ticker,
           price,
           timestamp: new Date().toISOString(),
           orderBookDepth: formattedOrderBook,
+          l2Book,
         })
       }
 
@@ -3660,12 +3864,17 @@ server.registerTool(
   'get_liquidation_levels',
   {
     title: 'Get Liquidation Levels',
-    description: 'Get liquidation level analysis for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"])',
+    description: 'Get liquidation level analysis with heatmap data from HyperScreener for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"])',
     inputSchema: {
       tickers: z
         .array(z.string())
         .min(1)
         .describe('Array of asset ticker symbols (e.g., ["BTC", "ETH", "SOL"])'),
+      includeHeatmap: z
+        .boolean()
+        .optional()
+        .default(true)
+        .describe('Include liquidation heatmap from HyperScreener. Default: true'),
     },
     outputSchema: z.object({
       results: z.array(
@@ -3712,6 +3921,8 @@ server.registerTool(
             })
             .nullable()
             .optional(),
+          liquidationHeatmap: z.any().nullable().optional(),
+          recentLiquidations: z.array(z.any()).nullable().optional(),
         })
       ),
       summary: z
@@ -3723,7 +3934,7 @@ server.registerTool(
         .optional(),
     }),
   },
-  async ({ tickers }: { tickers: string[] }) => {
+  async ({ tickers, includeHeatmap = true }: { tickers: string[], includeHeatmap?: boolean }) => {
     if (!Array.isArray(tickers) || tickers.length === 0) {
       return {
         content: [
@@ -3776,17 +3987,44 @@ server.registerTool(
       if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 200) {
         process.env.CANDLES_COUNT = '200'
       }
-      const { marketDataMap } = await getMarketData(normalizedTickers)
+      
+      // Fetch market data and HyperScreener liquidation data in parallel
+      const [{ marketDataMap }, hyperscreenerLiquidations, ...heatmaps] = await Promise.all([
+        getMarketData(normalizedTickers),
+        includeHeatmap ? getLiquidations('notional_volume', 'desc', 50).catch(() => null) : Promise.resolve(null),
+        ...(includeHeatmap 
+          ? normalizedTickers.map(ticker => getLiquidationHeatmap(ticker, '24h').catch(() => null))
+          : normalizedTickers.map(() => Promise.resolve(null))
+        )
+      ])
+
+      // Create liquidations lookup map
+      const liquidationsMap = new Map<string, any[]>()
+      if (hyperscreenerLiquidations && Array.isArray(hyperscreenerLiquidations)) {
+        for (const liq of hyperscreenerLiquidations) {
+          const symbol = (liq.symbol || liq.coin || '').toUpperCase()
+          if (symbol) {
+            if (!liquidationsMap.has(symbol)) {
+              liquidationsMap.set(symbol, [])
+            }
+            liquidationsMap.get(symbol)!.push(liq)
+          }
+        }
+      }
 
       const results: Array<{
         ticker: string
         price: number | null
         timestamp?: string
         liquidationLevels: ReturnType<typeof formatLiquidationLevels>
+        liquidationHeatmap: any
+        recentLiquidations: any[] | null
       }> = []
 
-      for (const ticker of normalizedTickers) {
+      for (let i = 0; i < normalizedTickers.length; i++) {
+        const ticker = normalizedTickers[i]
         const assetData = marketDataMap.get(ticker)
+        const heatmapData = heatmaps[i]
         const price = await getRealTimePrice(ticker).catch(() => null)
 
         if (!assetData || !price) {
@@ -3795,6 +4033,8 @@ server.registerTool(
             price,
             timestamp: new Date().toISOString(),
             liquidationLevels: null,
+            liquidationHeatmap: heatmapData || null,
+            recentLiquidations: liquidationsMap.get(ticker)?.slice(0, 10) || null,
           })
           continue
         }
@@ -3808,6 +4048,8 @@ server.registerTool(
             price,
             timestamp: new Date().toISOString(),
             liquidationLevels: null,
+            liquidationHeatmap: heatmapData || null,
+            recentLiquidations: liquidationsMap.get(ticker)?.slice(0, 10) || null,
           })
           continue
         }
@@ -3820,10 +4062,12 @@ server.registerTool(
           price,
           timestamp: new Date().toISOString(),
           liquidationLevels: formattedLiquidation,
+          liquidationHeatmap: heatmapData || null,
+          recentLiquidations: liquidationsMap.get(ticker)?.slice(0, 10) || null,
         })
       }
 
-      const found = results.filter((r) => r.liquidationLevels !== null).length
+      const found = results.filter((r) => r.liquidationLevels !== null || r.liquidationHeatmap !== null).length
       const notFound = results.length - found
 
       const result = {
@@ -3873,12 +4117,17 @@ server.registerTool(
   'get_long_short_ratio',
   {
     title: 'Get Long/Short Ratio',
-    description: 'Get long/short ratio analysis for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"])',
+    description: 'Get long/short ratio analysis with whale positions and top traders data from HyperScreener for multiple trading tickers at once (e.g., ["BTC", "ETH", "SOL"])',
     inputSchema: {
       tickers: z
         .array(z.string())
         .min(1)
         .describe('Array of asset ticker symbols (e.g., ["BTC", "ETH", "SOL"])'),
+      includeWhales: z
+        .boolean()
+        .optional()
+        .default(true)
+        .describe('Include whale positions and top traders from HyperScreener. Default: true'),
     },
     outputSchema: z.object({
       results: z.array(
@@ -3910,8 +4159,12 @@ server.registerTool(
             })
             .nullable()
             .optional(),
+          hyperscreenerRatio: z.number().nullable().optional(),
+          whalePositions: z.array(z.any()).nullable().optional(),
+          topTraders: z.array(z.any()).nullable().optional(),
         })
       ),
+      topTradersOverall: z.array(z.any()).nullable().optional(),
       summary: z
         .object({
           total: z.number(),
@@ -3921,7 +4174,7 @@ server.registerTool(
         .optional(),
     }),
   },
-  async ({ tickers }: { tickers: string[] }) => {
+  async ({ tickers, includeWhales = true }: { tickers: string[], includeWhales?: boolean }) => {
     if (!Array.isArray(tickers) || tickers.length === 0) {
       return {
         content: [
@@ -3974,13 +4227,54 @@ server.registerTool(
       if (!process.env.CANDLES_COUNT || parseInt(process.env.CANDLES_COUNT) < 200) {
         process.env.CANDLES_COUNT = '200'
       }
-      const { marketDataMap } = await getMarketData(normalizedTickers)
+      
+      // Fetch market data and HyperScreener data in parallel
+      const [
+        { marketDataMap },
+        hyperscreenerLongShort,
+        hyperscreenerWhales,
+        hyperscreenerTopTraders
+      ] = await Promise.all([
+        getMarketData(normalizedTickers),
+        includeWhales ? getHyperscreenerLongShortRatio('notional_value', 'desc', 50).catch(() => null) : Promise.resolve(null),
+        includeWhales ? getWhalePositions('notional_value', 'desc', 30).catch(() => null) : Promise.resolve(null),
+        includeWhales ? getTopTradersRanking('D', 'pnl', 'desc', 20).catch(() => null) : Promise.resolve(null),
+      ])
+
+      // Create lookup maps
+      const longShortMap = new Map<string, number>()
+      const whalesMap = new Map<string, any[]>()
+
+      if (hyperscreenerLongShort && Array.isArray(hyperscreenerLongShort)) {
+        for (const ls of hyperscreenerLongShort) {
+          const symbol = (ls.symbol || ls.coin || '').toUpperCase()
+          const ratio = ls.long_short_ratio || ls.longShortRatio || ls.ratio
+          if (symbol && ratio !== undefined) {
+            longShortMap.set(symbol, parseFloat(ratio))
+          }
+        }
+      }
+
+      if (hyperscreenerWhales && Array.isArray(hyperscreenerWhales)) {
+        for (const whale of hyperscreenerWhales) {
+          const symbol = (whale.symbol || whale.coin || '').toUpperCase()
+          if (symbol) {
+            if (!whalesMap.has(symbol)) {
+              whalesMap.set(symbol, [])
+            }
+            whalesMap.get(symbol)!.push(whale)
+          }
+        }
+      }
 
       const results: Array<{
         ticker: string
         price: number | null
         timestamp?: string
         longShortRatio: ReturnType<typeof formatLongShortRatio>
+        hyperscreenerRatio: number | null
+        whalePositions: any[] | null
+        topTraders: any[] | null
       }> = []
 
       for (const ticker of normalizedTickers) {
@@ -3993,6 +4287,9 @@ server.registerTool(
             price,
             timestamp: new Date().toISOString(),
             longShortRatio: null,
+            hyperscreenerRatio: longShortMap.get(ticker) || null,
+            whalePositions: whalesMap.get(ticker)?.slice(0, 10) || null,
+            topTraders: null,
           })
           continue
         }
@@ -4006,6 +4303,9 @@ server.registerTool(
             price,
             timestamp: new Date().toISOString(),
             longShortRatio: null,
+            hyperscreenerRatio: longShortMap.get(ticker) || null,
+            whalePositions: whalesMap.get(ticker)?.slice(0, 10) || null,
+            topTraders: null,
           })
           continue
         }
@@ -4018,14 +4318,18 @@ server.registerTool(
           price,
           timestamp: new Date().toISOString(),
           longShortRatio: formattedRatio,
+          hyperscreenerRatio: longShortMap.get(ticker) || null,
+          whalePositions: whalesMap.get(ticker)?.slice(0, 10) || null,
+          topTraders: null,
         })
       }
 
-      const found = results.filter((r) => r.longShortRatio !== null).length
+      const found = results.filter((r) => r.longShortRatio !== null || r.hyperscreenerRatio !== null).length
       const notFound = results.length - found
 
       const result = {
         results,
+        topTradersOverall: hyperscreenerTopTraders || null,
         summary: {
           total: normalizedTickers.length,
           found,

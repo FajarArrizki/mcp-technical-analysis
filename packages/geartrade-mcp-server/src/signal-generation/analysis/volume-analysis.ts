@@ -6,12 +6,97 @@
 import { HistoricalDataPoint } from '../types'
 import { SessionVolumeProfile, CompositeVolumeProfile } from './volume-profile'
 
-// Stub type for CumulativeVolumeDelta (removed with volume-delta.ts)
+// Cumulative Volume Delta (CVD) Analysis
 export interface CumulativeVolumeDelta {
   cvd: number
   cvdTrend: 'bullish' | 'bearish' | 'neutral'
   cvdDelta: number
   cvdDivergence?: boolean
+  cvdValues?: number[]
+}
+
+/**
+ * Calculate Cumulative Volume Delta (CVD)
+ * CVD tracks the cumulative difference between buying and selling volume
+ * Positive CVD = More buying pressure
+ * Negative CVD = More selling pressure
+ */
+export function calculateCVD(historicalData: HistoricalDataPoint[]): CumulativeVolumeDelta | null {
+  if (!historicalData || historicalData.length < 10) {
+    return null
+  }
+
+  const cvdValues: number[] = []
+  let cumulativeDelta = 0
+
+  historicalData.forEach((candle) => {
+    const open = candle.open || 0
+    const close = candle.close || 0
+    const high = candle.high || close
+    const low = candle.low || close
+    const volume = candle.volume || 0
+
+    // Estimate buy/sell volume based on price action
+    // Method: Use close position within the candle range
+    const priceRange = high - low
+    
+    let buyRatio = 0.5 // Default 50/50
+    if (priceRange > 0) {
+      // Where did price close within the range? (0 = low, 1 = high)
+      const closePosition = (close - low) / priceRange
+      buyRatio = closePosition
+    } else {
+      // No range - use direction
+      buyRatio = close >= open ? 0.6 : 0.4
+    }
+
+    const buyVolume = volume * buyRatio
+    const sellVolume = volume * (1 - buyRatio)
+    const delta = buyVolume - sellVolume
+
+    cumulativeDelta += delta
+    cvdValues.push(cumulativeDelta)
+  })
+
+  // Calculate CVD trend (compare recent CVD to older CVD)
+  const recentPeriod = Math.min(10, Math.floor(cvdValues.length / 2))
+  const recentCVD = cvdValues.slice(-recentPeriod)
+  const olderCVD = cvdValues.slice(-recentPeriod * 2, -recentPeriod)
+
+  const recentAvg = recentCVD.length > 0 ? recentCVD.reduce((a, b) => a + b, 0) / recentCVD.length : 0
+  const olderAvg = olderCVD.length > 0 ? olderCVD.reduce((a, b) => a + b, 0) / olderCVD.length : 0
+
+  let cvdTrend: 'bullish' | 'bearish' | 'neutral' = 'neutral'
+  const trendThreshold = Math.abs(cumulativeDelta) * 0.05 // 5% threshold
+
+  if (recentAvg > olderAvg + trendThreshold) {
+    cvdTrend = 'bullish'
+  } else if (recentAvg < olderAvg - trendThreshold) {
+    cvdTrend = 'bearish'
+  }
+
+  // Calculate delta change (most recent vs previous)
+  const cvdDelta = cvdValues.length >= 2 
+    ? cvdValues[cvdValues.length - 1] - cvdValues[cvdValues.length - 2]
+    : 0
+
+  // Check for divergence (price going up but CVD going down, or vice versa)
+  let cvdDivergence = false
+  if (historicalData.length >= 10) {
+    const recentPrices = historicalData.slice(-10).map(c => c.close || 0)
+    const priceDirection = recentPrices[recentPrices.length - 1] > recentPrices[0] ? 'up' : 'down'
+    const cvdDirection = recentCVD[recentCVD.length - 1] > recentCVD[0] ? 'up' : 'down'
+    
+    cvdDivergence = priceDirection !== cvdDirection
+  }
+
+  return {
+    cvd: cumulativeDelta,
+    cvdTrend,
+    cvdDelta,
+    cvdDivergence,
+    cvdValues: cvdValues.slice(-20) // Return last 20 values
+  }
 }
 
 export interface VolumeConfirmationResult {
