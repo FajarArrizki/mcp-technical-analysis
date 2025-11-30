@@ -25,7 +25,8 @@ export function detectChangeOfCharacter(
   historicalData: HistoricalDataPoint[],
   currentPrice: number
 ): ChangeOfCharacterResult | null {
-  if (!historicalData || historicalData.length < 20 || !currentPrice || currentPrice <= 0) {
+  // Minimum 10 data points required (reduced from 20)
+  if (!historicalData || historicalData.length < 10 || !currentPrice || currentPrice <= 0) {
     return null
   }
   
@@ -37,11 +38,24 @@ export function detectChangeOfCharacter(
   const swingHighs: Array<{ price: number; index: number; timestamp: number }> = []
   const swingLows: Array<{ price: number; index: number; timestamp: number }> = []
   
-  // More sensitive swing detection for COC
-  for (let i = 3; i < closes.length - 3; i++) {
-    // Swing high: higher than previous 3 and next 3 candles
-    if (highs[i] > highs[i - 1] && highs[i] > highs[i - 2] && highs[i] > highs[i - 3] &&
-        highs[i] > highs[i + 1] && highs[i] > highs[i + 2] && highs[i] > highs[i + 3]) {
+  // Adaptive swing detection - use 2 candles for smaller datasets, 3 for larger
+  const lookback = closes.length >= 20 ? 3 : 2
+  
+  for (let i = lookback; i < closes.length - lookback; i++) {
+    // Swing high: higher than previous and next candles
+    let isSwingHigh = true
+    let isSwingLow = true
+    
+    for (let j = 1; j <= lookback; j++) {
+      if (highs[i] <= highs[i - j] || highs[i] <= highs[i + j]) {
+        isSwingHigh = false
+      }
+      if (lows[i] >= lows[i - j] || lows[i] >= lows[i + j]) {
+        isSwingLow = false
+      }
+    }
+    
+    if (isSwingHigh) {
       swingHighs.push({ 
         price: highs[i], 
         index: i, 
@@ -49,9 +63,7 @@ export function detectChangeOfCharacter(
       })
     }
     
-    // Swing low: lower than previous 3 and next 3 candles
-    if (lows[i] < lows[i - 1] && lows[i] < lows[i - 2] && lows[i] < lows[i - 3] &&
-        lows[i] < lows[i + 1] && lows[i] < lows[i + 2] && lows[i] < lows[i + 3]) {
+    if (isSwingLow) {
       swingLows.push({ 
         price: lows[i], 
         index: i, 

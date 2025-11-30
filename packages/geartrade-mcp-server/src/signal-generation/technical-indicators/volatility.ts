@@ -11,17 +11,20 @@ export function calculateBollingerBands(
   period: number = 20,
   stdDev: number = 2
 ): BollingerBands[] {
-  if (closes.length < period) return []
+  if (closes.length === 0) return []
+  
+  // Use adaptive period for small datasets
+  const effectivePeriod = Math.min(period, closes.length)
   
   const bands: BollingerBands[] = []
-  const sma = calculateSMA(closes, period)
+  const sma = calculateSMA(closes, effectivePeriod)
   
-  for (let i = period - 1; i < closes.length; i++) {
-    const periodCloses = closes.slice(i - period + 1, i + 1)
-    const mean = sma[i - period + 1]
+  for (let i = effectivePeriod - 1; i < closes.length; i++) {
+    const periodCloses = closes.slice(i - effectivePeriod + 1, i + 1)
+    const mean = sma[i - effectivePeriod + 1]
     
     // Calculate standard deviation
-    const variance = periodCloses.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / period
+    const variance = periodCloses.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / effectivePeriod
     const standardDeviation = Math.sqrt(variance)
     
     bands.push({
@@ -40,9 +43,13 @@ export function calculateATR(
   closes: number[],
   period: number = 14
 ): number[] {
-  if (highs.length < period + 1 || lows.length < period + 1 || closes.length < period + 1) {
+  // Need at least 2 data points to calculate true range
+  if (highs.length < 2 || lows.length < 2 || closes.length < 2) {
     return []
   }
+  
+  // Use adaptive period for small datasets
+  const effectivePeriod = Math.min(period, closes.length - 1)
   
   const trueRanges: number[] = []
   
@@ -61,23 +68,25 @@ export function calculateATR(
     trueRanges.push(trueRange)
   }
   
+  if (trueRanges.length === 0) {
+    return []
+  }
+  
   // Calculate ATR as SMA of True Ranges
   const atr: number[] = []
   let sum = 0
   
-  // Initial ATR = average of first period true ranges
-  for (let i = 0; i < period && i < trueRanges.length; i++) {
+  // Initial ATR = average of first effectivePeriod true ranges
+  const initialPeriod = Math.min(effectivePeriod, trueRanges.length)
+  for (let i = 0; i < initialPeriod; i++) {
     sum += trueRanges[i]
   }
+  atr.push(sum / initialPeriod)
   
-  if (trueRanges.length >= period) {
-    atr.push(sum / period)
-    
-    // Subsequent ATR values use Wilder's smoothing method (exponential moving average)
-    for (let i = period; i < trueRanges.length; i++) {
-      const currentATR = ((atr[atr.length - 1] * (period - 1)) + trueRanges[i]) / period
-      atr.push(currentATR)
-    }
+  // Subsequent ATR values use Wilder's smoothing method (exponential moving average)
+  for (let i = initialPeriod; i < trueRanges.length; i++) {
+    const currentATR = ((atr[atr.length - 1] * (effectivePeriod - 1)) + trueRanges[i]) / effectivePeriod
+    atr.push(currentATR)
   }
   
   return atr

@@ -149,25 +149,28 @@ export function calculateChaikinVolatility(
 }
 
 /**
- * Helper function to calculate EMA
+ * Helper function to calculate EMA with adaptive period
  */
 function calculateEMA(values: number[], period: number): number[] {
-  if (values.length < period) {
+  if (values.length < 2) {
     return values
   }
 
+  // Use adaptive period for small datasets
+  const effectivePeriod = Math.min(period, values.length)
+  
   const ema: number[] = []
-  const multiplier = 2 / (period + 1)
+  const multiplier = 2 / (effectivePeriod + 1)
 
-  // First EMA value is the simple average
+  // First EMA value is the simple average of available data
   let sum = 0
-  for (let i = 0; i < period; i++) {
+  for (let i = 0; i < effectivePeriod; i++) {
     sum += values[i]
   }
-  ema.push(sum / period)
+  ema.push(sum / effectivePeriod)
 
   // Calculate subsequent EMA values
-  for (let i = period; i < values.length; i++) {
+  for (let i = effectivePeriod; i < values.length; i++) {
     const currentEMA = (values[i] - ema[ema.length - 1]) * multiplier + ema[ema.length - 1]
     ema.push(currentEMA)
   }

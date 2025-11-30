@@ -58,11 +58,12 @@ export function calculateVortex(highs, lows, closes, period = 14) {
     const sumPlusDM = plusDMs.slice(-usePeriod).reduce((sum, dm) => sum + dm, 0);
     const sumMinusDM = minusDMs.slice(-usePeriod).reduce((sum, dm) => sum + dm, 0);
     if (sumTR === 0) {
+        // Fallback: return neutral values if no true range
         return {
-            vortexPlus: null,
-            vortexMinus: null,
-            trend: null,
-            strength: null,
+            vortexPlus: 0.5,
+            vortexMinus: 0.5,
+            trend: 'neutral',
+            strength: 'weak',
         };
     }
     // Calculate Vortex Indicators

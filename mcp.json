@@ -1,10 +1,8 @@
 {
   "mcpServers": {
-    "geartrade-v2": {
-      "command": "node",
-      "args": [
-        "C:\\Users\\hp5cd\\mcp-technical-analysis\\mcp-technical-analysis\\packages\\geartrade-mcp-server\\dist\\local-server.js"
-      ],
+    "geartradeTest": {
+      "command": "cmd",
+      "args": ["/c", "C:\\Users\\hp5cd\\Downloads\\mcp-technical-analysis\\scripts\\mcp-auto-start.bat"],
       "description": "GearTrade MCP Server V2 - 50 Tools"
     }
   }

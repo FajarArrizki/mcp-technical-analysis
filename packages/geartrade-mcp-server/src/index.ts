@@ -4871,12 +4871,18 @@ server.registerPrompt(
       ticker: z.string().describe('Asset ticker to analyze (e.g., BTC, ETH, SOL)'),
       capital: z.string().optional().describe('Trading capital in USD (default: 10000)'),
       riskPct: z.string().optional().describe('Risk percentage per trade (default: 1.0)'),
+      leverage: z.string().optional().describe('Leverage multiplier (default: 1 for spot, 1-50 for futures)'),
+      strategy: z.string().optional().describe('Trading strategy: day_trading, swing_trading, position_trading (default: swing_trading)'),
+      timeframe: z.string().optional().describe('Primary timeframe: 1m, 5m, 15m, 1h, 4h, 1d (default: 1h)'),
     } as any,
   },
   async (args: any) => {
     const ticker = args.ticker || 'BTC'
     const capital = args.capital ? parseFloat(args.capital) : 10000
     const riskPct = args.riskPct ? parseFloat(args.riskPct) : 1.0
+    const leverage = args.leverage ? parseInt(args.leverage) : 1
+    const strategy = args.strategy || 'swing_trading'
+    const timeframe = args.timeframe || '1h'
 
     return {
       messages: [
@@ -4884,7 +4890,7 @@ server.registerPrompt(
           role: 'user' as const,
           content: {
             type: 'text' as const,
-            text: `Please analyze ${ticker} comprehensively using these steps:
+            text: `Please analyze ${ticker} comprehensively using these steps (Strategy: ${strategy}, Timeframe: ${timeframe}):
 
 1. **Get Current Price & Basic Info:**
    - Use get_price tool for current price and market data
@@ -4894,20 +4900,41 @@ server.registerPrompt(
    - Use get_volume_analysis for volume patterns
    - Use get_market_structure for trend bias
    - Use get_candlestick_patterns for chart patterns
+   - Use get_market_regime to identify market conditions
 
-3. **Risk Management Setup:**
+3. **Advanced Indicators (Based on Strategy: ${strategy}):**
+   ${strategy === 'day_trading' ? `
+   - Use stochastic_rsi for overbought/oversold with fast signals
+   - Use fisher_transform for sharp reversal signals
+   - Use get_orderbook_depth for order book analysis
+   - Use get_liquidation_levels for liquidation zones` : ''}
+   ${strategy === 'swing_trading' ? `
+   - Use get_Multitimeframe for multi-timeframe trend alignment
+   - Use get_divergence for RSI divergence detection
+   - Use trend_indicators (supertrend) for trend following
+   - Use elder_ray for buying/selling pressure
+   - Use schaff_trend_cycle for MACD + Stochastic signals` : ''}
+   ${strategy === 'position_trading' ? `
+   - Use get_volume_profile for volume profile analysis
+   - Use know_sure_thing for multi-timeframe ROC momentum
+   - Use coppock_curve for long-term momentum
+   - Use hull_ma, kaufman_adaptive_ma, mcginley_dynamic for trend following
+   - Use get_market_regime to confirm market conditions` : ''}
+
+4. **Risk Management Setup:**
    - Use calculate_risk_management with entry price, capital=${capital}, riskPct=${riskPct}
-   - Calculate position size and stop loss levels
+   - Use calculate_position_setup for position sizing with leverage=${leverage}
 
-4. **Present Analysis Summary:**
+5. **Present Analysis Summary:**
    - Current price and 24h change
    - Technical signal (BUY/SELL/HOLD) with confidence %
    - Recommended entry, stop loss, take profit levels
    - Risk/reward ratio and position sizing
    - Key supporting indicators
+   - Leverage: ${leverage}x
 
-5. **Execution Preparation:**
-   - If user wants to execute: Use get_execution_spot for spot trading
+6. **Execution Preparation:**
+   - If user wants to execute: Use get_execution_spot for spot or get_execution_futures for futures
    - Always start with paper trading first (useLiveExecutor: false)
    - Only proceed to live execution after explicit confirmation
 
@@ -4930,11 +4957,17 @@ server.registerPrompt(
     argsSchema: {
       tickers: z.string().describe('Comma-separated tickers to scan (e.g., "BTC,ETH,SOL")'),
       capital: z.string().optional().describe('Trading capital in USD (default: 10000)'),
+      strategy: z.string().optional().describe('Trading strategy: day_trading, swing_trading, position_trading (default: swing_trading)'),
+      minConfidence: z.string().optional().describe('Minimum confidence threshold for signals (default: 60)'),
+      sortBy: z.string().optional().describe('Sort by: confidence, risk_reward, volume, trend_strength (default: confidence)'),
     } as any,
   },
   async (args: any) => {
     const tickers = args.tickers ? args.tickers.split(',').map((t: string) => t.trim()) : ['BTC', 'ETH', 'SOL']
     const capital = args.capital ? parseFloat(args.capital) : 10000
+    const strategy = args.strategy || 'swing_trading'
+    const minConfidence = args.minConfidence ? parseInt(args.minConfidence) : 60
+    const sortBy = args.sortBy || 'confidence'
 
     return {
       messages: [
@@ -4942,7 +4975,7 @@ server.registerPrompt(
           role: 'user' as const,
           content: {
             type: 'text' as const,
-            text: `Please scan multiple assets for trading opportunities:
+            text: `Please scan multiple assets for trading opportunities (Strategy: ${strategy}, Min Confidence: ${minConfidence}%):
 
 **Step-by-Step Analysis for each asset in ${JSON.stringify(tickers)}:**
 
@@ -4954,17 +4987,32 @@ server.registerPrompt(
    - Use get_indicators for technical signals
    - Use get_market_structure for trend bias
    - Use get_candlestick_patterns for chart patterns
+   - Use get_market_regime for market conditions
 
-3. **Risk Assessment:**
+3. **Strategy-Specific Indicators (${strategy}):**
+   ${strategy === 'day_trading' ? `
+   - Use stochastic_rsi for fast overbought/oversold signals
+   - Use fisher_transform for sharp reversal detection
+   - Use get_orderbook_depth for order book analysis` : ''}
+   ${strategy === 'swing_trading' ? `
+   - Use get_Multitimeframe for trend alignment
+   - Use get_divergence for divergence signals
+   - Use schaff_trend_cycle for momentum` : ''}
+   ${strategy === 'position_trading' ? `
+   - Use know_sure_thing for multi-timeframe momentum
+   - Use coppock_curve for long-term momentum
+   - Use get_volume_profile for volume analysis` : ''}
+
+4. **Risk Assessment:**
    - Use calculate_risk_management with capital=${capital}
 
-4. **Ranking Criteria:**
-   - Signal confidence and strength
+5. **Ranking Criteria (Sort by: ${sortBy}):**
+   - Signal confidence (minimum ${minConfidence}%)
    - Risk/Reward ratio quality
    - Trend alignment (multi-timeframe)
    - Volume confirmation
 
-5. **Present Top 3 Opportunities:**
+6. **Present Top 3 Opportunities:**
    - Asset ticker and current price
    - BUY/SELL/HOLD signal with confidence %
    - Recommended entry, SL, TP levels
@@ -5088,7 +5136,10 @@ server.registerPrompt(
       tickers: z.string().optional().describe('Comma-separated tickers to analyze (e.g., "BTC,ETH,SOL"). Use this for multiple assets'),
       capital: z.string().optional().describe('Trading capital in USD (default: 10000)'),
       riskPct: z.string().optional().describe('Risk percentage per trade (default: 1.0)'),
-      strategy: z.string().optional().describe('Trading strategy timeframe: short_term, long_term, or flexible (default: flexible)'),
+      strategy: z.string().optional().describe('Trading strategy: day_trading, swing_trading, position_trading, flexible (default: flexible)'),
+      includeAdvanced: z.string().optional().describe('Include advanced indicators: true/false (default: true)'),
+      includeVolume: z.string().optional().describe('Include volume analysis: true/false (default: true)'),
+      includeExternal: z.string().optional().describe('Include external data (funding, OI): true/false (default: true)'),
     } as any,
   },
   async (args: any) => {
@@ -5990,17 +6041,505 @@ server.registerPrompt(
     argsSchema: {
       tickers: z.string().describe('Comma-separated tickers to compare (e.g., "BTC,ETH,SOL,BNB")'),
       metrics: z.string().optional().describe('Comma-separated metrics (e.g., "price,volume,rsi,trend"). Default: all'),
+      strategy: z.string().optional().describe('Trading strategy: day_trading, swing_trading, position_trading (default: swing_trading)'),
+      sortBy: z.string().optional().describe('Sort by: confidence, risk_reward, volume, trend_strength (default: confidence)'),
     } as any,
   },
   async (args: any) => {
     const tickers = args.tickers.split(',').map((t: string) => t.trim().toUpperCase())
+    const strategy = args.strategy || 'swing_trading'
+    const sortBy = args.sortBy || 'confidence'
     return {
       messages: [
         {
           role: 'user' as const,
           content: {
             type: 'text' as const,
-            text: `Compare assets: ${tickers.join(', ')}. Use get_multiple_prices, get_multiple_indicators, get_multiple_volume_analysis, get_multiple_multitimeframe, and analisis_multiple_crypto. Present: price comparison, technical comparison, signal comparison, risk/reward comparison, overall ranking, and top 3 recommendations.`,
+            text: `Compare assets: ${tickers.join(', ')} (Strategy: ${strategy}, Sort by: ${sortBy}). Use get_price, get_indicators, get_volume_analysis, get_Multitimeframe. Present: price comparison, technical comparison, signal comparison, risk/reward comparison, overall ranking (sorted by ${sortBy}), and top 3 recommendations for ${strategy}.`,
+          },
+        },
+      ],
+    }
+  }
+)
+
+// NEW: Day Trading Analysis Prompt (Based on MCP_TOOLS_TEST_RESULTS.md recommendations)
+server.registerPrompt(
+  'day_trading_analysis',
+  {
+    title: 'Day Trading Analysis',
+    description: 'Comprehensive day trading analysis with fast oscillators and order book depth',
+    argsSchema: {
+      ticker: z.string().describe('Asset ticker to analyze (e.g., BTC, ETH, SOL)'),
+      capital: z.string().optional().describe('Trading capital in USD (default: 10000)'),
+      riskPct: z.string().optional().describe('Risk percentage per trade (default: 0.5 for day trading)'),
+      leverage: z.string().optional().describe('Leverage multiplier (default: 3 for day trading)'),
+      timeframe: z.string().optional().describe('Primary timeframe: 1m, 5m, 15m (default: 5m)'),
+    } as any,
+  },
+  async (args: any) => {
+    const ticker = args.ticker?.toUpperCase() || 'BTC'
+    const capital = args.capital ? parseFloat(args.capital) : 10000
+    const riskPct = args.riskPct ? parseFloat(args.riskPct) : 0.5
+    const leverage = args.leverage ? parseInt(args.leverage) : 3
+    const timeframe = args.timeframe || '5m'
+
+    return {
+      messages: [
+        {
+          role: 'user' as const,
+          content: {
+            type: 'text' as const,
+            text: `Please perform Day Trading analysis for ${ticker} (Timeframe: ${timeframe}, Capital: $${capital}, Risk: ${riskPct}%, Leverage: ${leverage}x):
+
+**1. Price & Basic Data:**
+- Use get_price for current price
+- Use get_indicators for core technical indicators
+
+**2. Fast Oscillators (Day Trading Focus):**
+- Use stochastic_rsi for overbought/oversold with RSI + Stochastic combination
+- Use fisher_transform for sharp reversal signals
+- Use momentum for rate of price change
+- Use chande_momentum for momentum on both sides (-100 to +100)
+
+**3. Order Book & Liquidity:**
+- Use get_orderbook_depth for bid/ask analysis, spread, liquidity scoring
+- Use get_liquidation_levels for liquidation clusters and safe entry zones
+
+**4. Volume Analysis:**
+- Use get_volume_analysis for buy/sell pressure, POC levels
+- Use volume_indicators for CMF (accumulation/distribution)
+
+**5. Quick Trend Confirmation:**
+- Use get_market_structure for immediate trend bias
+- Use get_candlestick_patterns for reversal signals
+
+**6. Risk Management:**
+- Use calculate_risk_management with capital=${capital}, riskPct=${riskPct}
+- Use calculate_position_setup with leverage=${leverage}
+
+**Present Day Trading Summary:**
+- Current price and immediate trend
+- Fast oscillator signals (stochastic_rsi, fisher)
+- Order book sentiment (bid/ask imbalance)
+- Entry signal: SCALP LONG / SCALP SHORT / WAIT
+- Entry price, tight stop loss (0.5-1%), quick take profit (1-2%)
+- Risk/Reward ratio (aim for 1.5:1 minimum for day trades)
+- Liquidation risk assessment
+
+**Important:** Day trading requires quick decisions. Focus on:
+- Fast oscillators for timing
+- Order book for immediate direction
+- Tight stops and quick profits
+- Avoid trading during low liquidity periods`,
+          },
+        },
+      ],
+    }
+  }
+)
+
+// NEW: Swing Trading Analysis Prompt (Based on MCP_TOOLS_TEST_RESULTS.md recommendations)
+server.registerPrompt(
+  'swing_trading_analysis',
+  {
+    title: 'Swing Trading Analysis',
+    description: 'Comprehensive swing trading analysis with multi-timeframe and divergence detection',
+    argsSchema: {
+      ticker: z.string().describe('Asset ticker to analyze (e.g., BTC, ETH, SOL)'),
+      capital: z.string().optional().describe('Trading capital in USD (default: 10000)'),
+      riskPct: z.string().optional().describe('Risk percentage per trade (default: 1.0 for swing trading)'),
+      leverage: z.string().optional().describe('Leverage multiplier (default: 5 for swing trading)'),
+      holdPeriod: z.string().optional().describe('Expected hold period: 1d, 3d, 1w, 2w (default: 1w)'),
+    } as any,
+  },
+  async (args: any) => {
+    const ticker = args.ticker?.toUpperCase() || 'BTC'
+    const capital = args.capital ? parseFloat(args.capital) : 10000
+    const riskPct = args.riskPct ? parseFloat(args.riskPct) : 1.0
+    const leverage = args.leverage ? parseInt(args.leverage) : 5
+    const holdPeriod = args.holdPeriod || '1w'
+
+    return {
+      messages: [
+        {
+          role: 'user' as const,
+          content: {
+            type: 'text' as const,
+            text: `Please perform Swing Trading analysis for ${ticker} (Hold Period: ${holdPeriod}, Capital: $${capital}, Risk: ${riskPct}%, Leverage: ${leverage}x):
+
+**1. Multi-Timeframe Analysis:**
+- Use get_Multitimeframe for Daily, 4H, 1H trend alignment
+- Use get_market_structure for swing highs/lows identification
+
+**2. Trend Indicators (Swing Trading Focus):**
+- Use trend_indicators (supertrend) for ATR-based trend following
+- Use elder_ray for bull/bear power (buying/selling pressure)
+- Use schaff_trend_cycle for MACD + Stochastic with double smoothing
+- Use trix for triple EMA rate of change
+
+**3. Divergence Detection:**
+- Use get_divergence for RSI divergence (bullish/bearish)
+- Use get_candlestick_patterns for reversal patterns
+
+**4. Momentum Confirmation:**
+- Use get_indicators for RSI, MACD, ADX
+- Use true_strength_index for double-smoothed momentum
+- Use ultimate_oscillator for three-timeframe oscillator
+
+**5. Volume & External Data:**
+- Use get_volume_analysis for CVD trend, buy/sell pressure
+- Use get_External_data for funding rate, open interest
+
+**6. Risk Management:**
+- Use calculate_risk_management with capital=${capital}, riskPct=${riskPct}
+- Use calculate_position_setup with leverage=${leverage}
+
+**Present Swing Trading Summary:**
+- Multi-timeframe trend alignment (Daily/4H/1H)
+- Trend strength score
+- Divergence signals detected
+- Entry signal: SWING LONG / SWING SHORT / WAIT
+- Entry zone (support/resistance levels)
+- Stop loss (2-3% for swing trades)
+- Take profit levels (TP1: 5%, TP2: 10%, TP3: 15%)
+- Risk/Reward ratio (aim for 2:1 minimum)
+- Expected hold period: ${holdPeriod}
+
+**Important:** Swing trading focuses on:
+- Multi-timeframe alignment
+- Divergence for reversal timing
+- Trend indicators for confirmation
+- Wider stops, bigger targets
+- Patience for the setup to develop`,
+          },
+        },
+      ],
+    }
+  }
+)
+
+// NEW: Position Trading Analysis Prompt (Based on MCP_TOOLS_TEST_RESULTS.md recommendations)
+server.registerPrompt(
+  'position_trading_analysis',
+  {
+    title: 'Position Trading Analysis',
+    description: 'Long-term position trading analysis with volume profile and long-term momentum indicators',
+    argsSchema: {
+      ticker: z.string().describe('Asset ticker to analyze (e.g., BTC, ETH, SOL)'),
+      capital: z.string().optional().describe('Trading capital in USD (default: 10000)'),
+      riskPct: z.string().optional().describe('Risk percentage per trade (default: 2.0 for position trading)'),
+      leverage: z.string().optional().describe('Leverage multiplier (default: 2 for position trading)'),
+      holdPeriod: z.string().optional().describe('Expected hold period: 1m, 3m, 6m (default: 1m)'),
+    } as any,
+  },
+  async (args: any) => {
+    const ticker = args.ticker?.toUpperCase() || 'BTC'
+    const capital = args.capital ? parseFloat(args.capital) : 10000
+    const riskPct = args.riskPct ? parseFloat(args.riskPct) : 2.0
+    const leverage = args.leverage ? parseInt(args.leverage) : 2
+    const holdPeriod = args.holdPeriod || '1m'
+
+    return {
+      messages: [
+        {
+          role: 'user' as const,
+          content: {
+            type: 'text' as const,
+            text: `Please perform Position Trading analysis for ${ticker} (Hold Period: ${holdPeriod}, Capital: $${capital}, Risk: ${riskPct}%, Leverage: ${leverage}x):
+
+**1. Long-Term Trend Analysis:**
+- Use get_market_regime for overall market conditions (trending/choppy/volatile)
+- Use get_volume_profile for POC, VAH, VAL, accumulation/distribution zones
+
+**2. Long-Term Momentum Indicators (Position Trading Focus):**
+- Use know_sure_thing for multi-timeframe ROC momentum
+- Use coppock_curve for major market bottoms, long-term momentum
+- Use relative_vigor_index for close vs open momentum
+
+**3. Adaptive Moving Averages:**
+- Use hull_ma for smooth trend with reduced lag
+- Use kaufman_adaptive_ma for adaptive to market efficiency
+- Use mcginley_dynamic for adaptive to market volatility
+- Use rainbow_ma for multi-period trend visualization
+
+**4. Volume Profile Analysis:**
+- Use get_volume_profile for session and composite profiles
+- Use strength_indicators (bull_bear_power) for buying vs selling strength
+- Use coppock_curve for contraction/expansion phases
+
+**5. External Data (Long-Term Sentiment):**
+- Use get_External_data for funding rate trends, open interest
+- Use get_long_short_ratio for market sentiment
+
+**6. Risk Management:**
+- Use calculate_risk_management with capital=${capital}, riskPct=${riskPct}
+- Use calculate_position_setup with leverage=${leverage}
+
+**Present Position Trading Summary:**
+- Market regime: trending/choppy/volatile
+- Long-term trend direction
+- Volume profile key levels (POC, VAH, VAL)
+- Long-term momentum signals (KST, Coppock)
+- Entry signal: POSITION LONG / POSITION SHORT / ACCUMULATE / WAIT
+- Entry zone (accumulation zone from volume profile)
+- Stop loss (5-10% for position trades)
+- Take profit levels (TP1: 20%, TP2: 50%, TP3: 100%+)
+- Risk/Reward ratio (aim for 3:1 minimum)
+- Expected hold period: ${holdPeriod}
+
+**Important:** Position trading focuses on:
+- Long-term market regime
+- Volume profile for key levels
+- Long-term momentum for timing
+- Lower leverage, wider stops
+- Patience for major moves`,
+          },
+        },
+      ],
+    }
+  }
+)
+
+// NEW: Risk Management Analysis Prompt (Enhanced based on MCP_TOOLS_TEST_RESULTS.md)
+server.registerPrompt(
+  'risk_management_analysis',
+  {
+    title: 'Risk Management Analysis',
+    description: 'Comprehensive risk management analysis with liquidation levels and volatility assessment',
+    argsSchema: {
+      ticker: z.string().describe('Asset ticker to analyze (e.g., BTC, ETH, SOL)'),
+      entryPrice: z.string().optional().describe('Planned entry price (uses current price if not provided)'),
+      side: z.string().optional().describe('Trade side: LONG or SHORT (default: LONG)'),
+      capital: z.string().optional().describe('Trading capital in USD (default: 10000)'),
+      riskPct: z.string().optional().describe('Risk percentage per trade (default: 1.0)'),
+      leverage: z.string().optional().describe('Planned leverage (default: 5)'),
+    } as any,
+  },
+  async (args: any) => {
+    const ticker = args.ticker?.toUpperCase() || 'BTC'
+    const entryPrice = args.entryPrice || 'current'
+    const side = args.side?.toUpperCase() || 'LONG'
+    const capital = args.capital ? parseFloat(args.capital) : 10000
+    const riskPct = args.riskPct ? parseFloat(args.riskPct) : 1.0
+    const leverage = args.leverage ? parseInt(args.leverage) : 5
+
+    return {
+      messages: [
+        {
+          role: 'user' as const,
+          content: {
+            type: 'text' as const,
+            text: `Please perform comprehensive Risk Management analysis for ${ticker} ${side} position:
+
+**Entry Parameters:**
+- Entry Price: ${entryPrice === 'current' ? 'Use current market price' : entryPrice}
+- Side: ${side}
+- Capital: $${capital}
+- Risk: ${riskPct}%
+- Planned Leverage: ${leverage}x
+
+**1. Current Price & Volatility:**
+- Use get_price for current price
+- Use volatility_indicators (bollinger_band_width) for volatility assessment
+- Use get_indicators for ATR (volatility measure)
+
+**2. Liquidation Risk Assessment:**
+- Use get_liquidation_levels for liquidation clusters
+- Identify safe entry zones away from liquidation clusters
+- Assess cascade risk potential
+
+**3. Position Sizing:**
+- Use calculate_position_setup with capital=${capital}, riskPct=${riskPct}, leverage=${leverage}
+- Calculate optimal position size based on volatility
+
+**4. Stop Loss Calculation:**
+- Use calculate_risk_management for optimal stop loss levels
+- Calculate ATR-based stop loss
+- Identify support/resistance for technical stop loss
+
+**5. Take Profit Planning:**
+- Calculate multiple TP levels (TP1: 2:1, TP2: 3:1, TP3: 5:1)
+- Use get_market_structure for resistance levels (for LONG) or support (for SHORT)
+
+**6. Risk/Reward Assessment:**
+- Calculate overall R:R ratio
+- Assess probability of success based on technical signals
+
+**Present Risk Management Summary:**
+
+| Metric | Value |
+|--------|-------|
+| Entry Price | [PRICE] |
+| Position Size | [QUANTITY] ${ticker} |
+| Position Value | $[USD] |
+| Leverage | ${leverage}x |
+| Margin Used | $[USD] |
+| Stop Loss | [PRICE] ([%] from entry) |
+| TP1 (2:1) | [PRICE] ([%] gain) |
+| TP2 (3:1) | [PRICE] ([%] gain) |
+| TP3 (5:1) | [PRICE] ([%] gain) |
+| Max Loss | $[USD] (${riskPct}% of capital) |
+| Max Gain (TP3) | $[USD] |
+| R:R Ratio | [X]:1 |
+| Liquidation Price | [PRICE] |
+| Liquidation Distance | [%] |
+
+**Risk Assessment:**
+- Volatility Level: [LOW / MEDIUM / HIGH]
+- Liquidation Risk: [LOW / MEDIUM / HIGH]
+- Overall Risk: [LOW / MEDIUM / HIGH]
+- Recommendation: [PROCEED / REDUCE LEVERAGE / WAIT]`,
+          },
+        },
+      ],
+    }
+  }
+)
+
+// NEW: Oscillators Analysis Prompt (All 10 oscillator tools from MCP_TOOLS_TEST_RESULTS.md)
+server.registerPrompt(
+  'oscillators_analysis',
+  {
+    title: 'Oscillators Analysis',
+    description: 'Analyze all oscillator indicators for overbought/oversold and momentum signals',
+    argsSchema: {
+      ticker: z.string().describe('Asset ticker to analyze (e.g., BTC, ETH, SOL)'),
+      focusType: z.string().optional().describe('Focus on: fast (day trading), medium (swing), slow (position). Default: all'),
+    } as any,
+  },
+  async (args: any) => {
+    const ticker = args.ticker?.toUpperCase() || 'BTC'
+    const focusType = args.focusType || 'all'
+
+    return {
+      messages: [
+        {
+          role: 'user' as const,
+          content: {
+            type: 'text' as const,
+            text: `Please analyze all oscillator indicators for ${ticker} (Focus: ${focusType}):
+
+**Fast Oscillators (Day Trading):**
+- Use stochastic_rsi for overbought/oversold with RSI + Stochastic
+- Use fisher_transform for sharp reversal signals
+- Use momentum for rate of price change
+
+**Medium Oscillators (Swing Trading):**
+- Use chande_momentum for momentum on both sides (-100 to +100)
+- Use rate_of_change for percentage change in price
+- Use percentage_price_oscillator for MACD as percentage
+- Use detrended_price for cycle identification
+
+**Slow Oscillators (Position Trading):**
+- Use gator_oscillator for Alligator convergence/divergence
+- Use ultimate_oscillator for three-timeframe oscillator
+- Use true_strength_index for double-smoothed momentum
+
+**Trend Confirmation:**
+- Use schaff_trend_cycle for MACD + Stochastic with double smoothing
+
+**Present Oscillators Summary:**
+
+| Oscillator | Value | Signal | Confidence |
+|------------|-------|--------|------------|
+| Stochastic RSI | [K/D] | [OVERBOUGHT/OVERSOLD/NEUTRAL] | [HIGH/MED/LOW] |
+| Fisher Transform | [VALUE] | [BULLISH/BEARISH/NEUTRAL] | [HIGH/MED/LOW] |
+| Momentum | [VALUE] | [BULLISH/BEARISH] | [HIGH/MED/LOW] |
+| Chande Momentum | [VALUE] | [OVERBOUGHT/OVERSOLD/NEUTRAL] | [HIGH/MED/LOW] |
+| ROC | [%] | [BULLISH/BEARISH] | [HIGH/MED/LOW] |
+| PPO | [%] | [BULLISH/BEARISH] | [HIGH/MED/LOW] |
+| Detrended Price | [VALUE] | [CYCLE POSITION] | [HIGH/MED/LOW] |
+| Gator | [UPPER/LOWER] | [AWAKE/SLEEPING] | [HIGH/MED/LOW] |
+| Ultimate Oscillator | [VALUE] | [OVERBOUGHT/OVERSOLD/NEUTRAL] | [HIGH/MED/LOW] |
+| TSI | [VALUE] | [BULLISH/BEARISH] | [HIGH/MED/LOW] |
+| Schaff Trend | [VALUE] | [BUY/SELL/NEUTRAL] | [HIGH/MED/LOW] |
+
+**Overall Oscillator Consensus:**
+- Bullish signals: [COUNT]/11
+- Bearish signals: [COUNT]/11
+- Neutral signals: [COUNT]/11
+- Overall signal: [BULLISH/BEARISH/NEUTRAL]
+- Recommendation: [BUY/SELL/WAIT]`,
+          },
+        },
+      ],
+    }
+  }
+)
+
+// NEW: Moving Averages Analysis Prompt (All 8 MA tools from MCP_TOOLS_TEST_RESULTS.md)
+server.registerPrompt(
+  'moving_averages_analysis',
+  {
+    title: 'Moving Averages Analysis',
+    description: 'Analyze all moving average indicators for trend direction and crossovers',
+    argsSchema: {
+      ticker: z.string().describe('Asset ticker to analyze (e.g., BTC, ETH, SOL)'),
+      period: z.string().optional().describe('MA period focus: short (9,20), medium (50,100), long (200). Default: all'),
+    } as any,
+  },
+  async (args: any) => {
+    const ticker = args.ticker?.toUpperCase() || 'BTC'
+    const period = args.period || 'all'
+
+    return {
+      messages: [
+        {
+          role: 'user' as const,
+          content: {
+            type: 'text' as const,
+            text: `Please analyze all moving average indicators for ${ticker} (Period focus: ${period}):
+
+**Standard Moving Averages:**
+- Use get_indicators for EMA20, EMA50 (baseline)
+- Use double_ema for reduced lag EMA (DEMA)
+- Use triple_ema for further reduced lag (TEMA)
+
+**Weighted Moving Averages:**
+- Use weighted_ma for recent price weighted MA (WMA)
+- Use smoothed_ma for smooth trend following (SMMA)
+- Use vwma for volume-weighted moving average
+
+**Adaptive Moving Averages:**
+- Use hull_ma for smooth trend with reduced lag (HMA)
+- Use kaufman_adaptive_ma for adaptive to market efficiency (KAMA)
+- Use mcginley_dynamic for adaptive to market volatility
+
+**Visual Trend Analysis:**
+- Use rainbow_ma for multi-period trend visualization
+
+**Present Moving Averages Summary:**
+
+| MA Type | Value | Price Position | Signal |
+|---------|-------|----------------|--------|
+| EMA20 | [PRICE] | [ABOVE/BELOW] | [BULLISH/BEARISH] |
+| EMA50 | [PRICE] | [ABOVE/BELOW] | [BULLISH/BEARISH] |
+| DEMA | [PRICE] | [ABOVE/BELOW] | [BULLISH/BEARISH] |
+| TEMA | [PRICE] | [ABOVE/BELOW] | [BULLISH/BEARISH] |
+| WMA | [PRICE] | [ABOVE/BELOW] | [BULLISH/BEARISH] |
+| SMMA | [PRICE] | [ABOVE/BELOW] | [BULLISH/BEARISH] |
+| VWMA | [PRICE] | [ABOVE/BELOW] | [BULLISH/BEARISH] |
+| HMA | [PRICE] | [ABOVE/BELOW] | [BULLISH/BEARISH] |
+| KAMA | [PRICE] | [ABOVE/BELOW] | [BULLISH/BEARISH] |
+| McGinley | [PRICE] | [ABOVE/BELOW] | [BULLISH/BEARISH] |
+
+**Rainbow MA Alignment:**
+- Short-term MAs: [BULLISH/BEARISH] (2-5 periods)
+- Medium-term MAs: [BULLISH/BEARISH] (6-7 periods)
+- Long-term MAs: [BULLISH/BEARISH] (8-9 periods)
+- Rainbow alignment: [PERFECT/MIXED/INVERTED]
+
+**Crossover Signals:**
+- Golden Cross (EMA20 > EMA50): [YES/NO]
+- Death Cross (EMA20 < EMA50): [YES/NO]
+- Recent crossover: [GOLDEN/DEATH/NONE]
+
+**Overall MA Trend:**
+- Bullish MAs: [COUNT]/10
+- Bearish MAs: [COUNT]/10
+- Overall trend: [STRONG UPTREND/UPTREND/NEUTRAL/DOWNTREND/STRONG DOWNTREND]
+- Recommendation: [BUY/SELL/WAIT]`,
           },
         },
       ],
@@ -7634,6 +8173,374 @@ Fibonacci retracement levels identify potential support/resistance zones. This g
 3. **61.8% is most important** - Golden ratio level
 4. **Wait for bounce confirmation** - Don't enter blindly
 5. **Set stops beyond 78.6%** - Deep retracement invalidates setup
+`,
+        },
+      ],
+    }
+  }
+)
+
+// NEW: Recommended Usage Patterns Resource (Based on MCP_TOOLS_TEST_RESULTS.md)
+server.registerResource(
+  'usage-patterns-guide',
+  'geartrade://docs/usage-patterns',
+  {
+    description: 'Recommended usage patterns for Day Trading, Swing Trading, Position Trading, and Risk Management',
+    mimeType: 'text/markdown',
+  },
+  async () => {
+    return {
+      contents: [
+        {
+          uri: 'geartrade://docs/usage-patterns',
+          mimeType: 'text/markdown',
+          text: `# Recommended Usage Patterns
+
+## Overview
+
+This guide covers recommended tool combinations for different trading styles based on the 52 available MCP tools.
+
+---
+
+## Day Trading Pattern
+
+**Focus:** Quick decisions, fast oscillators, order book analysis
+
+### Recommended Tools:
+
+**1. Price & Market Data:**
+- \`get_price\` - Current price
+- \`get_indicators\` - Core technical indicators
+- \`get_volume_analysis\` - Buy/sell pressure
+
+**2. Fast Oscillators:**
+- \`stochastic_rsi\` - Overbought/oversold with RSI + Stochastic combination
+- \`fisher_transform\` - Sharp reversal signals
+- \`momentum\` - Rate of price change
+- \`chande_momentum\` - Momentum on both sides (-100 to +100)
+
+**3. Order Book & Liquidity:**
+- \`get_orderbook_depth\` - Bid/ask analysis, spread, liquidity scoring
+- \`get_liquidation_levels\` - Liquidation clusters, safe entry zones
+
+**4. Quick Confirmation:**
+- \`get_market_structure\` - Immediate trend bias
+- \`get_candlestick_patterns\` - Reversal signals
+
+### Day Trading Workflow:
+\`\`\`
+1. get_price → Check current price
+2. get_orderbook_depth → Check order book sentiment
+3. stochastic_rsi + fisher_transform → Get oscillator signals
+4. get_liquidation_levels → Identify safe entry zones
+5. calculate_risk_management → Set tight stop (0.5-1%)
+6. Execute with low leverage (2-3x)
+\`\`\`
+
+### Risk Parameters:
+- Risk per trade: 0.5%
+- Leverage: 2-3x
+- Stop loss: 0.5-1%
+- Take profit: 1-2%
+- R:R target: 1.5:1 minimum
+
+---
+
+## Swing Trading Pattern
+
+**Focus:** Multi-timeframe alignment, divergence detection, trend following
+
+### Recommended Tools:
+
+**1. Multi-Timeframe Analysis:**
+- \`get_Multitimeframe\` - Daily, 4H, 1H trend alignment
+- \`get_market_structure\` - Swing highs/lows identification
+
+**2. Trend Indicators:**
+- \`trend_indicators\` (supertrend) - ATR-based trend following
+- \`elder_ray\` - Bull/bear power (buying/selling pressure)
+- \`schaff_trend_cycle\` - MACD + Stochastic with double smoothing
+- \`trix\` - Triple EMA rate of change
+
+**3. Divergence & Patterns:**
+- \`get_divergence\` - RSI divergence (bullish/bearish)
+- \`get_candlestick_patterns\` - Reversal/continuation patterns
+
+**4. Momentum Confirmation:**
+- \`get_indicators\` - RSI, MACD, ADX
+- \`true_strength_index\` - Double-smoothed momentum
+- \`ultimate_oscillator\` - Three-timeframe oscillator
+
+**5. Volume & External:**
+- \`get_volume_analysis\` - CVD trend, buy/sell pressure
+- \`get_External_data\` - Funding rate, open interest
+
+### Swing Trading Workflow:
+\`\`\`
+1. get_Multitimeframe → Check trend alignment (Daily/4H/1H)
+2. get_divergence → Look for RSI divergence
+3. trend_indicators + elder_ray → Confirm trend direction
+4. get_volume_analysis → Verify volume supports the move
+5. calculate_risk_management → Set stop (2-3%)
+6. Execute with moderate leverage (3-5x)
+7. Hold for 1 day to 2 weeks
+\`\`\`
+
+### Risk Parameters:
+- Risk per trade: 1.0%
+- Leverage: 3-5x
+- Stop loss: 2-3%
+- Take profit: 5-15% (multiple TPs)
+- R:R target: 2:1 minimum
+
+---
+
+## Position Trading Pattern
+
+**Focus:** Long-term trends, volume profile, adaptive moving averages
+
+### Recommended Tools:
+
+**1. Market Regime:**
+- \`get_market_regime\` - Overall market conditions (trending/choppy/volatile)
+- \`get_volume_profile\` - POC, VAH, VAL, accumulation/distribution zones
+
+**2. Long-Term Momentum:**
+- \`know_sure_thing\` - Multi-timeframe ROC momentum
+- \`coppock_curve\` - Major market bottoms, long-term momentum
+- \`relative_vigor_index\` - Close vs open momentum
+
+**3. Adaptive Moving Averages:**
+- \`hull_ma\` - Smooth trend with reduced lag
+- \`kaufman_adaptive_ma\` - Adaptive to market efficiency
+- \`mcginley_dynamic\` - Adaptive to market volatility
+- \`rainbow_ma\` - Multi-period trend visualization
+
+**4. Volume & Strength:**
+- \`get_volume_profile\` - Session and composite profiles
+- \`strength_indicators\` (bull_bear_power) - Buying vs selling strength
+
+**5. External Sentiment:**
+- \`get_External_data\` - Funding rate trends, open interest
+- \`get_long_short_ratio\` - Market sentiment
+
+### Position Trading Workflow:
+\`\`\`
+1. get_market_regime → Confirm trending market
+2. get_volume_profile → Identify accumulation zones
+3. know_sure_thing + coppock_curve → Check long-term momentum
+4. hull_ma + kaufman_adaptive_ma → Confirm trend direction
+5. get_long_short_ratio → Check sentiment extremes
+6. calculate_risk_management → Set wide stop (5-10%)
+7. Execute with low leverage (1-2x)
+8. Hold for 1-6 months
+\`\`\`
+
+### Risk Parameters:
+- Risk per trade: 2.0%
+- Leverage: 1-2x
+- Stop loss: 5-10%
+- Take profit: 20-100%+ (multiple TPs)
+- R:R target: 3:1 minimum
+
+---
+
+## Risk Management Pattern
+
+**Focus:** Comprehensive risk assessment before any trade
+
+### Recommended Tools:
+
+**1. Volatility Assessment:**
+- \`volatility_indicators\` (bollinger_band_width) - Volatility measurement
+- \`get_indicators\` - ATR (Average True Range)
+
+**2. Liquidation Risk:**
+- \`get_liquidation_levels\` - Liquidation clusters
+- Safe entry zone identification
+
+**3. Position Sizing:**
+- \`calculate_position_setup\` - Optimal position size
+- \`calculate_risk_management\` - Stop loss, take profit levels
+
+**4. Market Structure:**
+- \`get_market_structure\` - Support/resistance levels
+
+### Risk Management Workflow:
+\`\`\`
+1. get_price → Current price
+2. volatility_indicators → Check volatility level
+3. get_liquidation_levels → Identify liquidation risk
+4. calculate_position_setup → Calculate position size
+5. calculate_risk_management → Set SL/TP levels
+6. Assess overall risk: LOW / MEDIUM / HIGH
+7. Proceed or wait based on risk assessment
+\`\`\`
+
+---
+
+## Tool Categories Summary
+
+| Category | Tools | Best For |
+|----------|-------|----------|
+| Market Data | 10 | All trading styles |
+| Advanced Market Data | 5 | All trading styles |
+| Oscillators | 10 | Day trading, swing trading |
+| Trend Indicators | 7 | Swing trading, position trading |
+| Volume Indicators | 4 | All trading styles |
+| Channels & Bands | 3 | Volatility assessment |
+| Moving Averages | 8 | Position trading, trend following |
+| Specialized | 5 | Pattern recognition |
+
+---
+
+## Quick Reference
+
+### For Scalping/Day Trading:
+\`get_price\` → \`stochastic_rsi\` → \`fisher_transform\` → \`get_orderbook_depth\`
+
+### For Swing Trading:
+\`get_Multitimeframe\` → \`get_divergence\` → \`schaff_trend_cycle\` → \`get_volume_analysis\`
+
+### For Position Trading:
+\`get_market_regime\` → \`know_sure_thing\` → \`coppock_curve\` → \`get_volume_profile\`
+
+### For Risk Management:
+\`calculate_position_setup\` → \`calculate_risk_management\` → \`get_liquidation_levels\` → \`volatility_indicators\`
+`,
+        },
+      ],
+    }
+  }
+)
+
+// NEW: Complete Tools Reference Resource (52 Tools from MCP_TOOLS_TEST_RESULTS.md)
+server.registerResource(
+  'complete-tools-reference',
+  'geartrade://docs/complete-tools',
+  {
+    description: 'Complete reference of all 52 MCP tools with parameters and use cases',
+    mimeType: 'text/markdown',
+  },
+  async () => {
+    return {
+      contents: [
+        {
+          uri: 'geartrade://docs/complete-tools',
+          mimeType: 'text/markdown',
+          text: `# Complete Tools Reference (52 Tools)
+
+## Market Data Tools (10)
+
+| Tool | Description | Parameters |
+|------|-------------|------------|
+| \`get_price\` | Get latest prices | tickers: string[] |
+| \`get_indicators\` | Comprehensive technical indicators | tickers: string[] |
+| \`get_market_structure\` | Market structure and swing points | tickers: string[] |
+| \`get_volume_analysis\` | Volume profile and buy/sell pressure | tickers: string[] |
+| \`get_divergence\` | RSI divergence detection | tickers: string[] |
+| \`get_candlestick_patterns\` | Candlestick pattern recognition | tickers: string[] |
+| \`get_market_regime\` | Market conditions (trending/choppy) | tickers: string[] |
+| \`get_Multitimeframe\` | Multi-timeframe trend alignment | tickers: string[] |
+| \`get_liquidation_levels\` | Liquidation clusters and zones | tickers: string[] |
+| \`get_long_short_ratio\` | Long/short sentiment | tickers: string[] |
+
+## Advanced Market Data Tools (5)
+
+| Tool | Description | Parameters |
+|------|-------------|------------|
+| \`get_orderbook_depth\` | Order book depth analysis | tickers: string[] |
+| \`get_volume_profile\` | Volume profile (POC, VAH, VAL) | tickers: string[] |
+| \`get_External_data\` | Funding rate, open interest | tickers: string[] |
+| \`calculate_position_setup\` | Position sizing calculations | ticker, entryPrice, side, capital, riskPct, leverage |
+| \`calculate_risk_management\` | Stop loss, take profit, R:R | ticker, entryPrice, side, stopLossPct, takeProfitPct |
+
+## Oscillators (10)
+
+| Tool | Description | Key Output |
+|------|-------------|------------|
+| \`awesome_oscillator\` | Bill Williams AO | Momentum changes |
+| \`accelerator_oscillator\` | AC momentum | Acceleration/deceleration |
+| \`fisher_transform\` | Sharp reversal signals | Fisher value, trend |
+| \`stochastic_rsi\` | RSI + Stochastic | K, D values, oversold/overbought |
+| \`momentum\` | Rate of price change | Momentum value, signal |
+| \`chande_momentum\` | CMO (-100 to +100) | CMO value, oversold/overbought |
+| \`rate_of_change\` | ROC percentage | ROC %, direction |
+| \`percentage_price_oscillator\` | MACD as percentage | PPO %, signal |
+| \`detrended_price\` | Cycle identification | DPO, cycle position |
+| \`gator_oscillator\` | Alligator divergence | Upper, lower values |
+
+## Trend Indicators (7)
+
+| Tool | Description | Key Output |
+|------|-------------|------------|
+| \`trend_indicators\` | SuperTrend ATR-based | Trend direction, ATR bands |
+| \`elder_ray\` | Bull/Bear power | Bull power, bear power |
+| \`know_sure_thing\` | Multi-timeframe ROC | KST value, momentum |
+| \`trix\` | Triple EMA ROC | TRIX %, trend |
+| \`ultimate_oscillator\` | Three-timeframe | UO value, oversold/overbought |
+| \`true_strength_index\` | Double-smoothed momentum | TSI value, direction |
+| \`schaff_trend_cycle\` | MACD + Stochastic | STC value, buy/sell signal |
+
+## Volume Indicators (4)
+
+| Tool | Description | Key Output |
+|------|-------------|------------|
+| \`volume_indicators\` | Chaikin Money Flow | CMF, accumulation/distribution |
+| \`relative_vigor_index\` | Close vs open momentum | RVI value, trend |
+| \`coppock_curve\` | Long-term momentum | Coppock value, phase |
+| \`strength_indicators\` | Bull/Bear power | Bull/bear strength |
+
+## Channels & Bands (3)
+
+| Tool | Description | Key Output |
+|------|-------------|------------|
+| \`channels\` | Keltner Channels | Middle, upper, lower |
+| \`volatility_indicators\` | Bollinger Band Width | Width, squeeze status |
+| \`ma_envelope\` | MA with envelope | MA, upper, lower |
+
+## Moving Averages (8)
+
+| Tool | Description | Key Output |
+|------|-------------|------------|
+| \`double_ema\` | DEMA reduced lag | DEMA value |
+| \`triple_ema\` | TEMA further reduced lag | TEMA value |
+| \`hull_ma\` | HMA smooth trend | HMA value |
+| \`weighted_ma\` | WMA recent weighted | WMA value |
+| \`smoothed_ma\` | SMMA smooth | SMMA value |
+| \`vwma\` | Volume-weighted MA | VWMA, efficiency |
+| \`kaufman_adaptive_ma\` | KAMA adaptive | KAMA, efficiency ratio |
+| \`mcginley_dynamic\` | McGinley adaptive | McGinley value, trend |
+
+## Specialized (5)
+
+| Tool | Description | Key Output |
+|------|-------------|------------|
+| \`rainbow_ma\` | Multi-period MAs | Multiple MA values, alignment |
+| \`pivot_points\` | Standard pivots | Pivot, R1-R3, S1-S3 |
+| \`patterns\` | Fractals, ZigZag, COC | Pattern detection |
+
+---
+
+## Common Parameters
+
+### For Ticker-Based Tools:
+- \`tickers\`: Array of strings (e.g., ["BTC", "ETH", "SOL"])
+
+### For Calculation Tools:
+- \`ticker\`: Single string (e.g., "BTC")
+- \`entryPrice\`: Number (entry price)
+- \`side\`: "LONG" or "SHORT"
+- \`capital\`: Number (trading capital in USD)
+- \`riskPct\`: Number (risk percentage, e.g., 1.0)
+- \`leverage\`: Number (leverage multiplier, e.g., 5)
+
+### For Indicator Tools:
+- \`period\`: Number (indicator period, e.g., 14)
+- \`prices\`: Array of numbers (price data)
+- \`highs\`: Array of numbers (high prices)
+- \`lows\`: Array of numbers (low prices)
+- \`volumes\`: Array of numbers (volume data)
 `,
         },
       ],

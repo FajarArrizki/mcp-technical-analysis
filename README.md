@@ -31,8 +31,8 @@ A comprehensive Model Context Protocol (MCP) server that bridges AI assistants w
 - 🎯 **Advanced Technical Analysis** - RSI, MACD, Fibonacci, Order Book, etc.
 - 💰 **Risk Management** - Position sizing, stop loss, take profit calculations
 - 📈 **Multi-Timeframe Analysis** - Daily, 4H, 1H trend alignment
-- 🤖 **24 AI Prompts** - Pre-configured analysis workflows
-- 📚 **20 Resources** - Comprehensive analysis documentation
+- 🤖 **32 AI Prompts** - Pre-configured analysis workflows for Day Trading, Swing Trading, Position Trading
+- 📚 **22 Resources** - Comprehensive analysis documentation with usage patterns guide
 - 🔄 **Streaming Support** - HTTP/SSE for real-time updates
 - 💹 **Hyperliquid Trading** - Testnet & Mainnet futures execution with slippage protection
 - ✅ **Fully Tested** - All tools validated and working
@@ -51,16 +51,24 @@ A comprehensive Model Context Protocol (MCP) server that bridges AI assistants w
 - **Merged Indicator Tools** (7): Volume indicators, volatility, trend, strength, channels, pivot points, patterns
 - **Trading Execution** (2): Hyperliquid Testnet & Mainnet futures trading with intelligent slippage handling
 
-### 📚 **20 Analysis Resources**
+### 📚 **22 Analysis Resources**
 - Comprehensive documentation for trading strategies, risk management, and technical analysis
 - API references and integration guides
 - Specialized guides for volume analysis, Fibonacci, orderbook, and more
+- **NEW:** Usage patterns guide for Day Trading, Swing Trading, Position Trading
+- **NEW:** Complete tools reference (52 tools with parameters)
 
-### 🤖 **24 AI Analysis Prompts**
+### 🤖 **32 AI Analysis Prompts**
 - Core analysis workflows for comprehensive market research
 - Technical analysis prompts for indicator-based insights
 - Risk management and position sizing guidance
 - Specialized prompts for advanced trading strategies
+- **NEW:** Day Trading Analysis with fast oscillators (stochastic_rsi, fisher_transform)
+- **NEW:** Swing Trading Analysis with multi-timeframe and divergence
+- **NEW:** Position Trading Analysis with volume profile and long-term momentum
+- **NEW:** Risk Management Analysis with liquidation levels
+- **NEW:** Oscillators Analysis (11 oscillator indicators)
+- **NEW:** Moving Averages Analysis (10 MA indicators)
 
 ## 🚀 **Quick Start**
 
@@ -286,7 +294,7 @@ nameserver 1.0.0.1
 | 51 | `hyperliquid_testnet_futures_trade` | Execute futures trades on Hyperliquid TESTNET. Supports market/limit/custom orders, sizeInUsd ($100), leverage (1-100x), slippage protection (0.01%-50%), auto-fallback to GTC on no liquidity. |
 | 52 | `hyperliquid_mainnet_futures_trade` | Execute REAL futures trades on Hyperliquid MAINNET. Safety checks: confirmExecution=true required, asset whitelist, min $10, max 25% equity. |
 
-### 📚 Resources (20)
+### 📚 Resources (22)
 
 | No | Resource URI | Description |
 |----|--------------|-------------|
@@ -311,15 +319,17 @@ nameserver 1.0.0.1
 | 19 | `geartrade://momentum-oscillators-guide` | Momentum indicators and oscillator-based strategies |
 | 20 | `geartrade://volume-indicators-guide` | Volume-based indicators and flow analysis |
 | 21 | `geartrade://volatility-indicators-guide` | Volatility measurement and option strategies |
+| 22 | `geartrade://usage-patterns` | **NEW:** Recommended usage patterns for Day Trading, Swing Trading, Position Trading |
+| 23 | `geartrade://complete-tools` | **NEW:** Complete reference of all 52 MCP tools with parameters and use cases |
 
-### 🤖 Prompts (24)
+### 🤖 Prompts (32)
 
 | No | Prompt Name | Description |
 |----|-------------|-------------|
 | | **Core Trading Prompts** | |
-| 1 | `analyze_and_execute` | Analyze a crypto asset and prepare execution plan with risk management |
-| 2 | `multi_asset_scan` | Scan multiple assets for trading opportunities |
-| 3 | `comprehensive_analysis` | Complete market analysis with technical indicators and risk assessment |
+| 1 | `analyze_and_execute` | Analyze a crypto asset and prepare execution plan with risk management. **NEW params:** leverage, strategy, timeframe |
+| 2 | `multi_asset_scan` | Scan multiple assets for trading opportunities. **NEW params:** strategy, minConfidence, sortBy |
+| 3 | `comprehensive_analysis` | Complete market analysis with technical indicators and risk assessment. **NEW params:** includeAdvanced, includeVolume, includeExternal |
 | | **Quick Analysis Prompts** | |
 | 4 | `quick_price_check` | Fast price check with basic market data |
 | 5 | `trend_analysis` | Trend direction and strength analysis |
@@ -340,14 +350,23 @@ nameserver 1.0.0.1
 | 17 | `volatility_analysis` | Volatility measurement and risk assessment |
 | | **Specialized Trading Prompts** | |
 | 18 | `entry_exit_strategy` | Entry and exit timing optimization |
-| 19 | `momentum_trading` | Momentum-based trading strategies |
-| 20 | `mean_reversion` | Mean reversion trading opportunities |
-| 21 | `breakout_trading` | Breakout pattern recognition and execution |
-| 22 | `scalping_strategy` | High-frequency scalping strategies |
-| 23 | `swing_trading` | Medium-term swing trading analysis |
-| 24 | `trend_following` | Long-term trend following strategies |
-| 25 | `arbitrage_opportunities` | Cross-exchange and cross-asset arbitrage |
-| 26 | `options_strategy` | Options trading and volatility plays |
+| 19 | `multi_asset_comparison` | Compare multiple assets across various metrics. **NEW params:** strategy, sortBy |
+| | **NEW: Trading Style Prompts** | |
+| 20 | `day_trading_analysis` | **NEW:** Day trading with fast oscillators (stochastic_rsi, fisher_transform), order book, liquidation levels. Params: ticker, capital, riskPct, leverage, timeframe |
+| 21 | `swing_trading_analysis` | **NEW:** Swing trading with multi-timeframe, divergence, trend indicators (supertrend, elder_ray, schaff_trend_cycle). Params: ticker, capital, riskPct, leverage, holdPeriod |
+| 22 | `position_trading_analysis` | **NEW:** Position trading with volume profile, long-term momentum (know_sure_thing, coppock_curve), adaptive MAs. Params: ticker, capital, riskPct, leverage, holdPeriod |
+| | **NEW: Risk & Indicator Analysis Prompts** | |
+| 23 | `risk_management_analysis` | **NEW:** Comprehensive risk analysis with liquidation levels and volatility. Params: ticker, entryPrice, side, capital, riskPct, leverage |
+| 24 | `oscillators_analysis` | **NEW:** Analyze all 11 oscillator indicators (stochastic_rsi, fisher, momentum, chande, ROC, PPO, gator, etc.). Params: ticker, focusType |
+| 25 | `moving_averages_analysis` | **NEW:** Analyze all 10 MA indicators (DEMA, TEMA, HMA, WMA, SMMA, VWMA, KAMA, McGinley, Rainbow). Params: ticker, period |
+| | **Additional Trading Prompts** | |
+| 26 | `momentum_trading` | Momentum-based trading strategies |
+| 27 | `mean_reversion` | Mean reversion trading opportunities |
+| 28 | `breakout_trading` | Breakout pattern recognition and execution |
+| 29 | `scalping_strategy` | High-frequency scalping strategies |
+| 30 | `swing_trading` | Medium-term swing trading analysis |
+| 31 | `trend_following` | Long-term trend following strategies |
+| 32 | `arbitrage_opportunities` | Cross-exchange and cross-asset arbitrage |
 
 ## 🏗️ Architecture
 

@@ -45,14 +45,18 @@ export function calculateUlcerIndex(
   closes: number[],
   period: number = 14
 ): UlcerIndexData | null {
-  if (closes.length < period) {
+  // Minimum 3 data points required
+  if (closes.length < 3) {
     return null
   }
+  
+  // Use adaptive period for small datasets
+  const effectivePeriod = Math.min(period, closes.length)
 
   // Find the maximum price in the period for each point
   const maxPrices: number[] = []
   for (let i = 0; i < closes.length; i++) {
-    const startIndex = Math.max(0, i - period + 1)
+    const startIndex = Math.max(0, i - effectivePeriod + 1)
     const periodPrices = closes.slice(startIndex, i + 1)
     maxPrices.push(Math.max(...periodPrices))
   }
@@ -68,9 +72,9 @@ export function calculateUlcerIndex(
   }
 
   // Calculate Ulcer Index: Square root of average of squared drawdowns
-  const recentDrawdowns = drawdowns.slice(-period)
+  const recentDrawdowns = drawdowns.slice(-effectivePeriod)
   const squaredDrawdowns = recentDrawdowns.map(d => d * d)
-  const averageSquaredDrawdown = squaredDrawdowns.reduce((sum, d) => sum + d, 0) / period
+  const averageSquaredDrawdown = squaredDrawdowns.reduce((sum, d) => sum + d, 0) / effectivePeriod
   const ulcerIndex = Math.sqrt(averageSquaredDrawdown)
 
   // Current drawdown
@@ -89,10 +93,10 @@ export function calculateUlcerIndex(
   // Determine trend (improving vs deteriorating)
   let trend: 'improving' | 'deteriorating' | 'stable' = 'stable'
 
-  if (drawdowns.length >= period * 2) {
-    const currentPeriodAvg = recentDrawdowns.reduce((sum, d) => sum + d, 0) / period
-    const previousPeriodDrawdowns = drawdowns.slice(-period * 2, -period)
-    const previousPeriodAvg = previousPeriodDrawdowns.reduce((sum, d) => sum + d, 0) / period
+  if (drawdowns.length >= effectivePeriod * 2) {
+    const currentPeriodAvg = recentDrawdowns.reduce((sum, d) => sum + d, 0) / effectivePeriod
+    const previousPeriodDrawdowns = drawdowns.slice(-effectivePeriod * 2, -effectivePeriod)
+    const previousPeriodAvg = previousPeriodDrawdowns.reduce((sum, d) => sum + d, 0) / effectivePeriod
 
     if (currentPeriodAvg < previousPeriodAvg * 0.9) {
       trend = 'improving'
@@ -106,8 +110,8 @@ export function calculateUlcerIndex(
 
   // Calculate risk-adjusted return (if we have enough data)
   let riskAdjustedReturn: number | null = null
-  if (closes.length >= period * 2) {
-    const startPrice = closes[closes.length - period * 2]
+  if (closes.length >= effectivePeriod * 2) {
+    const startPrice = closes[closes.length - effectivePeriod * 2]
     const endPrice = closes[closes.length - 1]
     const totalReturn = ((endPrice - startPrice) / startPrice) * 100
     riskAdjustedReturn = ulcerIndex > 0 ? totalReturn / ulcerIndex : totalReturn
@@ -136,7 +140,7 @@ export function calculateUlcerIndex(
     ulcerIndex,
     currentDrawdown,
     maxDrawdown,
-    period,
+    period: effectivePeriod,
     riskLevel,
     trend,
     strength,

@@ -65,7 +65,8 @@ export function calculateSuperTrend(
   const finalLowerBands: number[] = []
   const superTrends: number[] = []
   
-  const startIdx = Math.min(effectiveAtrPeriod, closes.length - 1)
+  // Start from index 1 at minimum, but prefer effectiveAtrPeriod if we have enough data
+  const startIdx = Math.min(Math.max(1, effectiveAtrPeriod), closes.length - 1)
 
   for (let i = startIdx; i < closes.length; i++) {
     const hl2 = (highs[i] + lows[i]) / 2
@@ -119,6 +120,23 @@ export function calculateSuperTrend(
     }
 
     superTrends.push(superTrend)
+  }
+
+  // Ensure we have calculated values
+  if (superTrends.length === 0 || finalUpperBands.length === 0 || finalLowerBands.length === 0) {
+    // Fallback: calculate simple values
+    const hl2 = (highs[highs.length - 1] + lows[lows.length - 1]) / 2
+    const fallbackUpper = hl2 + (multiplier * currentATR)
+    const fallbackLower = hl2 - (multiplier * currentATR)
+    const fallbackSuperTrend = closes[closes.length - 1] > hl2 ? fallbackLower : fallbackUpper
+    return {
+      superTrend: fallbackSuperTrend,
+      trend: closes[closes.length - 1] > hl2 ? 'bullish' : 'bearish',
+      signal: closes[closes.length - 1] > hl2 ? 'buy' : 'sell',
+      upperBand: fallbackUpper,
+      lowerBand: fallbackLower,
+      atr: currentATR,
+    }
   }
 
   const currentSuperTrend = superTrends[superTrends.length - 1]
