@@ -13,6 +13,8 @@ import { registerPatternsTool } from './patterns'
 import { registerStrengthIndicatorsTool } from './strength-indicators'
 import { registerTestnetFuturesTradeTool } from './hyperliquid-testnet-futures-trade'
 import { registerMainnetFuturesTradeTool } from './hyperliquid-mainnet-futures-trade'
+import { registerMemoryTools } from './memory-tools'
+
 export function registerAllMergedTools(server: any) {
   registerMovingAveragesTool(server)
   registerOscillatorsTool(server)
@@ -25,6 +27,7 @@ export function registerAllMergedTools(server: any) {
   registerStrengthIndicatorsTool(server)
   registerTestnetFuturesTradeTool(server)
   registerMainnetFuturesTradeTool(server)
+  registerMemoryTools(server)
 }
 
 export { registerMovingAveragesTool }
@@ -38,3 +41,4 @@ export { registerPatternsTool }
 export { registerStrengthIndicatorsTool }
 export { registerTestnetFuturesTradeTool }
 export { registerMainnetFuturesTradeTool }
+export { registerMemoryTools }

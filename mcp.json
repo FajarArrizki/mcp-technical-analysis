@@ -3,7 +3,7 @@
     "geartradeTest": {
       "command": "cmd",
       "args": ["/c", "C:\\Users\\hp5cd\\Downloads\\mcp-technical-analysis\\scripts\\mcp-auto-start.bat"],
-      "description": "GearTrade MCP Server V2 - 50 Tools"
+      "description": "GearTrade MCP Server V2 - 58 Tools (with AI Memory)"
     }
   }
 }

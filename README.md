@@ -26,7 +26,7 @@ A comprehensive Model Context Protocol (MCP) server that bridges AI assistants w
 
 
 **🔥 Key Features:**
-- 🔴 **56 Analysis & Trading Tools** - Complete market analysis + trading execution toolkit
+- 🔴 **58 Analysis & Trading Tools** - Complete market analysis + trading execution toolkit
 - 📊 **Real-time Market Data** - Live prices, indicators, volume analysis
 - 🎯 **Advanced Technical Analysis** - RSI, MACD, Fibonacci, Order Book, etc.
 - 💰 **Risk Management** - Position sizing, stop loss, take profit calculations
@@ -40,11 +40,27 @@ A comprehensive Model Context Protocol (MCP) server that bridges AI assistants w
 - 📊 **Tier Classification** - Market breakdown by trader tier (🦐 Shrimp to 🐉 Institutional)
 - 🔗 **BTC Correlation** - Altcoin correlation with BTC, beta analysis, market regime detection
 - 📈 **Enhanced L2 Order Book** - Real-time bids/asks with depth and imbalance from Hyperliquid
-- ✅ **Fully Tested** - All 56 tools validated and working (November 2024)
+- 🧠 **AI Memory (Mem0)** - Persistent memory for trading preferences, trade journal, pattern learning
+- ✅ **Fully Tested** - All 58 tools validated and working (December 2024)
 
-## 📋 Recent Updates (November 2024)
+## 📋 Recent Updates
 
-### New Tools Added
+### December 2024 - AI Memory Integration (Mem0)
+- ✅ **`memory_save_preference`** - Save trading preferences (leverage, risk %, pairs, style)
+- ✅ **`memory_log_trade`** - Log trades with full context for pattern learning
+- ✅ **`memory_get_insights`** - Get personalized insights based on trading history
+- ✅ **`memory_check_pattern`** - Check if current setup matches past winning/losing patterns
+- ✅ **`memory_remember`** - Store any note/context for future reference
+- ✅ **`memory_recall`** - Search and recall stored memories
+- ✅ **`memory_get_all`** - Get all stored memories
+- ✅ **`memory_delete`** - Delete specific memory by ID
+
+**New Environment Variable:**
+```env
+MEM0_API_KEY=your_mem0_api_key  # Get from https://app.mem0.ai
+```
+
+### November 2024 - Position & Whale Tracking
 - ✅ **`get_position`** - Track your own futures positions from Hyperliquid (account value, margin, PnL, positions)
 - ✅ **`get_correlation_analysis`** - BTC dominance, altcoin correlation with BTC, beta analysis, market regime
 - ✅ **`get_whale_position`** - Track specific wallet addresses with labeling & change detection alerts
@@ -83,7 +99,7 @@ A comprehensive Model Context Protocol (MCP) server that bridges AI assistants w
 
 ## 🌟 **What's Included**
 
-### 📊 **56 Complete Analysis & Trading Tools**
+### 📊 **58 Complete Analysis & Trading Tools**
 - **Market Data** (5): Price, indicators, volume analysis, multi-timeframe, external data
 - **Order Book & Market** (8): Order book depth, volume profile, market structure, regime, patterns, divergence, liquidation, long/short ratio
 - **Position & Whale Tracking** (4): Position tracking, correlation analysis, whale position tracking, tier classification
@@ -92,6 +108,7 @@ A comprehensive Model Context Protocol (MCP) server that bridges AI assistants w
 - **Oscillators** (18): Stochastic RSI, CMO, PPO, AO, Gator, Elder Ray, Fisher, KST, Schaff, Coppock, TSI, RVI, DPO, Momentum, ROC, Ultimate, TRIX
 - **Merged Indicator Tools** (7): Volume indicators, volatility, trend, strength, channels, pivot points, patterns
 - **Trading Execution** (2): Hyperliquid Testnet & Mainnet futures trading with intelligent slippage handling
+- **AI Memory** (8): Save preferences, log trades, get insights, check patterns, remember, recall, get all, delete
 
 ### 📚 **22 Analysis Resources**
 - Comprehensive documentation for trading strategies, risk management, and technical analysis
@@ -266,7 +283,7 @@ nameserver 1.0.0.1
 
 ## 📦 MCP Capabilities
 
-### 🔧 Tools (56)
+### 🔧 Tools (58)
 
 | No | Tool Name | Description |
 |----|-----------|-------------|
@@ -340,6 +357,15 @@ nameserver 1.0.0.1
 | | **Trading Execution (Hyperliquid)** | |
 | 51 | `hyperliquid_testnet_futures_trade` | Execute futures trades on Hyperliquid TESTNET. Supports market/limit/custom orders, sizeInUsd ($100), leverage (1-100x), slippage protection (0.01%-50%), auto-fallback to GTC on no liquidity. |
 | 52 | `hyperliquid_mainnet_futures_trade` | Execute REAL futures trades on Hyperliquid MAINNET. Safety checks: confirmExecution=true required, asset whitelist, min $10, max 25% equity. |
+| | **AI Memory (Mem0)** | |
+| 53 | `memory_save_preference` | Save trading preferences (leverage, risk %, pairs, style). AI remembers for future interactions. |
+| 54 | `memory_log_trade` | Log completed trade with full context (entry/exit reason, PnL, lesson) for pattern learning. |
+| 55 | `memory_get_insights` | Get personalized trading insights based on history (performance, patterns, mistakes). |
+| 56 | `memory_check_pattern` | Check if current setup matches past winning/losing patterns from your history. |
+| 57 | `memory_remember` | Store any important note or context for future reference (key levels, observations). |
+| 58 | `memory_recall` | Search and recall stored memories based on query. |
+| 59 | `memory_get_all` | Get all stored memories for review. |
+| 60 | `memory_delete` | Delete specific memory by ID. |
 
 ### 📚 Resources (22)
 
@@ -418,89 +444,101 @@ nameserver 1.0.0.1
 ## 🏗️ Architecture
 
 ```
-╔═══════════════════════════════════════════════════════════════════════════════╗
-║                       MCP Technical Analysis Server                           ║
-║                    AI-Powered Cryptocurrency Analysis                         ║
-╠═══════════════════════════════════════════════════════════════════════════════╣
-║                                                                               ║
-║  ┌────────────────────────┐    ┌─────────────────────────────────┐            ║
-║  │    AI Assistants       │◄──►│        MCP Protocol             │            ║
-║  │  ┌────────────────────┐│    │  ┌───────────────────────────┐  │            ║
-║  │  │  Claude / Cursor   ││    │  │  56 Tools Execution       │  │            ║
-║  │  │  Claude Code CLI   ││    │  │  22 Resources Access      │  │            ║
-║  │  │  Custom MCP Apps   ││    │  │  32 Prompts Management    │  │            ║
-║  │  └────────────────────┘│    │  └───────────────────────────┘  │            ║
-║  └────────────────────────┘    └─────────────────────────────────┘            ║
-║                                          │                                    ║
-║                                          ▼                                    ║
-║  ┌────────────────────────────────────────────────────────────────────────┐   ║
-║  │                    Core MCP Server (56 Tools)                          │   ║
-║  │  ┌─────────────────────────┐  ┌─────────────────────────────────────┐  │   ║
-║  │  │    Analysis Engine      │  │         Resources (22)              │  │   ║
-║  │  │  ┌─────────────────────┐│  │  ┌─────────────────────────────┐    │  │   ║
-║  │  │  │ Price & Indicators  ││  │  │ Trading Strategies          │    │  │   ║
-║  │  │  │ Volume & CVD        ││  │  │ Risk Management Guides      │    │  │   ║
-║  │  │  │ Market Structure    ││  │  │ Technical Indicators Ref    │    │  │   ║
-║  │  │  │ Risk Management     ││  │  │ HyperScreener API Docs      │    │  │   ║
-║  │  │  │ Order Book Depth    ││  │  │ Usage Patterns Guide        │    │  │   ║
-║  │  │  └─────────────────────┘│  │  └─────────────────────────────┘    │  │   ║
-║  │  └─────────────────────────┘  └─────────────────────────────────────┘  │   ║
-║  │                                                                        │   ║
-║  │  ┌─────────────────────────┐  ┌─────────────────────────────────────┐  │   ║
-║  │  │    AI Prompts (32)      │  │     Security & Validation          │  │   ║
-║  │  │  ┌─────────────────────┐│  │  ┌─────────────────────────────┐    │  │   ║
-║  │  │  │ Day/Swing/Position  ││  │  │ Zod Schema Validation       │    │  │   ║
-║  │  │  │ Trading Workflows   ││  │  │ Trading Safety Checks       │    │  │   ║
-║  │  │  │ Oscillators/MA      ││  │  │ Slippage Protection         │    │  │   ║
-║  │  │  │ Risk Analysis       ││  │  │ Asset Whitelist             │    │  │   ║
-║  │  │  └─────────────────────┘│  │  └─────────────────────────────┘    │  │   ║
-║  │  └─────────────────────────┘  └─────────────────────────────────────┘  │   ║
-║  └────────────────────────────────────────────────────────────────────────┘   ║
-║                                          │                                    ║
-║                                          ▼                                    ║
-║  ┌────────────────────────────────────────────────────────────────────────┐   ║
-║  │                    Data Sources (3 APIs)                               │   ║
-║  │  ┌─────────────────────────┐  ┌─────────────────────────────────────┐  │   ║
-║  │  │   Hyperliquid API       │  │      HyperScreener API              │  │   ║
-║  │  │  ┌─────────────────────┐│  │  ┌─────────────────────────────┐    │  │   ║
-║  │  │  │ Real-time Prices    ││  │  │ /node/liquidations          │    │  │   ║
-║  │  │  │ L2 Order Book       ││  │  │ /node/positions (Whales)    │    │  │   ║
-║  │  │  │ Funding Rates       ││  │  │ /node/market/summary        │    │  │   ║
-║  │  │  │ Open Interest       ││  │  │ /market-data/* (14 endpts)  │    │  │   ║
-║  │  │  └─────────────────────┘│  │  └─────────────────────────────┘    │  │   ║
-║  │  └─────────────────────────┘  └─────────────────────────────────────┘  │   ║
-║  │                                                                        │   ║
-║  │  ┌─────────────────────────┐  ┌─────────────────────────────────────┐  │   ║
-║  │  │   Binance API           │  │      Analysis Components           │  │   ║
-║  │  │  ┌─────────────────────┐│  │  ┌─────────────────────────────┐    │  │   ║
-║  │  │  │ Historical Candles  ││  │  │ 70+ Technical Indicators    │    │  │   ║
-║  │  │  │ Multi-Timeframe     ││  │  │ CVD & Volume Profile        │    │  │   ║
-║  │  │  │ Volume Data         ││  │  │ Market Structure Detection  │    │  │   ║
-║  │  │  └─────────────────────┘│  │  │ Liquidation Heatmap         │    │  │   ║
-║  │  └─────────────────────────┘  │  └─────────────────────────────┘    │  │   ║
-║  │                               └─────────────────────────────────────┘  │   ║
-║  └────────────────────────────────────────────────────────────────────────┘   ║
-║                                          │                                    ║
-║                                          ▼                                    ║
-║  ┌────────────────────────────────────────────────────────────────────────┐   ║
-║  │                  Streaming & Trading Execution                         │   ║
-║  │  ┌─────────────────────────┐  ┌─────────────────────────────────────┐  │   ║
-║  │  │   HTTP/SSE Streaming    │  │   Hyperliquid Trading               │  │   ║
-║  │  │  ┌─────────────────────┐│  │  ┌─────────────────────────────┐    │  │   ║
-║  │  │  │ localhost:8787      ││  │  │ Testnet: Full Features      │    │  │   ║
-║  │  │  │ Server-Sent Events  ││  │  │ Mainnet: Safety Checks      │    │  │   ║
-║  │  │  │ mcp-remote Support  ││  │  │ Market/Limit/Custom Orders  │    │  │   ║
-║  │  │  │ Cloudflare Workers  ││  │  │ Slippage: 0.01% - 50%       │    │  │   ║
-║  │  │  └─────────────────────┘│  │  └─────────────────────────────┘    │  │   ║
-║  │  └─────────────────────────┘  └─────────────────────────────────────┘  │   ║
-║  └────────────────────────────────────────────────────────────────────────┘   ║
-╚═══════════════════════════════════════════════════════════════════════════════╝
+╔════════════════════════════════════════════════════════════════════════════════════════════╗
+║                                                                                            ║
+║                           MCP TECHNICAL ANALYSIS SERVER                                    ║
+║                         AI-Powered Cryptocurrency Analysis                                 ║
+║                                                                                            ║
+╠════════════════════════════════════════════════════════════════════════════════════════════╣
+║                                                                                            ║
+║                           ╭─────────────────────────────────────╮                          ║
+║                           │  AI ASSISTANTS                      │                          ║
+║                           │  ┌─────────┐ ┌─────────┐ ┌────────┐ │                          ║
+║                           │  │ Claude  │ │ Cursor  │ │ Custom │ │                          ║
+║                           │  └────┬─── ┘ └───┬──── ┘ └──┬─── ─┘ │                          ║
+║                           ╰───────┼──────────┼──────────┼───────╯                          ║
+║                                   │          │          │                                  ║
+║                                   └──────────┼──────────┘                                  ║
+║                                              │                                             ║
+║                                        ◀═══ MCP ═══▶                                      ║
+║                                              │                                             ║
+║  ┌───────────────────────────────────────────┼───────────────────────────────────────┐     ║
+║  │                                           ▼                                       │     ║
+║  │  ╔═════════════════════════════════════════════════════════════════════════════╗  │     ║
+║  │  ║                       GEARTRADE MCP SERVER v2.0                             ║  │     ║
+║  │  ║                 58 Tools • 22 Resources • 32 Prompts                        ║  │     ║
+║  │  ╚═════════════════════════════════════════════════════════════════════════════╝  │     ║
+║  │                                           │                                       │     ║
+║  │                                           ▼                                       │     ║
+║  │  ┌─────────────────────────────────────────────────────────────────────────────┐  │     ║
+║  │  │  CORE COMPONENTS                                                            │  │     ║
+║  │  │  ┌────────────────────────────┐           ┌────────────────────────────┐    │  │     ║
+║  │  │  │  ANALYSIS ENGINE           │           │  AI MEMORY (Mem0)          │    │  │     ║
+║  │  │  │  ────────────────────────  │           │  ────────────────────────  │    │  │     ║
+║  │  │  │  • Price & Indicators      │           │  • Trading Preferences     │    │  │     ║
+║  │  │  │  • Volume & CVD            │           │  • Trade Journal           │    │  │     ║
+║  │  │  │  • Market Structure        │           │  • Pattern Learning        │    │  │     ║
+║  │  │  │  • Order Book Depth        │           │  • Personalized Insights   │    │  │     ║
+║  │  │  │  • Risk Management         │           │  • Historical Win Rate     │    │  │     ║
+║  │  │  └────────────────────────────┘           └────────────────────────────┘    │  │     ║
+║  │  └─────────────────────────────────────────────────────────────────────────────┘  │     ║
+║  │                                           │                                       │     ║
+║  │                                           ▼                                       │     ║
+║  │  ┌─────────────────────────────────────────────────────────────────────────────┐  │     ║
+║  │  │  DATA SOURCES                                                               │  │     ║
+║  │  │  ┌─────────────────────┐ ┌─────────────────────┐ ┌─────────────────────┐    │  │     ║
+║  │  │  │  HYPERLIQUID API    │ │  HYPERSCREENER API  │ │  BINANCE API        │    │  │     ║
+║  │  │  │  ─────────────────  │ │  ─────────────────  │ │  ─────────────────  │    │  │     ║
+║  │  │  │  • Real-time Prices │ │  • Whale Positions  │ │  • Historical Candle│    │  │     ║
+║  │  │  │  • L2 Order Book    │ │  • Liquidations     │ │  • Multi-Timeframe  │    │  │     ║
+║  │  │  │  • Funding Rates    │ │  • Long/Short Ratio │ │  • Volume Data      │    │  │     ║
+║  │  │  │  • Open Interest    │ │  • Large Trades     │ │  • Market Data      │    │  │     ║
+║  │  │  │  • Trading Execution│ │  • Top Traders      │ │                     │    │  │     ║
+║  │  │  └─────────────────────┘ └─────────────────────┘ └─────────────────────┘    │  │     ║
+║  │  └─────────────────────────────────────────────────────────────────────────────┘  │     ║
+║  │                                           │                                       │     ║
+║  │                                           ▼                                       │     ║
+║  │  ┌─────────────────────────────────────────────────────────────────────────────┐  │     ║
+║  │  │  AI LAYER                                                                   │  │     ║
+║  │  │  ┌────────────────────────────┐         ┌────────────────────────────┐      │  │     ║
+║  │  │  │  AI PROMPTS (32)           │         │  SECURITY & VALIDATION     │      │  │     ║
+║  │  │  │  ────────────────────────  │         │  ────────────────────────  │      │  │     ║
+║  │  │  │  • Day Trading Analysis    │         │  • Zod Schema Validation   │      │  │     ║
+║  │  │  │  • Swing Trading           │         │  • Trading Safety Checks   │      │  │     ║
+║  │  │  │  • Position Trading        │         │  • Slippage Protection     │      │  │     ║
+║  │  │  │  • Oscillators & MA        │         │  • Asset Whitelist         │      │  │     ║
+║  │  │  │  • Risk Analysis           │         │  • Position Size Limits    │      │  │     ║
+║  │  │  └────────────────────────────┘         └────────────────────────────┘      │  │     ║
+║  │  └─────────────────────────────────────────────────────────────────────────────┘  │     ║
+║  │                                           │                                       │     ║
+║  │                                           ▼                                       │     ║
+║  │  ┌─────────────────────────────────────────────────────────────────────────────┐  │     ║
+║  │  │  STREAMING & TRADING EXECUTION                                              │  │     ║
+║  │  │  ┌──────────────────────────────┐     ┌──────────────────────────────┐      │  │     ║
+║  │  │  │  HTTP/SSE STREAMING          │     │  HYPERLIQUID TRADING         │      │  │     ║
+║  │  │  │  • localhost:8787            │     │  • TESTNET: Full Features    │      │  │     ║
+║  │  │  │  • Server-Sent Events        │     │  • MAINNET: Safety Checks    │      │  │     ║
+║  │  │  │  • mcp-remote Support        │     │  • Market/Limit/Custom       │      │  │     ║
+║  │  │  │  • Real-time Updates         │     │  • Slippage: 0.01%-50%       │      │  │     ║
+║  │  │  └──────────────────────────────┘     └──────────────────────────────┘      │  │     ║
+║  │  └─────────────────────────────────────────────────────────────────────────────┘  │     ║
+║  │                                           │                                       │     ║
+║  │                                           ▼                                       │     ║
+║  │  ┌─────────────────────────────────────────────────────────────────────────────┐  │     ║
+║  │  │  MEM0 PLATFORM API                                                          │  │     ║
+║  │  │  ─────────────────────────────────────────────────────────────────────────  │  │     ║
+║  │  │  • Persistent Memory Storage             • Vector Search & Semantic Recall  │  │     ║
+║  │  │  • LLM-Powered Memory Extraction                                            │  │     ║
+║  │  └─────────────────────────────────────────────────────────────────────────────┘  │     ║
+║  └───────────────────────────────────────────────────────────────────────────────────┘     ║
+╚════════════════════════════════════════════════════════════════════════════════════════════╝
+
 ```
 
 ### Component Details
 
 **🎯 MCP Protocol Layer**
-- **Tool Execution**: 56 specialized analysis & trading tools for comprehensive market intelligence
+- **Tool Execution**: 58 specialized analysis & trading tools for comprehensive market intelligence
 - **Resource Management**: 22 detailed documentation resources for research and education
 - **Prompt System**: 32 AI-optimized prompts for structured analysis workflows
 
@@ -518,6 +556,13 @@ nameserver 1.0.0.1
 - **Multi-Timeframe**: Cross-timeframe trend alignment (Daily, 4H, 1H) and confirmation signals
 - **Risk Management**: Position sizing, stop-loss, take-profit, and R:R calculations
 
+**🧠 AI Memory Layer (Mem0)**
+- **Trading Preferences**: Persistent storage of leverage, risk %, pairs, trading style
+- **Trade Journal**: Auto-logged trades with entry/exit reasons, PnL, lessons learned
+- **Pattern Learning**: Historical pattern matching with win rate analysis
+- **Personalized Insights**: Context-aware recommendations based on user history
+- **Vector Search**: Semantic search across all stored memories
+
 **🌐 Data Integration**
 
 | Source | Data Type | Caching |
@@ -525,6 +570,7 @@ nameserver 1.0.0.1
 | **Hyperliquid** | Real-time prices, L2 order book, funding rates, OI | 3-5s |
 | **HyperScreener** | Liquidations, whale positions, L/S ratio, market summary | 60s |
 | **Binance** | Historical candles, multi-timeframe data | 30s |
+| **Mem0** | User memories, preferences, trade history | Real-time |
 
 **🐋 HyperScreener API Integration**
 - **Base URL**: `https://api-hyperliquid.asxn.xyz/api`
@@ -585,7 +631,13 @@ GEARTRADE/
 ├── packages/
 │   └── geartrade-mcp-server/               # Main MCP server package
 │       ├── src/
-│       │   ├── index.ts                    # MCP server entry (56 tools, 22 resources, 32 prompts)
+│       │   ├── index.ts                    # MCP server entry (58 tools, 22 resources, 32 prompts)
+│       │   ├── memory/                     # AI Memory (Mem0) integration
+│       │   │   ├── index.ts                # Memory service singleton
+│       │   │   └── types.ts                # TypeScript interfaces
+│       │   ├── tools/                      # MCP tools registration
+│       │   │   ├── memory-tools.ts         # 8 memory tools
+│       │   │   └── ...                     # Other tool files
 │       │   └── signal-generation/          # Analysis engine modules
 │       │       ├── ai/                     # AI integration
 │       │       ├── analysis/               # Market analysis modules
@@ -622,19 +674,21 @@ GEARTRADE/
 
 | No | Directory | Description |
 |----|-----------|-------------|
-| 1 | `packages/geartrade-mcp-server/src/index.ts` | Main MCP server entry with 56 analysis tools, 22 resources, 32 prompts |
+| 1 | `packages/geartrade-mcp-server/src/index.ts` | Main MCP server entry with 58 analysis tools, 22 resources, 32 prompts |
 | 2 | `packages/geartrade-mcp-server/local-server.ts` | HTTP/SSE streaming server for remote MCP client connections |
 | 3 | `packages/geartrade-mcp-server/package.json` | MCP server package configuration and dependencies |
 | 4 | `packages/geartrade-mcp-server/tsconfig.json` | TypeScript configuration for MCP server compilation |
-| 5 | `packages/geartrade-mcp-server/src/signal-generation/` | Core analysis engine with market intelligence and indicators |
-| 6 | `packages/geartrade-mcp-server/src/signal-generation/analysis/` | Market analysis modules for pattern recognition |
-| 7 | `packages/geartrade-mcp-server/src/signal-generation/technical-indicators/` | Technical indicator implementations (70+ indicators) |
-| 8 | `packages/geartrade-mcp-server/src/signal-generation/data-fetchers/` | Multi-source market data fetchers (Hyperliquid, HyperScreener, Binance) |
-| 9 | `packages/geartrade-mcp-server/src/signal-generation/risk-management/` | Risk assessment and position sizing calculations |
-| 10 | `packages/geartrade-mcp-server/src/signal-generation/ai/` | Market analysis utilities |
-| 11 | `packages/geartrade-mcp-server/src/signal-generation/monitoring/` | Real-time market monitoring and alerts |
-| 12 | `scripts/` | Utility scripts for development and deployment |
-| 13 | `logs/` | Application logs and debugging information |
+| 5 | `packages/geartrade-mcp-server/src/memory/` | AI Memory (Mem0) service for persistent trading memory |
+| 6 | `packages/geartrade-mcp-server/src/tools/memory-tools.ts` | 8 memory tools registration for MCP |
+| 7 | `packages/geartrade-mcp-server/src/signal-generation/` | Core analysis engine with market intelligence and indicators |
+| 8 | `packages/geartrade-mcp-server/src/signal-generation/analysis/` | Market analysis modules for pattern recognition |
+| 9 | `packages/geartrade-mcp-server/src/signal-generation/technical-indicators/` | Technical indicator implementations (70+ indicators) |
+| 10 | `packages/geartrade-mcp-server/src/signal-generation/data-fetchers/` | Multi-source market data fetchers (Hyperliquid, HyperScreener, Binance) |
+| 11 | `packages/geartrade-mcp-server/src/signal-generation/risk-management/` | Risk assessment and position sizing calculations |
+| 12 | `packages/geartrade-mcp-server/src/signal-generation/ai/` | Market analysis utilities |
+| 13 | `packages/geartrade-mcp-server/src/signal-generation/monitoring/` | Real-time market monitoring and alerts |
+| 14 | `scripts/` | Utility scripts for development and deployment |
+| 15 | `logs/` | Application logs and debugging information |
 
 ## 🛠️ Development
 
@@ -668,6 +722,7 @@ This server provides both market analysis and trading execution capabilities wit
 - ✅ Configurable slippage protection (0.01% - 50%)
 - ✅ Auto-fallback to GTC orders on no liquidity
 - ✅ Environment variables for wallet security (AGENT_WALLET_PRIVATE_KEY, MAIN_WALLET_ADDRESS)
+- ✅ Mem0 API key for persistent memory (MEM0_API_KEY)
 
 ## 🌐 API Endpoints (HTTP Streaming Mode)
 

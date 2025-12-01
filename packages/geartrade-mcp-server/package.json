@@ -22,6 +22,7 @@
     "@nullshot/mcp": "latest",
     "dotenv": "^17.2.3",
     "ethers": "^6.15.0",
+    "mem0ai": "^2.1.38",
     "zod": "^3.22.4"
   },
   "devDependencies": {
