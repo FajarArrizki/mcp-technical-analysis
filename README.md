@@ -8,14 +8,14 @@ A comprehensive Model Context Protocol (MCP) server that bridges AI assistants w
 *Watch the full demonstration of AI-powered cryptocurrency analysis capabilities*
 
 <div align="center">
-  <a href="https://www.youtube.com/watch?v=SVaSJQo2iSk&autoplay=1">
-    <img src="https://img.youtube.com/vi/SVaSJQo2iSk/maxresdefault.jpg" alt="MCP Technical Analysis Server Demo" width="100%">
+  <a href="https://youtu.be/9d5ZlVpYxpM?si=rt57UDoy68AZaywL">
+    <img src="https://img.youtube.com/vi/9d5ZlVpYxpM/maxresdefault.jpg" alt="MCP Technical Analysis Server Demo" width="100%">
   </a>
   <br><br>
   <div style="position: relative; width: 100%;">
     <div style="position: absolute; left: 0; display: flex; gap: 10px;">
-      <a href="https://www.youtube.com/watch?v=SVaSJQo2iSk&autoplay=1">
-        <img src="https://img.shields.io/badge/Coming_Soon-FF0000?style=for-the-badge" alt="Coming Soon">
+      <a href="https://youtu.be/9d5ZlVpYxpM?si=rt57UDoy68AZaywL">
+        <img src="https://img.shields.io/badge/Watch_Demo-FF0000?style=for-the-badge&logo=youtube&logoColor=white" alt="Watch Demo">
       </a>
       <a href="https://nullshot.ai/brainstorm/c5ee234a-da45-4c8e-8b1b-2df3cc5abadb">
         <img src="https://img.shields.io/badge/Upvote_Now-00ADD8?style=for-the-badge&logo=null&logoColor=white" alt="Upvote Now">
@@ -41,19 +41,25 @@ A comprehensive Model Context Protocol (MCP) server that bridges AI assistants w
 - 🔗 **BTC Correlation** - Altcoin correlation with BTC, beta analysis, market regime detection
 - 📈 **Enhanced L2 Order Book** - Real-time bids/asks with depth and imbalance from Hyperliquid
 - 🧠 **AI Memory (Mem0)** - Persistent memory for trading preferences, trade journal, pattern learning
-- ✅ **Fully Tested** - All 58 tools validated and working (December 2024)
+- ✅ **Fully Tested** - All 60 tools validated and working (December 2024)
 
 ## 📋 Recent Updates
 
-### December 2024 - AI Memory Integration (Mem0)
+### December 2024 - AI Memory Integration (Mem0) + New Tools
+
+#### AI Memory Tools (8)
 - ✅ **`memory_save_preference`** - Save trading preferences (leverage, risk %, pairs, style)
 - ✅ **`memory_log_trade`** - Log trades with full context for pattern learning
 - ✅ **`memory_get_insights`** - Get personalized insights based on trading history
 - ✅ **`memory_check_pattern`** - Check if current setup matches past winning/losing patterns
 - ✅ **`memory_remember`** - Store any note/context for future reference
 - ✅ **`memory_recall`** - Search and recall stored memories
-- ✅ **`memory_get_all`** - Get all stored memories
+- ✅ **`memory_get_all`** - Get all stored memories with trading statistics
 - ✅ **`memory_delete`** - Delete specific memory by ID
+
+#### Position Management & Sentiment Tools (2)
+- ✅ **`close_position`** - Close or reduce positions on Hyperliquid (testnet/mainnet)
+- ✅ **`get_market_sentiment`** - Fear & Greed Index + BTC Dominance + Funding Summary (FREE APIs)
 
 **New Environment Variable:**
 ```env
@@ -115,7 +121,7 @@ MEM0_API_KEY=your_mem0_api_key  # Get from https://app.mem0.ai
 - API references and integration guides
 - Specialized guides for volume analysis, Fibonacci, orderbook, and more
 - **NEW:** Usage patterns guide for Day Trading, Swing Trading, Position Trading
-- **NEW:** Complete tools reference (56 tools with parameters)
+- **NEW:** Complete tools reference (60 tools with parameters including AI Memory)
 
 ### 🤖 **32 AI Analysis Prompts**
 - Core analysis workflows for comprehensive market research
@@ -393,7 +399,7 @@ nameserver 1.0.0.1
 | 20 | `geartrade://volume-indicators-guide` | Volume-based indicators and flow analysis |
 | 21 | `geartrade://volatility-indicators-guide` | Volatility measurement and option strategies |
 | 22 | `geartrade://usage-patterns` | **NEW:** Recommended usage patterns for Day Trading, Swing Trading, Position Trading |
-| 23 | `geartrade://complete-tools` | **NEW:** Complete reference of all 56 MCP tools with parameters and use cases |
+| 23 | `geartrade://complete-tools` | **NEW:** Complete reference of all 58 MCP tools with parameters and use cases |
 
 ### 🤖 Prompts (32)
 
@@ -629,7 +635,7 @@ GEARTRADE/
 ├── packages/
 │   └── geartrade-mcp-server/               # Main MCP server package
 │       ├── src/
-│       │   ├── index.ts                    # MCP server entry (58 tools, 22 resources, 32 prompts)
+│       │   ├── index.ts                    # MCP server entry (60 tools, 22 resources, 32 prompts)
 │       │   ├── memory/                     # AI Memory (Mem0) integration
 │       │   │   ├── index.ts                # Memory service singleton
 │       │   │   └── types.ts                # TypeScript interfaces

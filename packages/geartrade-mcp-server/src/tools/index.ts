@@ -14,6 +14,8 @@ import { registerStrengthIndicatorsTool } from './strength-indicators'
 import { registerTestnetFuturesTradeTool } from './hyperliquid-testnet-futures-trade'
 import { registerMainnetFuturesTradeTool } from './hyperliquid-mainnet-futures-trade'
 import { registerMemoryTools } from './memory-tools'
+import { registerClosePositionTool } from './close-position'
+import { registerMarketSentimentTool } from './market-sentiment'
 
 export function registerAllMergedTools(server: any) {
   registerMovingAveragesTool(server)
@@ -28,6 +30,8 @@ export function registerAllMergedTools(server: any) {
   registerTestnetFuturesTradeTool(server)
   registerMainnetFuturesTradeTool(server)
   registerMemoryTools(server)
+  registerClosePositionTool(server)
+  registerMarketSentimentTool(server)
 }
 
 export { registerMovingAveragesTool }
@@ -42,3 +46,5 @@ export { registerStrengthIndicatorsTool }
 export { registerTestnetFuturesTradeTool }
 export { registerMainnetFuturesTradeTool }
 export { registerMemoryTools }
+export { registerClosePositionTool }
+export { registerMarketSentimentTool }

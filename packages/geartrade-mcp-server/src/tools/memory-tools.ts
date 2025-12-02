@@ -338,15 +338,17 @@ export function registerMemoryTools(server: any) {
     }
   );
 
-  // Tool 7: Get All Memories
+  // Tool 7: Get All Memories with Trading Stats
   server.registerTool(
     "memory_get_all",
     {
       title: "Get All Memories",
-      description: "Get all stored memories. Useful for reviewing complete trading history and preferences.",
+      description: "Get all stored memories with trading statistics. Useful for reviewing complete trading history and preferences.",
       inputSchema: z.object({}),
       outputSchema: z.object({
         total_memories: z.number(),
+        trading_stats: z.object({}).passthrough().optional(),
+        memories_by_type: z.object({}).passthrough().optional(),
         memories: z.array(z.object({}).passthrough())
       }).passthrough(),
     },
@@ -354,8 +356,69 @@ export function registerMemoryTools(server: any) {
       try {
         const memories = await tradingMemory.getAll();
 
+        // Calculate trading stats from trade memories
+        const trades = memories.filter(m => m.metadata?.type === 'trade');
+        const preferences = memories.filter(m => m.metadata?.type === 'preference');
+        const notes = memories.filter(m => m.metadata?.type === 'note');
+
+        let tradingStats = null;
+        if (trades.length > 0) {
+          const wins = trades.filter(t => t.metadata?.result === 'win').length;
+          const losses = trades.filter(t => t.metadata?.result === 'loss').length;
+          const breakeven = trades.filter(t => t.metadata?.result === 'breakeven').length;
+          const totalTrades = wins + losses + breakeven;
+          const winRate = totalTrades > 0 ? ((wins / totalTrades) * 100).toFixed(1) : '0';
+
+          // Extract PnL from trade memories (parse from memory text)
+          let totalPnL = 0;
+          let pnlCount = 0;
+          trades.forEach(t => {
+            const pnlMatch = t.memory?.match(/PnL\s*([+-]?\d+\.?\d*)%/i);
+            if (pnlMatch) {
+              totalPnL += parseFloat(pnlMatch[1]);
+              pnlCount++;
+            }
+          });
+          const avgPnL = pnlCount > 0 ? (totalPnL / pnlCount).toFixed(2) : null;
+
+          // Group by symbol
+          const symbolStats: Record<string, { wins: number; losses: number; total: number }> = {};
+          trades.forEach(t => {
+            const symbol = t.metadata?.symbol || 'UNKNOWN';
+            if (!symbolStats[symbol]) {
+              symbolStats[symbol] = { wins: 0, losses: 0, total: 0 };
+            }
+            symbolStats[symbol].total++;
+            if (t.metadata?.result === 'win') symbolStats[symbol].wins++;
+            if (t.metadata?.result === 'loss') symbolStats[symbol].losses++;
+          });
+
+          tradingStats = {
+            total_trades: totalTrades,
+            wins,
+            losses,
+            breakeven,
+            win_rate: `${winRate}%`,
+            avg_pnl: avgPnL ? `${avgPnL}%` : null,
+            total_pnl: `${totalPnL.toFixed(2)}%`,
+            by_symbol: Object.entries(symbolStats).map(([symbol, stats]) => ({
+              symbol,
+              trades: stats.total,
+              wins: stats.wins,
+              losses: stats.losses,
+              win_rate: `${((stats.wins / stats.total) * 100).toFixed(1)}%`
+            }))
+          };
+        }
+
         const data = {
           total_memories: memories.length,
+          memories_by_type: {
+            trades: trades.length,
+            preferences: preferences.length,
+            notes: notes.length
+          },
+          trading_stats: tradingStats,
           memories: memories.map(m => ({
             id: m.id,
             memory: m.memory,

@@ -4440,7 +4440,7 @@ Start with systematic data gathering using specialized tools:
 **Price & Market Data:**
 - \`get_price\` - Current price, 24h change, market cap
 - \`get_volume_analysis\` - Volume patterns, buy/sell pressure
-- \`get_external_data\` - Funding rates, open interest, market sentiment
+- \`get_External_data\` - Funding rates, open interest, market sentiment
 
 **Technical Analysis:**
 - \`get_indicators\` - RSI, MACD, moving averages, momentum
@@ -4462,20 +4462,20 @@ Before execution, calculate:
 - Maximum leverage (consider volatility and market conditions)
 
 ### 4. Execution
-- Always use paper trading first (\`execute: false\` or \`useLiveExecutor: false\`)
+- Always test on TESTNET first using \`hyperliquid_testnet_futures_trade\`
 - Get user confirmation before live execution
 - Monitor positions after execution using \`get_position\`
 
 ## Technical Analysis Strategies
 
 ### Trend Following
-1. Use \`get_multitimeframe\` to identify trend alignment
+1. Use \`get_Multitimeframe\` to identify trend alignment
 2. Enter on pullbacks to support (for uptrends) or resistance (for downtrends)
 3. Use Fibonacci retracement levels from \`get_fibonacci\` for entry zones
 4. Confirm with volume analysis showing accumulation/distribution
 
 ### Mean Reversion
-1. Identify overbought/oversold conditions using RSI from \`get_indicator\`
+1. Identify overbought/oversold conditions using RSI from \`get_indicators\`
 2. Look for divergence signals from \`get_divergence\`
 3. Check order book depth for support/resistance zones
 4. Enter when price reaches extreme levels with reversal candlestick patterns
@@ -4551,17 +4551,42 @@ Before execution, calculate:
 7. ❌ Ignoring risk/reward ratios
 8. ❌ Not monitoring open positions
 
-## Tools Quick Reference
+## Tools Quick Reference (58 Tools)
 
-- **Price**: \`get_price\`, \`get_multiple_prices\`
-- **Technical Analysis**: \`get_indicator\`, \`get_multiple_indicators\`
-- **Volume**: \`get_volume_analysis\`, \`get_multiple_volume_analysis\`
-- **Multi-timeframe**: \`get_multitimeframe\`, \`get_multiple_multitimeframe\`
-- **Advanced**: \`get_fibonacci\`, \`get_orderbook_depth\`, \`get_volume_profile\`, \`get_market_structure\`, \`get_candlestick_patterns\`, \`get_divergence\`, \`get_liquidation_levels\`, \`get_long_short_ratio\`, \`get_spot_futures_divergence\`
-- **Comprehensive**: \`analisis_crypto\`, \`analisis_multiple_crypto\`
-- **Execution**: \`get_execution_spot\`, \`get_execution_futures\`
-- **Position**: \`get_position\`, \`get_multiple_positions\`
+### Market Data Tools
+- **Price**: \`get_price\`
+- **Technical Analysis**: \`get_indicators\`
+- **Volume**: \`get_volume_analysis\`, \`get_volume_profile\`
+- **Multi-timeframe**: \`get_Multitimeframe\`
+- **Market Analysis**: \`get_market_structure\`, \`get_market_regime\`, \`get_candlestick_patterns\`, \`get_divergence\`
+- **External Data**: \`get_External_data\`, \`get_orderbook_depth\`, \`get_liquidation_levels\`, \`get_long_short_ratio\`
+
+### Position & Risk Tools
+- **Position**: \`get_position\`, \`get_whale_position\`, \`get_tier_classification\`
 - **Risk**: \`calculate_risk_management\`, \`calculate_position_setup\`
+- **Correlation**: \`get_correlation_analysis\`
+
+### Execution Tools
+- **Testnet**: \`hyperliquid_testnet_futures_trade\`
+- **Mainnet**: \`hyperliquid_mainnet_futures_trade\`
+
+### Technical Indicator Tools (32)
+- **Moving Averages**: \`double_ema\`, \`triple_ema\`, \`hull_ma\`, \`weighted_ma\`, \`smoothed_ma\`, \`vwma\`, \`kaufman_adaptive_ma\`, \`mcginley_dynamic\`, \`rainbow_ma\`, \`ma_envelope\`
+- **Oscillators**: \`stochastic_rsi\`, \`chande_momentum\`, \`percentage_price_oscillator\`, \`accelerator_oscillator\`, \`awesome_oscillator\`, \`gator_oscillator\`, \`elder_ray\`, \`fisher_transform\`, \`know_sure_thing\`, \`schaff_trend_cycle\`, \`coppock_curve\`, \`true_strength_index\`, \`relative_vigor_index\`, \`detrended_price\`, \`momentum\`, \`rate_of_change\`, \`ultimate_oscillator\`, \`trix\`
+- **Volume**: \`volume_indicators\`
+- **Volatility**: \`volatility_indicators\`
+- **Channels**: \`channels\`
+- **Pivots**: \`pivot_points\`
+- **Trend**: \`trend_indicators\`
+- **Patterns**: \`patterns\`
+- **Strength**: \`strength_indicators\`
+
+### AI Memory Tools (8) - NEW
+- **Preferences**: \`memory_save_preference\`
+- **Trade Journal**: \`memory_log_trade\`
+- **Insights**: \`memory_get_insights\`, \`memory_check_pattern\`
+- **Notes**: \`memory_remember\`, \`memory_recall\`
+- **Management**: \`memory_get_all\`, \`memory_delete\`
 `,
             },
         ],
@@ -4757,7 +4782,10 @@ The tool automatically calculates optimal risk/reward ratios based on:
 - **\`calculate_position_setup\`**: Calculate position size, leverage, margin
 - **\`calculate_risk_management\`**: Calculate stop loss, take profit, risk/reward
 - **\`get_position\`**: Monitor open positions, PnL, MAE
-- **\`get_multiple_positions\`**: Monitor multiple positions at once
+- **\`get_indicators\`**: Get ATR for volatility-based stops
+- **\`get_market_structure\`**: Identify support/resistance for stop placement
+- **\`memory_save_preference\`**: Save your risk settings for AI to remember
+- **\`memory_log_trade\`**: Log trades with lessons for pattern learning
 
 ## Best Practices
 
@@ -4777,7 +4805,7 @@ The tool automatically calculates optimal risk/reward ratios based on:
     };
 });
 server.registerResource('tools-overview', 'geartrade://docs/tools-overview', {
-    description: 'Complete overview of all 84 MCP tools available in GearTrade',
+    description: 'Complete overview of all 58 MCP tools available in GearTrade',
     mimeType: 'text/markdown',
 }, async () => {
     return {
@@ -4787,105 +4815,139 @@ server.registerResource('tools-overview', 'geartrade://docs/tools-overview', {
                 mimeType: 'text/markdown',
                 text: `# Tools Overview
 
-## Complete List of 84 MCP Tools
+## Complete List of 58 MCP Tools
 
-### Price Tools (2)
-- **\`get_price\`**: Get latest price for single ticker
-- **\`get_multiple_prices\`**: Get latest prices for multiple tickers
+### Market Data Tools (18)
+- **\`get_price\`**: Get latest prices for multiple tickers
+- **\`get_indicators\`**: Comprehensive technical indicators (RSI, EMA, MACD, Bollinger Bands, ATR, ADX, etc.)
+- **\`get_volume_analysis\`**: Buy/sell volume, POC, VAH/VAL, HVN/LVN, CVD, liquidity zones
+- **\`get_volume_profile\`**: Volume profile analysis (POC, VAH, VAL)
+- **\`get_Multitimeframe\`**: Multi-timeframe trend alignment analysis
+- **\`get_market_structure\`**: Market structure and swing points
+- **\`get_market_regime\`**: Market conditions (trending/choppy/volatile)
+- **\`get_candlestick_patterns\`**: Candlestick pattern recognition
+- **\`get_divergence\`**: RSI divergence detection
+- **\`get_External_data\`**: Funding rates, open interest, liquidations
+- **\`get_orderbook_depth\`**: Order book depth analysis
+- **\`get_liquidation_levels\`**: Liquidation clusters and zones
+- **\`get_long_short_ratio\`**: Long/short sentiment with whale data
+- **\`get_position\`**: Current positions, balance, PnL
+- **\`get_whale_position\`**: Track whale wallet positions
+- **\`get_tier_classification\`**: Market breakdown by trader tier
+- **\`get_correlation_analysis\`**: BTC dominance, altcoin correlation
+- **\`calculate_risk_management\`**: Stop loss, take profit, R:R calculation
+- **\`calculate_position_setup\`**: Position sizing calculations
+### Execution Tools (2)
+- **\`hyperliquid_testnet_futures_trade\`**: Execute futures trades on Hyperliquid TESTNET
+- **\`hyperliquid_mainnet_futures_trade\`**: Execute REAL futures trades on Hyperliquid MAINNET
 
-### Technical Analysis Tools (2)
-- **\`get_indicator\`**: Comprehensive technical indicators (RSI, EMA, MACD, Bollinger Bands, ATR, ADX, OBV, VWAP, Stochastic, CCI, Williams %R, Parabolic SAR, Aroon, Support/Resistance, Fibonacci, Trend, Market Structure, RSI Divergence, Candlestick Patterns, Market Regime)
-- **\`get_multiple_indicators\`**: Technical indicators for multiple tickers
+### Technical Indicator Tools (32)
 
-### Volume Analysis Tools (2)
-- **\`get_volume_analysis\`**: Buy/sell volume, POC, VAH/VAL, HVN/LVN, CVD, liquidity zones, recommendations
-- **\`get_multiple_volume_analysis\`**: Volume analysis for multiple tickers
+#### Moving Averages (10)
+- **\`double_ema\`**: Double Exponential Moving Average - reduced lag
+- **\`triple_ema\`**: Triple Exponential Moving Average - smooth trend
+- **\`hull_ma\`**: Hull Moving Average - smooth trend identification
+- **\`weighted_ma\`**: Weighted Moving Average - recent price weighted
+- **\`smoothed_ma\`**: Smoothed Moving Average - reduced noise
+- **\`vwma\`**: Volume Weighted Moving Average
+- **\`kaufman_adaptive_ma\`**: Kaufman Adaptive MA - adjusts to volatility
+- **\`mcginley_dynamic\`**: McGinley Dynamic - adaptive to market
+- **\`rainbow_ma\`**: Multiple MAs for trend visualization
+- **\`ma_envelope\`**: Moving Average Envelope bands
 
-### Multi-Timeframe Tools (2)
-- **\`get_multitimeframe\`**: Trend alignment across Daily, 4H, 1H timeframes
-- **\`get_multiple_multitimeframe\`**: Multi-timeframe analysis for multiple tickers
+#### Oscillators (18)
+- **\`stochastic_rsi\`**: RSI + Stochastic for overbought/oversold
+- **\`chande_momentum\`**: Chande Momentum Oscillator (-100 to +100)
+- **\`percentage_price_oscillator\`**: MACD as percentage
+- **\`accelerator_oscillator\`**: Momentum acceleration
+- **\`awesome_oscillator\`**: Bill Williams AO
+- **\`gator_oscillator\`**: Alligator divergence
+- **\`elder_ray\`**: Bull/Bear power
+- **\`fisher_transform\`**: Sharp reversal signals
+- **\`know_sure_thing\`**: Multi-timeframe ROC
+- **\`schaff_trend_cycle\`**: MACD + Stochastic
+- **\`coppock_curve\`**: Long-term momentum
+- **\`true_strength_index\`**: Double-smoothed momentum
+- **\`relative_vigor_index\`**: Close vs open momentum
+- **\`detrended_price\`**: Cycle identification
+- **\`momentum\`**: Rate of price change
+- **\`rate_of_change\`**: ROC percentage
+- **\`ultimate_oscillator\`**: Three-timeframe oscillator
+- **\`trix\`**: Triple EMA ROC
 
-### External Data Tools (2)
-- **\`get_external_data\`**: Funding rate, open interest, volume trend, volatility
-- **\`get_multiple_external_data\`**: External data for multiple tickers
+#### Other Indicators (4)
+- **\`volume_indicators\`**: CMF, Chaikin Oscillator, PVT, VZO, MFI
+- **\`volatility_indicators\`**: BB Width, %B, Chaikin Volatility, HV, Mass Index
+- **\`channels\`**: Keltner Channels, Donchian Channels
+- **\`pivot_points\`**: Standard, Camarilla, Fibonacci pivots
+- **\`trend_indicators\`**: SuperTrend, Alligator, Ichimoku, Vortex
+- **\`patterns\`**: Fractals, ZigZag, Change of Character
+- **\`strength_indicators\`**: Bull/Bear Power, Force Index, COG, BOP
 
-### Position Management Tools (2)
-- **\`get_position\`**: Current position info (side, quantity, entry price, PnL, MAE)
-- **\`get_multiple_positions\`**: Position info for multiple tickers
-
-### Risk Management Tools (2)
-- **\`calculate_risk_management\`**: Calculate stop loss, take profit, risk/reward ratio
-- **\`calculate_position_setup\`**: Calculate position size, leverage, margin, quantity
-
-### Advanced Analysis Tools (18)
-- **\`get_fibonacci\`** / **\`get_multiple_fibonacci\`**: Fibonacci retracement levels
-- **\`get_orderbook_depth\`** / **\`get_multiple_orderbook_depth\`**: Order book depth analysis
-- **\`get_volume_profile\`** / **\`get_multiple_volume_profile\`**: Volume profile (POC, VAH/VAL, HVN/LVN)
-- **\`get_market_structure\`** / **\`get_multiple_market_structure\`**: Market structure (COC, swing patterns)
-- **\`get_candlestick_patterns\`** / **\`get_multiple_candlestick_patterns\`**: Candlestick pattern detection
-- **\`get_divergence\`** / **\`get_multiple_divergence\`**: RSI divergence detection
-- **\`get_liquidation_levels\`** / **\`get_multiple_liquidation_levels\`**: Liquidation level analysis
-- **\`get_long_short_ratio\`** / **\`get_multiple_long_short_ratio\`**: Long/short ratio sentiment
-- **\`get_spot_futures_divergence\`** / **\`get_multiple_spot_futures_divergence\`**: Spot-futures divergence
-
-### Comprehensive Analysis Tools (2)
-- **\`analisis_crypto\`**: Complete analysis for single ticker (aggregates all data)
-- **\`analisis_multiple_crypto\`**: Complete analysis for multiple tickers
-
-### Execution Tools (4)
-- **\`get_execution_spot\`**: Spot trading execution (1x leverage)
-- **\`get_multiple_execution_spot\`**: Spot execution for multiple tickers
-- **\`get_execution_futures\`**: Futures trading execution (1-50x leverage)
-- **\`get_multiple_execution_futures\`**: Futures execution for multiple tickers
+### AI Memory Tools (8) - NEW
+- **\`memory_save_preference\`**: Save trading preferences (leverage, risk, rules)
+- **\`memory_log_trade\`**: Log completed trades for pattern learning
+- **\`memory_get_insights\`**: Get personalized insights from history
+- **\`memory_check_pattern\`**: Check if setup matches winning patterns
+- **\`memory_remember\`**: Store notes, levels, observations
+- **\`memory_recall\`**: Search and retrieve memories
+- **\`memory_get_all\`**: Get all stored memories
+- **\`memory_delete\`**: Delete specific memory by ID
 
 ## Tool Categories
 
 ### Analysis Tools
-All tools that provide market data and analysis without executing trades.
+Market data and technical analysis without executing trades.
 
 ### Execution Tools
-Tools that can execute trades (paper or live). Always require user confirmation.
+Execute trades on Hyperliquid (testnet or mainnet).
 
 ### Risk Management Tools
-Tools for calculating position sizes, stop loss, take profit, and risk metrics.
+Position sizing, stop loss, take profit calculations.
+
+### AI Memory Tools
+Personalized AI that learns from your trading history.
 
 ## Usage Patterns
 
 ### Single Asset Analysis
 \`\`\`
-1. get_price → get_indicator → get_volume_analysis → get_multitimeframe
-2. OR: analisis_crypto (all-in-one)
+1. get_price → get_indicators → get_volume_analysis → get_Multitimeframe
+2. Add: get_market_structure, get_divergence, get_External_data
 \`\`\`
 
 ### Multiple Asset Scan
 \`\`\`
-1. get_multiple_prices → get_multiple_indicators
-2. OR: analisis_multiple_crypto (all-in-one)
+get_price(["BTC", "ETH", "SOL"]) → get_indicators(["BTC", "ETH", "SOL"])
 \`\`\`
 
 ### Execution Workflow
 \`\`\`
-1. analisis_crypto (analysis)
-2. calculate_position_setup (position sizing)
-3. calculate_risk_management (stop loss/take profit)
-4. get_execution_futures (execution with execute: false first)
-5. get_position (monitor after execution)
+1. memory_recall (check preferences)
+2. get_indicators + get_market_structure (analysis)
+3. memory_check_pattern (validate setup)
+4. calculate_position_setup (position sizing)
+5. calculate_risk_management (stop loss/take profit)
+6. hyperliquid_testnet_futures_trade (test first)
+7. hyperliquid_mainnet_futures_trade (live with confirmation)
+8. memory_log_trade (log for learning)
 \`\`\`
 
-## Tool Outputs
-
-All tools return structured JSON data with:
-- Ticker symbol
-- Timestamp
-- Requested data fields
-- Error handling (null values for missing data)
+### Memory-Enhanced Trading
+\`\`\`
+1. memory_save_preference - Set your trading rules
+2. memory_remember - Store key levels and observations
+3. memory_check_pattern - Validate setups before trading
+4. memory_log_trade - Log all trades with lessons
+5. memory_get_insights - Review performance and patterns
+\`\`\`
 
 ## Best Practices
 
-1. Use comprehensive tools (\`analisis_crypto\`) for complete analysis
-2. Use specialized tools for specific analysis needs
-3. Always use paper trading before live execution
-4. Get user confirmation before live trades
+1. Always test on TESTNET before MAINNET
+2. Get user confirmation before live trades
+3. Use memory tools to build personalized AI
+4. Log all trades for pattern learning
 5. Monitor positions after execution
 6. Use risk management tools before execution
 `,
@@ -4954,23 +5016,33 @@ Gather data systematically using specialized tools:
 }
 \`\`\`
 
-### Old Method (for reference):
-    "ticker": "BTC",
-    "capital": 10000,
-    "riskPct": 1.0,
-    "strategy": "flexible"
+#### 1.5 External Data
+\`\`\`json
+{
+  "name": "get_External_data",
+  "arguments": {
+    "tickers": ["BTC"]
+  }
+}
+\`\`\`
+
+#### 1.6 Check Memory (AI Personalization)
+\`\`\`json
+{
+  "name": "memory_recall",
+  "arguments": {
+    "query": "BTC leverage settings"
   }
 }
 \`\`\`
 
 **Combined Analysis Output:**
-- **get_price**: Current price, 24h change, market data
-- **get_indicators**: RSI, MACD, moving averages, momentum indicators
+- **get_price**: Current price, 24h change
+- **get_indicators**: RSI, MACD, moving averages, momentum
 - **get_volume_analysis**: Volume patterns, buy/sell pressure, CVD
-- **get_market_structure**: Trend bias, support/resistance levels
-- **get_external_data**: Funding rates, open interest, market sentiment
-- **Position recommendations** via risk management tools
-- Risk management calculations
+- **get_market_structure**: Trend bias, support/resistance
+- **get_External_data**: Funding rates, open interest, liquidations
+- **memory_recall**: User's saved preferences and rules
 
 ### Step 2: Signal Identification
 
@@ -5029,56 +5101,54 @@ Mau dieksekusi ke Hyperliquid? (YES/NO)
 
 **Never execute without user approval!**
 
-### Step 5: Paper Trading First (Recommended)
+### Step 5: Testnet First (Recommended)
 
-Test execution with paper trading first:
+Test execution on Hyperliquid TESTNET first:
 
 \`\`\`json
 {
-  "name": "get_execution_futures",
+  "name": "hyperliquid_testnet_futures_trade",
   "arguments": {
-    "ticker": "BTC",
-    "side": "SHORT",
-    "quantity": 0.1,
-    "leverage": 5,
-    "orderType": "MARKET",
-    "execute": true,
-    "useLiveExecutor": false
+    "symbol": "BTC",
+    "side": "sell",
+    "sizeInUsd": 100,
+    "orderMode": "market",
+    "leverage": "5"
   }
 }
 \`\`\`
 
-**Paper trading benefits:**
+**Testnet benefits:**
 - No real money at risk
 - Test execution logic
 - Verify position sizing
-- Check stop loss/take profit levels
+- Check order modes (market/limit/custom)
 
-### Step 6: Live Execution (If User Confirms)
+### Step 6: Mainnet Execution (If User Confirms)
 
-Only execute live if user explicitly confirms:
+Only execute on MAINNET if user explicitly confirms:
 
 \`\`\`json
 {
-  "name": "get_execution_futures",
+  "name": "hyperliquid_mainnet_futures_trade",
   "arguments": {
-    "ticker": "BTC",
-    "side": "SHORT",
-    "quantity": 0.1,
-    "leverage": 5,
-    "orderType": "MARKET",
-    "execute": true,
-    "useLiveExecutor": true
+    "symbol": "BTC",
+    "side": "sell",
+    "sizeInUsd": 100,
+    "orderMode": "market",
+    "leverage": "5",
+    "confirmExecution": "true"
   }
 }
 \`\`\`
 
 **Safety checks:**
 - ✅ User confirmed execution
-- ✅ Paper trading tested
+- ✅ Testnet trading tested
 - ✅ Position size calculated
-- ✅ Stop loss/take profit set
+- ✅ Stop loss/take profit planned
 - ✅ Risk within limits (1-2% of capital)
+- ✅ confirmExecution set to "true"
 
 ### Step 7: Position Monitoring
 
@@ -5088,7 +5158,7 @@ After execution, monitor the position:
 {
   "name": "get_position",
   "arguments": {
-    "ticker": "BTC"
+    "walletAddress": "your_wallet_address"
   }
 }
 \`\`\`
@@ -5096,41 +5166,68 @@ After execution, monitor the position:
 **Monitor:**
 - Unrealized PnL
 - Current price vs entry
-- Distance to stop loss/take profit
-- MAE (Maximum Adverse Excursion)
+- Liquidation price
+- Account equity and margin
 
-## Multiple Asset Execution
+### Step 8: Log Trade for AI Learning
 
-For multiple assets, use batch tools:
+After closing position, log the trade:
 
 \`\`\`json
 {
-  "name": "analisis_multiple_crypto",
+  "name": "memory_log_trade",
   "arguments": {
-    "tickers": ["BTC", "ETH", "SOL"],
-    "capital": 10000,
-    "riskPct": 1.0
+    "symbol": "BTC",
+    "side": "SHORT",
+    "entryPrice": 86804,
+    "exitPrice": 82003,
+    "pnlPercent": 5.53,
+    "result": "win",
+    "reason": "Bearish divergence at resistance, RSI overbought",
+    "lesson": "Divergence + overbought RSI is reliable for shorts",
+    "label": "swing",
+    "categories": "reversal"
   }
 }
 \`\`\`
 
-**Note:** \`get_multiple_execution_*\` tools default to paper trading for safety.
+**Benefits of logging:**
+- AI learns from your winning patterns
+- Identifies common mistakes
+- Provides personalized insights
+- Improves future recommendations
+
+## Multiple Asset Analysis
+
+For multiple assets, use array parameters:
+
+\`\`\`json
+{
+  "name": "get_indicators",
+  "arguments": {
+    "tickers": ["BTC", "ETH", "SOL"]
+  }
+}
+\`\`\`
+
+**Note:** Always test on TESTNET before MAINNET execution.
 
 ## Safety Features
 
-### Paper Trading Default
-- Multiple executions default to paper trading
-- Single executions require explicit \`useLiveExecutor: true\`
+### Testnet vs Mainnet
+- Use \`hyperliquid_testnet_futures_trade\` for testing
+- Use \`hyperliquid_mainnet_futures_trade\` for real trades
+- Mainnet requires \`confirmExecution: "true"\`
 
 ### User Confirmation Required
-- Always ask user before live execution
+- Always ask user before mainnet execution
 - Present clear risk/reward summary
 - Show position size and margin requirements
 
 ### Risk Limits
 - Default risk: 1% of capital per trade
 - Maximum recommended: 2% per trade
-- Total portfolio risk: 10-20% maximum
+- Mainnet has built-in safety checks (min $10, max 25% equity)
 
 ## Error Handling
 
@@ -5146,7 +5243,7 @@ For multiple assets, use batch tools:
 
 ## Best Practices
 
-1. ✅ **Always analyze first** - Use \`analisis_crypto\` before execution
+1. ✅ **Always analyze first** - Use \`get_indicators\` + \`get_market_structure\` before execution
 2. ✅ **Present clear summary** - Show all key metrics
 3. ✅ **Ask for confirmation** - Never execute without user approval
 4. ✅ **Paper trade first** - Test with paper trading
@@ -5159,12 +5256,12 @@ For multiple assets, use batch tools:
 
 ### Quick Analysis
 \`\`\`
-analisis_crypto → Present summary → User decision
+get_indicators + get_market_structure → Present summary → User decision
 \`\`\`
 
 ### Full Execution Workflow
 \`\`\`
-analisis_crypto → calculate_position_setup → calculate_risk_management → 
+get_indicators + memory_recall → calculate_position_setup → calculate_risk_management → 
 Present summary → User confirmation → Paper trade → Live execution → Monitor position
 \`\`\`
 
@@ -5247,9 +5344,9 @@ server.registerPrompt('analyze_and_execute', {
    - Leverage: ${leverage}x
 
 6. **Execution Preparation:**
-   - If user wants to execute: Use get_execution_spot for spot or get_execution_futures for futures
-   - Always start with paper trading first (useLiveExecutor: false)
-   - Only proceed to live execution after explicit confirmation
+   - If user wants to execute: Use hyperliquid_testnet_futures_trade for testing
+   - Always start with TESTNET first
+   - Only proceed to MAINNET (hyperliquid_mainnet_futures_trade) after explicit confirmation
 
 Ask user: "Mau dieksekusi dengan paper trading dulu? (YES/NO)"
 If YES, show the paper trade result first, then ask for live execution.
@@ -5396,7 +5493,7 @@ server.registerPrompt('position_monitoring', {
                     type: 'text',
                     text: `Please monitor open positions${tickers ? ` for ${JSON.stringify(tickers)}` : ' (all positions)'}.
 
-Use ${tickers ? 'get_multiple_positions' : 'get_position'} to get current status.
+Use \`get_position\` to get current status for open positions.
 
 For each position, present:
 1. Ticker and side (LONG/SHORT)
@@ -5446,7 +5543,7 @@ server.registerPrompt('comprehensive_analysis', {
                     role: 'user',
                     content: {
                         type: 'text',
-                        text: `Please perform comprehensive analysis for ${ticker} using the analisis_crypto tool with:
+                        text: `Please perform comprehensive analysis for ${ticker} using these tools:
 - capital: ${capital}
 - riskPct: ${riskPct}
 - strategy: ${strategy}
@@ -5578,8 +5675,8 @@ After analysis, for each asset present:
                         text: `Please perform comprehensive market analysis. 
 
 You can analyze:
-- Single asset: Use analisis_crypto with a specific ticker
-- Multiple assets: Use analisis_multiple_crypto with an array of tickers
+- Single asset: Use get_indicators, get_market_structure, get_volume_analysis
+- Multiple assets: Use get_indicators(["BTC", "ETH", "SOL"]) with array of tickers
 
 For comprehensive analysis, include:
 - Technical indicators (RSI, EMA, MACD, Bollinger Bands, etc.)
@@ -5615,7 +5712,7 @@ server.registerPrompt('quick_price_check', {
                     type: 'text',
                     text: `Please check current prices for the following assets: ${tickers.join(', ')}
 
-Use the get_multiple_prices tool to get prices for all tickers.
+Use the get_price tool with tickers array to get prices for all tickers.
 
 Present the results in a clear table format:
 - Ticker
@@ -5647,7 +5744,7 @@ server.registerPrompt('trend_analysis', {
                     type: 'text',
                     text: `Please perform trend analysis for ${ticker} across the following timeframes: ${timeframes.join(', ')}
 
-Use the get_multitimeframe tool to get trend data for ${ticker}.
+Use the get_Multitimeframe tool to get trend data for ${ticker}.
 
 Analyze and present:
 1. **Trend Direction per Timeframe**
@@ -5856,7 +5953,7 @@ server.registerPrompt('market_overview', {
                     type: 'text',
                     text: `Please provide a comprehensive market overview for: ${tickers.join(', ')}
 
-Use get_multiple_prices to get current prices for all tickers.
+Use get_price with tickers array to get current prices for all tickers.
 
 Present a market overview report:
 
@@ -5917,7 +6014,7 @@ server.registerPrompt('entry_exit_strategy', {
                     type: 'text',
                     text: `Please provide optimal entry and exit strategy for ${ticker} ${side} position.
 
-Use analisis_crypto tool with:
+Use get_indicators, get_market_structure, get_volume_analysis tools with:
 - ticker: ${ticker}
 - capital: ${capital}
 - riskPct: ${riskPct}
@@ -5994,7 +6091,7 @@ server.registerPrompt('volatility_analysis', {
                     type: 'text',
                     text: `Please analyze volatility for ${ticker} to determine appropriate risk management.
 
-Use get_indicator tool to get ATR (Average True Range) values for ${ticker}.
+Use get_indicators tool to get ATR (Average True Range) values for ${ticker}.
 
 Present volatility analysis:
 
@@ -6062,7 +6159,7 @@ server.registerPrompt('technical_indicator_analysis', {
                 role: 'user',
                 content: {
                     type: 'text',
-                    text: `Please analyze technical indicators for ${ticker}. Use the get_indicator tool to get: ${indicators.join(', ')}. Present: 1) Indicator values and signals, 2) Trading signals (BUY/SELL/HOLD), 3) Indicator combination analysis, 4) Entry/exit recommendations.`,
+                    text: `Please analyze technical indicators for ${ticker}. Use the get_indicators tool to get: ${indicators.join(', ')}. Present: 1) Indicator values and signals, 2) Trading signals (BUY/SELL/HOLD), 3) Indicator combination analysis, 4) Entry/exit recommendations.`,
                 },
             },
         ],
@@ -6162,7 +6259,7 @@ server.registerPrompt('external_data_analysis', {
                 role: 'user',
                 content: {
                     type: 'text',
-                    text: `Analyze external data for ${ticker} using get_external_data. Present: funding rate analysis, open interest trends, market sentiment, volatility, trading implications, and risk assessment.`,
+                    text: `Analyze external data for ${ticker} using get_External_data. Present: funding rate analysis, open interest trends, market sentiment, volatility, trading implications, and risk assessment.`,
                 },
             },
         ],
@@ -6887,7 +6984,7 @@ GearTrade MCP Server integrates with Hyperliquid DEX for perpetual futures tradi
 ### EIP-712 Signing
 - **Standard**: EIP-712 typed data signing
 - **Purpose**: Secure order submission without exposing private keys
-- **Implementation**: Automatic in \`get_execution_spot\` and \`get_execution_futures\` tools
+- **Implementation**: Automatic in \`hyperliquid_testnet_futures_trade\` and \`hyperliquid_mainnet_futures_trade\` tools
 
 ### Credentials
 - **Account Address**: Your Hyperliquid wallet address (0x format)
@@ -6956,7 +7053,7 @@ GearTrade MCP Server integrates with Hyperliquid DEX for perpetual futures tradi
 
 ### Price Data
 - **Real-time Price**: \`get_price\` tool
-- **Multiple Prices**: \`get_multiple_prices\` tool
+- **Multiple Prices**: \`get_price\` tool with tickers array
 - **Source**: Hyperliquid and Binance APIs
 
 ### Market Data
@@ -6965,10 +7062,10 @@ GearTrade MCP Server integrates with Hyperliquid DEX for perpetual futures tradi
 - **Volume**: 24h volume and trends
 
 ### Order Execution
-- **Spot Trading**: \`get_execution_spot\` (1x leverage)
-- **Futures Trading**: \`get_execution_futures\` (1-50x leverage)
-- **Paper Trading**: Default mode (safe testing)
-- **Live Trading**: Requires \`execute: true\` and \`useLiveExecutor: true\`
+- **Testnet Trading**: \`hyperliquid_testnet_futures_trade\` (test mode)
+- **Mainnet Trading**: \`hyperliquid_mainnet_futures_trade\` (real money)
+- **Leverage**: 1-100x supported
+- **Safety**: Mainnet requires \`confirmExecution: "true"\`
 
 ## Safety Features
 
@@ -7310,12 +7407,12 @@ This guide lists common trading mistakes and how to avoid them. Learning from th
 ### ❌ Trading Without Analysis
 - **Problem**: Random entries, poor results
 - **Solution**: Always use comprehensive analysis
-- **Tool**: Use \`analisis_crypto\` tool before trading
+- **Tool**: Use \`get_indicators\` + \`get_market_structure\` tools before trading
 
 ### ❌ Ignoring Multi-Timeframe Analysis
 - **Problem**: Trading against higher timeframe trend
 - **Solution**: Check Daily, 4H, and 1H alignment
-- **Tool**: Use \`get_multitimeframe\` tool
+- **Tool**: Use \`get_Multitimeframe\` tool
 
 ### ❌ Not Waiting for Confirmation
 - **Problem**: Entering too early, false signals
@@ -7386,7 +7483,7 @@ This guide lists common trading mistakes and how to avoid them. Learning from th
 ### ❌ Trading Against the Trend
 - **Problem**: Fighting the market
 - **Solution**: Trade with the trend
-- **Tool**: Use \`get_multitimeframe\` to identify trend
+- **Tool**: Use \`get_Multitimeframe\` to identify trend
 
 ### ❌ Not Diversifying
 - **Problem**: All capital in one trade
@@ -7408,7 +7505,7 @@ This guide lists common trading mistakes and how to avoid them. Learning from th
 ### ❌ Not Using Stop Loss Based on ATR
 - **Problem**: Fixed stops don't account for volatility
 - **Solution**: Use ATR-based stops (1.5x-3x ATR)
-- **Tool**: Use \`get_indicator\` for ATR values
+- **Tool**: Use \`get_indicators\` for ATR values
 
 ### ❌ Ignoring Market Structure
 - **Problem**: Trading in wrong market regime
@@ -8471,9 +8568,173 @@ This guide covers recommended tool combinations for different trading styles bas
         ],
     };
 });
-// NEW: Complete Tools Reference Resource (52 Tools from MCP_TOOLS_TEST_RESULTS.md)
+// NEW: AI Memory Analysis Prompt
+server.registerPrompt('memory_analysis', {
+    title: 'AI Memory Analysis',
+    description: 'Analyze trading history, preferences, and patterns stored in AI memory',
+    argsSchema: {
+        query: z.string().optional().describe('Specific query about trading history (e.g., "my BTC performance", "common mistakes")'),
+        symbol: z.string().optional().describe('Filter by symbol (e.g., "BTC", "ETH")'),
+        type: z.string().optional().describe('Filter by memory type: preference, trade, note, all (default: all)'),
+    },
+}, async (args) => {
+    const query = args.query || 'trading performance and patterns';
+    const symbol = args.symbol ? args.symbol.toUpperCase() : undefined;
+    const type = args.type || 'all';
+    return {
+        messages: [
+            {
+                role: 'user',
+                content: {
+                    type: 'text',
+                    text: `Please analyze my trading memory${symbol ? ` for ${symbol}` : ''}.
+
+**Step 1: Retrieve All Memories**
+Use \`memory_get_all\` to get complete trading history.
+
+**Step 2: Search Specific Query**
+Use \`memory_recall\` with query: "${query}"
+${symbol ? `Filter results for symbol: ${symbol}` : ''}
+${type !== 'all' ? `Filter by type: ${type}` : ''}
+
+**Step 3: Analyze Patterns**
+${symbol ? `Use \`memory_check_pattern\` for ${symbol} with common setups` : 'Identify common patterns across all trades'}
+
+**Step 4: Get Insights**
+Use \`memory_get_insights\` with query: "${query}"
+
+**Present Analysis:**
+
+1. **Memory Summary**
+   - Total memories stored
+   - Breakdown by type (preferences, trades, notes)
+   - Most recent activity
+
+2. **Trading Performance**
+   - Total trades logged
+   - Win rate (wins vs losses)
+   - Common winning setups
+   - Common losing patterns
+
+3. **Preferences Stored**
+   - Leverage settings per asset
+   - Risk management rules
+   - Trading strategies
+
+4. **Key Lessons Learned**
+   - Top lessons from winning trades
+   - Top lessons from losing trades
+   - Areas for improvement
+
+5. **Personalized Recommendations**
+   - Based on your history
+   - Patterns to repeat
+   - Mistakes to avoid
+
+6. **Action Items**
+   - Memories to update
+   - Outdated info to delete
+   - New preferences to save`,
+                },
+            },
+        ],
+    };
+});
+// NEW: Memory-Enhanced Trading Prompt
+server.registerPrompt('memory_enhanced_trading', {
+    title: 'Memory-Enhanced Trading',
+    description: 'Execute trades with AI memory context for personalized risk management',
+    argsSchema: {
+        ticker: z.string().describe('Asset ticker symbol (e.g., "BTC", "ETH")'),
+        side: z.string().describe('Trade direction: LONG or SHORT'),
+        capital: z.string().optional().describe('Trading capital in USD (default: uses memory preference or 10000)'),
+        testnet: z.string().optional().describe('Use testnet for paper trading: true/false (default: true)'),
+    },
+}, async (args) => {
+    const ticker = args.ticker ? args.ticker.toUpperCase() : 'BTC';
+    const side = args.side ? args.side.toUpperCase() : 'LONG';
+    const capital = args.capital ? parseFloat(args.capital) : 10000;
+    const testnet = args.testnet !== 'false';
+    return {
+        messages: [
+            {
+                role: 'user',
+                content: {
+                    type: 'text',
+                    text: `Please execute a memory-enhanced ${side} trade for ${ticker}.
+
+**Step 1: Check Memory for Preferences**
+Use \`memory_recall\` with query: "leverage ${ticker} risk settings"
+- Get preferred leverage for ${ticker}
+- Get risk per trade setting
+- Get any specific trading rules
+
+**Step 2: Check Historical Performance**
+Use \`memory_get_insights\` with query: "${ticker} ${side} trades performance"
+- Review past ${side} trades on ${ticker}
+- Identify win/loss patterns
+- Get lessons from similar setups
+
+**Step 3: Validate Current Setup**
+Use \`memory_check_pattern\` with:
+- symbol: "${ticker}"
+- setup: "current market conditions for ${side}"
+- Get historical win rate for similar setups
+
+**Step 4: Technical Analysis**
+Use \`get_indicators\` for ${ticker}:
+- RSI, MACD, EMA analysis
+- Support/resistance levels
+- Trend direction
+
+Use \`get_market_structure\` for ${ticker}:
+- Market structure analysis
+- Swing highs/lows
+
+**Step 5: Calculate Position**
+Use \`calculate_position_setup\`:
+- ticker: ${ticker}
+- capital: ${capital} (or from memory preference)
+- Apply memory-based leverage and risk settings
+
+Use \`calculate_risk_management\`:
+- Calculate stop loss and take profit
+- Based on historical patterns and current volatility
+
+**Step 6: Present Trade Plan**
+Show:
+- Entry price and reasoning
+- Stop loss (based on memory + technicals)
+- Take profit (based on historical R:R)
+- Position size and leverage
+- Pattern confidence from memory
+- Risk assessment
+
+**Step 7: Execute Trade (with confirmation)**
+${testnet ? `Use \`hyperliquid_testnet_futures_trade\`:
+- symbol: ${ticker}
+- side: ${side.toLowerCase()}
+- Apply calculated position size
+- Use memory-based leverage` : `Use \`hyperliquid_mainnet_futures_trade\`:
+- symbol: ${ticker}
+- side: ${side.toLowerCase()}
+- confirmExecution: "true" (REQUIRES USER APPROVAL)`}
+
+**Step 8: Log Trade for Learning**
+After execution, use \`memory_log_trade\`:
+- Log entry price and reason
+- Set appropriate label and categories
+- Include technical setup description
+
+Ask user: "Ready to proceed with this ${testnet ? 'TESTNET' : 'MAINNET'} trade? (YES/NO)"`,
+                },
+            },
+        ],
+    };
+});
+// NEW: Complete Tools Reference Resource (60 Tools - Updated with Memory + Position Management)
 server.registerResource('complete-tools-reference', 'geartrade://docs/complete-tools', {
-    description: 'Complete reference of all 52 MCP tools with parameters and use cases',
+    description: 'Complete reference of all 60 MCP tools with parameters and use cases',
     mimeType: 'text/markdown',
 }, async () => {
     return {
@@ -8481,7 +8742,7 @@ server.registerResource('complete-tools-reference', 'geartrade://docs/complete-t
             {
                 uri: 'geartrade://docs/complete-tools',
                 mimeType: 'text/markdown',
-                text: `# Complete Tools Reference (52 Tools)
+                text: `# Complete Tools Reference (60 Tools)
 
 ## Market Data Tools (10)
 
@@ -8594,6 +8855,225 @@ server.registerResource('complete-tools-reference', 'geartrade://docs/complete-t
 - \`highs\`: Array of numbers (high prices)
 - \`lows\`: Array of numbers (low prices)
 - \`volumes\`: Array of numbers (volume data)
+
+## AI Memory Tools (8) - NEW
+
+| Tool | Description | Parameters |
+|------|-------------|------------|
+| \`memory_save_preference\` | Save trading preferences | preference, label?, categories? |
+| \`memory_log_trade\` | Log completed trades | symbol, side, entryPrice, exitPrice, pnlPercent, result, reason, lesson?, label?, categories? |
+| \`memory_get_insights\` | Get personalized insights | query |
+| \`memory_check_pattern\` | Check pattern history | symbol, setup |
+| \`memory_remember\` | Store notes/observations | content, label?, categories?, tags? |
+| \`memory_recall\` | Search memories | query, limit? |
+| \`memory_get_all\` | Get all memories | (none) |
+| \`memory_delete\` | Delete specific memory | memoryId |
+
+### Memory Tools Use Cases:
+- **Preferences**: Store leverage, risk settings, trading rules
+- **Trade Journal**: Log all trades with entry/exit reasons and lessons
+- **Pattern Learning**: AI learns from your winning and losing patterns
+- **Key Levels**: Remember support/resistance and market observations
+- **Personalized Insights**: Get recommendations based on your history
+
+### Memory Metadata Fields:
+- \`label\`: Categorize memories (e.g., "leverage", "support", "scalp")
+- \`categories\`: Group memories (e.g., "risk-management", "technical-analysis")
+- \`tags\`: Additional tags for filtering
+
+## Position Management & Sentiment Tools (2) - NEW
+
+| Tool | Description | Parameters |
+|------|-------------|------------|
+| \`close_position\` | Close/reduce Hyperliquid positions | symbol, percentage?, isTestnet?, confirmMainnet? |
+| \`get_market_sentiment\` | Fear & Greed + BTC Dominance + Funding | includeFearGreed?, includeBtcDominance?, includeFundingSummary? |
+
+### close_position
+Close or reduce existing positions on Hyperliquid (testnet/mainnet).
+
+**Parameters:**
+- \`symbol\` (required): Asset symbol (e.g., "BTC", "ETH")
+- \`percentage\` (optional): 1-100%, default 100 for full close
+- \`isTestnet\` (optional): true (default) or false for mainnet
+- \`confirmMainnet\` (required for mainnet): Must be true to execute on mainnet
+
+### get_market_sentiment
+Get comprehensive market sentiment from FREE APIs.
+
+**Output:**
+- Fear & Greed Index (0-100, from alternative.me)
+- BTC Dominance (%, from CoinGecko)
+- Funding Rate Summary (from Hyperliquid)
+- Overall sentiment score with trading recommendation
+`,
+            },
+        ],
+    };
+});
+// NEW: AI Memory Tools Guide Resource
+server.registerResource('memory-tools-guide', 'geartrade://docs/memory-tools', {
+    description: 'Complete guide to AI Memory tools for personalized trading',
+    mimeType: 'text/markdown',
+}, async () => {
+    return {
+        contents: [
+            {
+                uri: 'geartrade://docs/memory-tools',
+                mimeType: 'text/markdown',
+                text: `# AI Memory Tools Guide
+
+## Overview
+GearTrade includes 8 AI Memory tools powered by Mem0 for personalized trading assistance. The AI learns from your preferences, trades, and observations to provide better recommendations over time.
+
+## Memory Tools (8)
+
+### 1. memory_save_preference
+Save trading preferences that the AI will remember.
+
+**Parameters:**
+- \`preference\` (required): What to remember
+- \`label\` (optional): Category label (e.g., "leverage", "risk")
+- \`categories\` (optional): Group category (e.g., "risk-management")
+
+**Example:**
+\`\`\`
+preference: "Default leverage for BTC is 5x, for altcoins use 3x"
+label: "leverage"
+categories: "risk-management"
+\`\`\`
+
+### 2. memory_log_trade
+Log completed trades for pattern learning.
+
+**Parameters:**
+- \`symbol\` (required): Asset symbol (BTC, ETH, SOL)
+- \`side\` (required): LONG or SHORT
+- \`entryPrice\` (required): Entry price
+- \`exitPrice\` (required): Exit price
+- \`pnlPercent\` (required): PnL percentage
+- \`result\` (required): win, loss, or breakeven
+- \`reason\` (required): Entry/exit reason
+- \`lesson\` (optional): Lesson learned
+- \`label\` (optional): Trade type (scalp, swing, position)
+- \`categories\` (optional): Strategy category
+
+**Example:**
+\`\`\`
+symbol: "BTC"
+side: "LONG"
+entryPrice: 95000
+exitPrice: 97500
+pnlPercent: 2.63
+result: "win"
+reason: "RSI oversold at support, took profit at resistance"
+lesson: "Support levels are reliable for BTC entries"
+label: "swing"
+categories: "momentum"
+\`\`\`
+
+### 3. memory_get_insights
+Get personalized insights based on your history.
+
+**Parameters:**
+- \`query\` (required): What insight you want
+
+**Example Queries:**
+- "my BTC trading performance"
+- "common mistakes I make"
+- "best setups for SOL"
+- "lessons from losing trades"
+
+### 4. memory_check_pattern
+Check if current setup matches historical patterns.
+
+**Parameters:**
+- \`symbol\` (required): Asset symbol
+- \`setup\` (required): Current setup description
+
+**Example:**
+\`\`\`
+symbol: "ETH"
+setup: "RSI oversold with bullish divergence at support"
+\`\`\`
+
+**Returns:** Win rate, similar trades, recommendation
+
+### 5. memory_remember
+Store any important note or observation.
+
+**Parameters:**
+- \`content\` (required): What to remember
+- \`label\` (optional): Category label
+- \`categories\` (optional): Group category
+- \`tags\` (optional): Array of tags
+
+**Example:**
+\`\`\`
+content: "BTC has strong support at 94000"
+label: "support"
+categories: "technical-analysis"
+\`\`\`
+
+### 6. memory_recall
+Search and retrieve stored memories.
+
+**Parameters:**
+- \`query\` (required): Search query
+- \`limit\` (optional): Max results (default: 5)
+
+**Example Queries:**
+- "leverage settings"
+- "BTC support levels"
+- "trading rules"
+
+### 7. memory_get_all
+Get all stored memories for review.
+
+**Parameters:** None
+
+### 8. memory_delete
+Delete a specific memory by ID.
+
+**Parameters:**
+- \`memoryId\` (required): Memory ID to delete
+
+---
+
+## Best Practices
+
+### Organizing Memories with Labels & Categories
+
+**Labels (specific):**
+- \`leverage\` - Leverage settings
+- \`risk\` - Risk management rules
+- \`support\` - Support levels
+- \`resistance\` - Resistance levels
+- \`scalp\` - Scalp trades
+- \`swing\` - Swing trades
+- \`position\` - Position trades
+
+**Categories (broad):**
+- \`risk-management\` - All risk-related
+- \`technical-analysis\` - TA observations
+- \`position-sizing\` - Size calculations
+- \`momentum\` - Momentum strategies
+- \`reversal\` - Reversal patterns
+- \`breakout\` - Breakout trades
+
+### Workflow Integration
+
+**Before Trading:**
+1. \`memory_recall\` - Check preferences for the asset
+2. \`memory_check_pattern\` - Validate current setup
+3. \`memory_get_insights\` - Review past performance
+
+**After Trading:**
+1. \`memory_log_trade\` - Log the trade with full context
+2. Include lesson learned for future reference
+
+**Regular Maintenance:**
+1. \`memory_get_all\` - Review all memories
+2. \`memory_delete\` - Remove outdated information
 `,
             },
         ],
