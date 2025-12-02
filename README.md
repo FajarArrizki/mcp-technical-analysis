@@ -141,8 +141,11 @@ MEM0_API_KEY=your_mem0_api_key  # Get from https://app.mem0.ai
 
 #### Linux / Mac
 ```bash
-# Start Streaming Server
+# Start Streaming Server (from project root)
 bash scripts/mcp-auto-start.sh
+
+# Or with full path
+bash /path/to/mcp-technical-analysis/scripts/mcp-auto-start.sh
 
 # Or test with MCP client for analysis (separate terminal)
 pnpm run terminal
@@ -150,8 +153,11 @@ pnpm run terminal
 
 #### Windows
 ```cmd
-# Start Streaming Server (runs in background and connects via mcp-remote)
+# Start Streaming Server (from project root)
 scripts\mcp-auto-start.bat
+
+# Or with full path (adjust to your installation directory)
+C:\Users\YourUsername\Downloads\mcp-technical-analysis\scripts\mcp-auto-start.bat
 
 # Or manually start server and test
 pnpm run stream
