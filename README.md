@@ -139,11 +139,22 @@ MEM0_API_KEY=your_mem0_api_key  # Get from https://app.mem0.ai
 
 ### ⚡ Fastest Way - Streaming Mode (Recommended)
 
+#### Linux / Mac
 ```bash
-# Terminal 1 - Start Streaming Server
+# Start Streaming Server
 bash scripts/mcp-auto-start.sh
 
-# Terminal 2 - Test with MCP client for analysis
+# Or test with MCP client for analysis (separate terminal)
+pnpm run terminal
+```
+
+#### Windows
+```cmd
+# Start Streaming Server (runs in background and connects via mcp-remote)
+scripts\mcp-auto-start.bat
+
+# Or manually start server and test
+pnpm run stream
 pnpm run terminal
 ```
 
