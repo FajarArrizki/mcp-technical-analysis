@@ -26,7 +26,7 @@ A comprehensive Model Context Protocol (MCP) server that bridges AI assistants w
 
 
 **🔥 Key Features:**
-- 🔴 **58 Analysis & Trading Tools** - Complete market analysis + trading execution toolkit
+- 🔴 **66 Analysis & Trading Tools** - Complete market analysis + trading execution toolkit
 - 📊 **Real-time Market Data** - Live prices, indicators, volume analysis
 - 🎯 **Advanced Technical Analysis** - RSI, MACD, Fibonacci, Order Book, etc.
 - 💰 **Risk Management** - Position sizing, stop loss, take profit calculations
