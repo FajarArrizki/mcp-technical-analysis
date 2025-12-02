@@ -460,41 +460,41 @@ nameserver 1.0.0.1
 
 | Technology | Version | Purpose |
 |-----------|---------|---------|
-| **🎯 [Nullshot AI Agent Framework](https://nullshot.ai)** | latest | MCP server development & deployment framework |
+| **Nullshot AI Agent Framework](https://nullshot.ai)** | latest | MCP server development & deployment framework |
 | @nullshot/mcp | latest | Nullshot MCP SDK for AI-powered applications |
 | @nullshot/cli | latest | CLI tools for development workflow |
-| **⚙️ Node.js** | - | JavaScript runtime environment |
+| **Node.js** | - | JavaScript runtime environment |
 | TypeScript | ^5.0.0 | Static type checking and compilation |
 | tsx | ^4.20.6 | TypeScript execution for development |
-| **📦 pnpm** | - | Fast, disk space efficient package manager |
-| **✅ Zod** | ^3.22.4 | TypeScript-first schema validation |
-| **🌐 Node.js HTTP/HTTPS** | Built-in | Core web server |
+| **pnpm** | - | Fast, disk space efficient package manager |
+| **Zod** | ^3.22.4 | TypeScript-first schema validation |
+| **Node.js HTTP/HTTPS** | Built-in | Core web server |
 | Server-Sent Events (SSE) | Native | Real-time streaming transport |
 | mcp-remote | npm package | Remote MCP client connection support |
 | **📡 Hyperliquid API** | @nktkas/hyperliquid ^0.27.1 | Real-time prices, L2 order book, funding, OI, trading |
 | HyperScreener API | REST API | Whale positions, liquidations, L/S ratio, large trades |
 | Binance API | REST API | Historical candles, multi-timeframe data |
-| **🧠 Mem0 Platform** | mem0ai ^2.1.38 | AI-powered persistent memory with vector search |
-| **📊 Custom Indicators** | 70+ Built-in | MAs, oscillators, volume, volatility, trend, strength |
+| **Mem0 Platform** | mem0ai ^2.1.38 | AI-powered persistent memory with vector search |
+| **Custom Indicators** | 70+ Built-in | MAs, oscillators, volume, volatility, trend, strength |
 | Market Analysis | Built-in | Volume profile, market structure, patterns, divergence |
 | Risk Management | Built-in | Position sizing, SL/TP, R:R calculations |
-| **💹 Hyperliquid Trading** | @nktkas/hyperliquid ^0.27.1 | Testnet/mainnet futures with slippage protection |
+| **Hyperliquid Trading** | @nktkas/hyperliquid ^0.27.1 | Testnet/mainnet futures with slippage protection |
 | Wallet Management | ethers.js ^6.15.0 | Ethereum wallet integration for trading |
 | Order Types | Custom | Market (auto-retry), Limit, Custom entry |
 | Mem0 Integration | mem0ai ^2.1.38 | Trading preferences, journal, pattern learning |
 | Vector Search | Mem0 Built-in | Semantic memory recall with similarity matching |
 | LLM Extraction | Mem0 Built-in | Intelligent context extraction from trading data |
-| **🔧 TypeScript Compiler** | tsc ^5.0.0 | Build tool for production |
+| **TypeScript Compiler** | tsc ^5.0.0 | Build tool for production |
 | dotenv | ^17.2.3 | Environment variable management |
 | Auto-start Scripts | .bat/.sh | Windows and Linux/Mac server automation |
-| **💻 Cursor IDE** | - | Desktop IDE with MCP support |
+| **Cursor IDE** | - | Desktop IDE with MCP support |
 | Claude Desktop | - | Desktop app with MCP integration |
 | Claude Code CLI | - | Command-line MCP client |
 | mcp-remote | npm | Remote HTTP/SSE MCP transport |
-| **🔒 Asset Whitelist** | Built-in | Mainnet trading safety |
+| **Asset Whitelist** | Built-in | Mainnet trading safety |
 | Position Limits | Built-in | Max 25% account equity per trade |
 | Confirmation Required | Built-in | Explicit mainnet execution approval |
-| **🌍 Linux** | ✅ | Full support with .sh scripts |
+| **Linux** | ✅ | Full support with .sh scripts |
 | macOS | ✅ | Full support with .sh scripts |
 | Windows | ✅ | Full support with .bat scripts |
 
