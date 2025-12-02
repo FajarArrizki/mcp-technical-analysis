@@ -14,7 +14,7 @@ A comprehensive Model Context Protocol (MCP) server that bridges AI assistants w
   <br><br>
   <div style="position: relative; width: 100%;">
     <div style="position: absolute; left: 0; display: flex; gap: 10px;">
-      <a href="https://www.youtube.com/watch?v=SVaSJQo2iSk&autoplay=1">
+      <a href="https://youtu.be/9d5ZlVpYxpM?si=rt57UDoy68AZaywL">
         <img src="https://img.shields.io/badge/Coming_Soon-FF0000?style=for-the-badge" alt="Coming Soon">
       </a>
       <a href="https://nullshot.ai/brainstorm/c5ee234a-da45-4c8e-8b1b-2df3cc5abadb">
@@ -26,7 +26,7 @@ A comprehensive Model Context Protocol (MCP) server that bridges AI assistants w
 
 
 **🔥 Key Features:**
-- 🔴 **58 Analysis & Trading Tools** - Complete market analysis + trading execution toolkit
+- 🔴 **66 Analysis & Trading Tools** - Complete market analysis + trading execution toolkit
 - 📊 **Real-time Market Data** - Live prices, indicators, volume analysis
 - 🎯 **Advanced Technical Analysis** - RSI, MACD, Fibonacci, Order Book, etc.
 - 💰 **Risk Management** - Position sizing, stop loss, take profit calculations
