@@ -8,7 +8,7 @@ A comprehensive Model Context Protocol (MCP) server that bridges AI assistants w
 *Watch the full demonstration of AI-powered cryptocurrency analysis capabilities*
 
 <div align="center">
-  <a href="https://www.youtube.com/watch?v=SVaSJQo2iSk&autoplay=1">
+  <a href="https://youtu.be/9d5ZlVpYxpM?si=rt57UDoy68AZaywL&autoplay=1">
     <img src="https://img.youtube.com/vi/SVaSJQo2iSk/maxresdefault.jpg" alt="MCP Technical Analysis Server Demo" width="100%">
   </a>
   <br><br>
