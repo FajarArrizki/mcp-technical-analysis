@@ -9,7 +9,7 @@ A comprehensive Model Context Protocol (MCP) server that bridges AI assistants w
 
 <div align="center">
   <a href="https://youtu.be/9d5ZlVpYxpM?si=rt57UDoy68AZaywL&autoplay=1">
-    <img src="https://img.youtube.com/vi/SVaSJQo2iSk/maxresdefault.jpg" alt="MCP Technical Analysis Server Demo" width="100%">
+    <img src="https://youtu.be/9d5ZlVpYxpM?si=rt57UDoy68AZaywL/maxresdefault.jpg" alt="MCP Technical Analysis Server Demo" width="100%">
   </a>
   <br><br>
   <div style="position: relative; width: 100%;">
