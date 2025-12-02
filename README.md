@@ -43,6 +43,37 @@ A comprehensive Model Context Protocol (MCP) server that bridges AI assistants w
 - 🧠 **AI Memory (Mem0)** - Persistent memory for trading preferences, trade journal, pattern learning
 - ✅ **Fully Tested** - All 60 tools validated and working (December 2024)
 
+## 🛠️ **Technology Stack**
+
+### Core Technologies
+- **Runtime**: Node.js with TypeScript
+- **Package Manager**: pnpm (Fast, disk space efficient)
+- **MCP Protocol**: Model Context Protocol SDK (@modelcontextprotocol/sdk)
+- **HTTP Server**: Built-in Node.js HTTP/HTTPS with SSE (Server-Sent Events)
+- **Validation**: Zod schema validation for type-safe operations
+
+### Data Sources & APIs
+- **Hyperliquid API** - Real-time prices, L2 order book, funding rates, open interest, trading execution
+- **HyperScreener API** - Whale positions, liquidations, long/short ratio, large trades, top traders
+- **Binance API** - Historical candles, multi-timeframe data, market data
+- **Mem0 Platform** - AI-powered persistent memory with vector search
+
+### Technical Analysis Libraries
+- **70+ Custom Indicators** - Moving averages, oscillators, volume, volatility, trend, strength indicators
+- **Market Analysis** - Volume profile, market structure, candlestick patterns, divergence detection
+- **Risk Management** - Position sizing, stop loss, take profit, R:R calculations
+
+### Trading & Execution
+- **Hyperliquid Trading** - Futures trading on testnet & mainnet with slippage protection
+- **Order Types** - Market, limit, custom entry with configurable slippage (0.01%-50%)
+- **Safety Features** - Asset whitelist, position size limits, explicit confirmation for mainnet
+
+### Development & Deployment
+- **Build Tool**: TypeScript compiler (tsc)
+- **Streaming**: HTTP/SSE for real-time MCP communication
+- **Cross-Platform**: Linux, macOS, Windows support with auto-start scripts
+- **MCP Clients**: Cursor IDE, Claude Desktop, Claude Code CLI, mcp-remote
+
 ## 📋 Recent Updates
 
 ### December 2024 - AI Memory Integration (Mem0) + New Tools
