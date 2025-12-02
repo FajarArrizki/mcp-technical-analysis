@@ -137,36 +137,8 @@ MEM0_API_KEY=your_mem0_api_key  # Get from https://app.mem0.ai
 
 ## 🚀 **Quick Start**
 
-### ⚡ Fastest Way - Streaming Mode (Recommended)
+### 1️⃣ Installation
 
-#### Linux / Mac
-```bash
-# Start Streaming Server (from project root)
-bash scripts/mcp-auto-start.sh
-
-# Or with full path
-bash /path/to/mcp-technical-analysis/scripts/mcp-auto-start.sh
-
-# Or test with MCP client for analysis (separate terminal)
-pnpm run terminal
-```
-
-#### Windows
-```cmd
-# Start Streaming Server (from project root)
-scripts\mcp-auto-start.bat
-
-# Or with full path (adjust to your installation directory)
-C:\Users\YourUsername\Downloads\mcp-technical-analysis\scripts\mcp-auto-start.bat
-
-# Or manually start server and test
-pnpm run stream
-pnpm run terminal
-```
-
-Server runs at `http://localhost:8787` with SSE streaming support for real-time market analysis!
-
-### Installation:
 ```bash
 # Clone the repository
 git clone https://github.com/FajarArrizki/mcp-technical-analysis.git
@@ -179,51 +151,73 @@ pnpm install
 pnpm run build
 ```
 
+### 2️⃣ Run Server
 
-### 🔧 MCP Client Configuration
+Server runs at `http://localhost:8787` with SSE streaming support for real-time market analysis!
 
-#### Windows Configuration
+#### 🐧 Linux / Mac
+```bash
+# Start Streaming Server (from project root)
+bash scripts/mcp-auto-start.sh
 
-**For Cursor IDE / Claude Desktop** (`mcp.json` or `.cursor/mcp.json`):
+# Or with full path
+bash /path/to/mcp-technical-analysis/scripts/mcp-auto-start.sh
+```
+
+#### 🪟 Windows
+```cmd
+# Start Streaming Server (from project root)
+scripts\mcp-auto-start.bat
+
+# Or with full path (adjust to your installation directory)
+C:\Users\YourUsername\Downloads\mcp-technical-analysis\scripts\mcp-auto-start.bat
+```
+
+**Alternative - Manual Start:**
+```bash
+# Terminal 1 - Start server
+pnpm run stream
+
+# Terminal 2 - Test with MCP client
+pnpm run terminal
+```
+
+### 3️⃣ Add to MCP Client
+
+#### 🪟 Windows - Cursor IDE / Claude Desktop
+
+Add to `mcp.json` or `.cursor/mcp.json`:
 ```json
 {
   "mcpServers": {
-    "geartrade-v2": {
+    "mcp-technical-analysis": {
       "command": "cmd",
-      "args": ["/c", "cd /d C:\\Users\\hp5cd\\mcp-technical-analysis\\mcp-technical-analysis\\packages\\geartrade-mcp-server && node dist\\local-server.js"],
+      "args": ["/c", "C:\\Users\\YourUsername\\Downloads\\mcp-technical-analysis\\scripts\\mcp-auto-start.bat"],
       "env": {
         "CANDLES_COUNT": "75"
       },
-      "description": "GearTrade MCP Server v2 - Windows"
+      "description": "MCP Technical Analysis Server - Windows"
     }
   }
 }
 ```
 
-#### Linux Configuration
+#### 🐧 Linux / Mac - Cursor IDE / Claude Desktop
 
-**Start the server:**
-```bash
-cd /root/GEARTRADE
-bash scripts/mcp-auto-start.sh
-```
-
-Server runs at `http://localhost:8787` with SSE streaming support!
-
-**For Cursor IDE / Claude Desktop** (`.cursor/mcp.json` or `mcp.json`):
+Add to `.cursor/mcp.json` or `mcp.json`:
 ```json
 {
   "mcpServers": {
     "mcp-technical-analysis": {
       "command": "bash",
-      "args": ["/root/GEARTRADE/scripts/mcp-auto-start.sh"],
-      "description": "MCP Technical Analysis Server - Localhost Only"
+      "args": ["/path/to/mcp-technical-analysis/scripts/mcp-auto-start.sh"],
+      "description": "MCP Technical Analysis Server - Linux/Mac"
     }
   }
 }
 ```
 
-#### Claude Code (CLI) - Both Platforms
+#### ⚡ Claude Code (CLI) - All Platforms
 
 ```bash
 # Add the MCP server to Claude Code
@@ -232,13 +226,13 @@ claude mcp add --transport http mcp-technical-analysis http://localhost:8787/mcp
 # List configured servers
 claude mcp list
 
-# Check server status in Claude Code
+# Check server status
 /mcp
 ```
 
-#### Remote Access via mcp-remote
+#### 🌐 Remote Access via mcp-remote
 
-**For remote MCP connection** (`.mcp.json` in project root):
+For remote MCP connection, add to `.mcp.json` in project root:
 ```json
 {
   "mcpServers": {
