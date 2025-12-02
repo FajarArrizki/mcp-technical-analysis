@@ -43,37 +43,6 @@ A comprehensive Model Context Protocol (MCP) server that bridges AI assistants w
 - 🧠 **AI Memory (Mem0)** - Persistent memory for trading preferences, trade journal, pattern learning
 - ✅ **Fully Tested** - All 60 tools validated and working (December 2024)
 
-## 🛠️ **Technology Stack**
-
-### Core Technologies
-- **Runtime**: Node.js with TypeScript
-- **Package Manager**: pnpm (Fast, disk space efficient)
-- **MCP Protocol**: Model Context Protocol SDK (@modelcontextprotocol/sdk)
-- **HTTP Server**: Built-in Node.js HTTP/HTTPS with SSE (Server-Sent Events)
-- **Validation**: Zod schema validation for type-safe operations
-
-### Data Sources & APIs
-- **Hyperliquid API** - Real-time prices, L2 order book, funding rates, open interest, trading execution
-- **HyperScreener API** - Whale positions, liquidations, long/short ratio, large trades, top traders
-- **Binance API** - Historical candles, multi-timeframe data, market data
-- **Mem0 Platform** - AI-powered persistent memory with vector search
-
-### Technical Analysis Libraries
-- **70+ Custom Indicators** - Moving averages, oscillators, volume, volatility, trend, strength indicators
-- **Market Analysis** - Volume profile, market structure, candlestick patterns, divergence detection
-- **Risk Management** - Position sizing, stop loss, take profit, R:R calculations
-
-### Trading & Execution
-- **Hyperliquid Trading** - Futures trading on testnet & mainnet with slippage protection
-- **Order Types** - Market, limit, custom entry with configurable slippage (0.01%-50%)
-- **Safety Features** - Asset whitelist, position size limits, explicit confirmation for mainnet
-
-### Development & Deployment
-- **Build Tool**: TypeScript compiler (tsc)
-- **Streaming**: HTTP/SSE for real-time MCP communication
-- **Cross-Platform**: Linux, macOS, Windows support with auto-start scripts
-- **MCP Clients**: Cursor IDE, Claude Desktop, Claude Code CLI, mcp-remote
-
 ## 📋 Recent Updates
 
 ### December 2024 - AI Memory Integration (Mem0) + New Tools
@@ -486,6 +455,51 @@ nameserver 1.0.0.1
 | 30 | `swing_trading` | Medium-term swing trading analysis |
 | 31 | `trend_following` | Long-term trend following strategies |
 | 32 | `arbitrage_opportunities` | Cross-exchange and cross-asset arbitrage |
+
+## 🛠️ **Technology Stack**
+
+### 🎯 Framework & Core
+- **[Nullshot](https://nullshot.ai)** - MCP Server development framework for AI-powered applications
+- **Runtime**: Node.js with TypeScript
+- **Package Manager**: pnpm (Fast, disk space efficient)
+- **MCP Protocol**: Model Context Protocol SDK (@modelcontextprotocol/sdk)
+- **Validation**: Zod schema validation for type-safe operations
+
+### 🌐 Server & Communication
+- **HTTP Server**: Built-in Node.js HTTP/HTTPS
+- **Streaming**: Server-Sent Events (SSE) for real-time updates
+- **MCP Transport**: HTTP/SSE streaming with mcp-remote support
+- **Cross-Platform**: Linux, macOS, Windows compatibility
+
+### 📡 Data Sources & APIs
+- **Hyperliquid API** - Real-time prices, L2 order book, funding rates, open interest, trading execution
+- **HyperScreener API** - Whale positions, liquidations, long/short ratio, large trades, top traders
+- **Binance API** - Historical candles, multi-timeframe data, market data
+- **Mem0 Platform** - AI-powered persistent memory with vector search and LLM extraction
+
+### 📊 Technical Analysis Engine
+- **70+ Custom Indicators** - Moving averages, oscillators, volume, volatility, trend, strength indicators
+- **Market Analysis** - Volume profile, market structure, candlestick patterns, divergence detection
+- **Risk Management** - Position sizing, stop loss, take profit, risk-reward ratio calculations
+- **Multi-Timeframe** - Daily, 4H, 1H trend alignment and confirmation signals
+
+### 💹 Trading & Execution
+- **Hyperliquid Trading** - Futures trading on testnet & mainnet with intelligent slippage handling
+- **Order Types** - Market (auto-retry), Limit (exact price), Custom (user-defined entry)
+- **Slippage Protection** - Configurable 0.01% - 50% with auto-fallback to GTC
+- **Safety Features** - Asset whitelist, position size limits (25% max), explicit mainnet confirmation
+
+### 🔧 Development Tools
+- **Build Tool**: TypeScript compiler (tsc)
+- **Scripts**: Auto-start scripts for Windows (.bat) and Linux/Mac (.sh)
+- **MCP Clients**: Cursor IDE, Claude Desktop, Claude Code CLI, mcp-remote
+- **Logging**: Structured logging with file output support
+
+### 🧠 AI & Memory
+- **Mem0 Integration** - Persistent trading memory (preferences, trades, patterns, insights)
+- **Vector Search** - Semantic memory recall with similarity matching
+- **LLM Extraction** - Intelligent context extraction from trading data
+- **Pattern Learning** - Historical win rate analysis and setup matching
 
 ## 🏗️ Architecture
 ```
