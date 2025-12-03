@@ -368,7 +368,33 @@ nameserver 1.0.0.1
 
 ## 📦 MCP Capabilities
 
-### 🔧 Tools (58)
+The MCP Technical Analysis Server exposes **104 total components** through the Model Context Protocol:
+- **69 Tools** - Executable functions for analysis, trading, and account management
+- **31 Prompts** - Pre-configured AI workflows for trading strategies
+- **4 Resources** - Educational documentation and guides
+
+### Component Breakdown
+
+```
+📊 Total: 104 Components
+├─ 🔧 Tools: 69
+│  ├─ Account (10): Account ops, bridge, AI memory
+│  ├─ Analysis (15): Market analysis, patterns, structure
+│  ├─ Data (3): Price, positions, ratios
+│  ├─ Indicators (35): MAs, oscillators, channels, patterns
+│  └─ Trading (6): Futures, spot, risk management
+├─ 🤖 Prompts: 31
+│  ├─ Day Trading (9): Scalping, momentum, range
+│  ├─ Swing Trading (11): Multi-timeframe, patterns
+│  └─ Position Trading (11): Long-term trends, macro
+└─ 📚 Resources: 4
+   ├─ Trading Strategy Guide
+   ├─ Technical Analysis Reference
+   ├─ Risk Management Guide
+   └─ Tool Usage Patterns
+```
+
+### 🔧 Tools (69)
 
 | No | Tool Name | Description |
 |----|-----------|-------------|
@@ -575,31 +601,27 @@ nameserver 1.0.0.1
 | Windows | ✅ | Full support with .bat scripts |
 
 ## 🏗️ Architecture
+
+### High-Level Overview
+
 ```
-╔═════════════════════════════════════════════════════════════════════════════════════════╗
-║                                                                                         ║
-║                           MCP TECHNICAL ANALYSIS SERVER                                 ║
-║                         AI-Powered Cryptocurrency Analysis                              ║
-║                                                                                         ║
-╠═════════════════════════════════════════════════════════════════════════════════════════╣
-║                                                                                         ║
-║                           ╭─────────────────────────────────────╮                       ║
-║                           │  AI ASSISTANTS                      │                       ║
-║                           │  ┌─────────┐ ┌─────────┐ ┌────────┐ │                       ║
-║                           │  │ Claude  │ │ Cursor  │ │ Custom │ │                       ║
-║                           │  └────┬─── ┘ └───┬──── ┘ └──┬─── ─┘ │                       ║
-║                           ╰───────┼──────────┼──────────┼───────╯                       ║
-║                                   │          │          │                               ║
-║                                   └──────────┼──────────┘                               ║
-║                                              │                                          ║
-║                                        ◀═══ MCP ═══▶                                   ║
-║                                              │                                          ║
-║  ┌───────────────────────────────────────────┼───────────────────────────────────────┐  ║
-║  │                                           ▼                                       │  ║
-║  │  ╔═════════════════════════════════════════════════════════════════════════════╗  │  ║
-║  │  ║                       GEARTRADE MCP SERVER v2.0                             ║  │  ║
-║  │  ║                 68 Tools • 22 Resources • 32 Prompts                        ║  │  ║
-║  │  ╚═════════════════════════════════════════════════════════════════════════════╝  │  ║
+┌─────────────────────────────────────────────────────────────────────┐
+│                      AI ASSISTANTS LAYER                            │
+│  ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐     │
+│  │  Claude  │    │  Cursor  │    │  GPT-4   │    │  Custom  │     │
+│  └────┬─────┘    └────┬─────┘    └────┬─────┘    └────┬─────┘     │
+└───────┼───────────────┼───────────────┼───────────────┼───────────┘
+        │               │               │               │
+        └───────────────┴───────────────┴───────────────┘
+                            │
+                   ◀═══ MCP Protocol ═══▶
+                            │
+┌───────────────────────────┼──────────────────────────────────────────┐
+│                           ▼                                          │
+│  ╔═══════════════════════════════════════════════════════════════╗  │
+│  ║          GEARTRADE MCP SERVER v1.1.0                          ║  │
+│  ║   69 Tools • 31 Prompts • 4 Resources • 104 Components        ║  │
+│  ╚═══════════════════════════════════════════════════════════════╝  │
 ║  │                                           │                                       │  ║
 ║  │                                           ▼                                       │  ║
 ║  │  ┌─────────────────────────────────────────────────────────────────────────────┐  │  ║
@@ -761,73 +783,156 @@ The server integrates data from [HyperScreener](https://hyperscreener.asxn.xyz/)
 ## 📁 Project Structure
 
 ```
-GEARTRADE/
+mcp-technical-analysis/
 ├── packages/
-│   └── geartrade-mcp-server/               # Main MCP server package
-│       ├── src/
-│       │   ├── index.ts                    # MCP server entry (68 tools, 22 resources, 32 prompts)
+│   ├── .env.example                        # Environment variables template
+│   └── geartrade-mcp-server/               # Main MCP server package (v1.1.0)
+│       ├── src/                            # Source code (TypeScript)
+│       │   ├── index.ts                    # Entry point (804 lines, 83.8% reduction!)
+│       │   │                               # Registers 69 tools, 31 prompts, 4 resources
+│       │   ├── formatters/                 # Output formatting utilities (17 files)
+│       │   │   ├── indicators.ts           # Technical indicator formatting
+│       │   │   ├── volume.ts               # Volume analysis formatting
+│       │   │   ├── orderbook.ts            # Order book depth formatting
+│       │   │   ├── liquidation.ts          # Liquidation levels formatting
+│       │   │   ├── position.ts             # Position data formatting
+│       │   │   └── ...                     # 12 other formatters
 │       │   ├── memory/                     # AI Memory (Mem0) integration
-│       │   │   ├── index.ts                # Memory service singleton
-│       │   │   └── types.ts                # TypeScript interfaces
-│       │   ├── tools/                      # MCP tools registration
-│       │   │   ├── memory-tools.ts         # 8 memory tools
-│       │   │   ├── hyperliquid-account-operations.ts   # 6 account operations (NEW Dec 3, 2025)
-│       │   │   ├── hyperliquid-bridge-operations.ts    # 2 bridge operations (NEW Dec 3, 2025)
-│       │   │   ├── spot-trading.ts                     # Spot trading (NEW Dec 3, 2025)
-│       │   │   ├── hyperliquid-testnet-futures-trade.ts  # Testnet futures
-│       │   │   ├── hyperliquid-mainnet-futures-trade.ts  # Mainnet futures
-│       │   │   └── ...                     # Other tool files
-│       │   └── signal-generation/          # Analysis engine modules
-│       │       ├── ai/                     # AI integration
-│       │       ├── analysis/               # Market analysis modules
-│       │       ├── config/                 # Configuration
-│       │       ├── data-fetchers/          # Market data sources
-│       │       ├── exit-conditions/        # Exit condition logic
-│       │       ├── formatting/             # Data formatting utilities
-│       │       ├── monitoring/             # Monitoring and logging
-│       │       ├── position-management/    # Position management
-│       │       ├── risk-management/        # Risk management
-│       │       ├── signal-generation/      # Signal generation logic
-│       │       ├── technical-indicators/   # Technical analysis
-│       │       ├── types/                  # TypeScript types
-│       │       ├── utils/                  # Utilities
-│       │       └── validation/             # Input validation
-│       ├── local-server.ts                 # HTTP/SSE streaming server for MCP
-│       ├── package.json                    # MCP server package configuration
+│       │   │   └── [Memory storage files]  # Trade journal, preferences
+│       │   ├── prompts/                    # AI prompt templates (31 prompts)
+│       │   │   └── index.ts                # Day/Swing/Position trading workflows
+│       │   ├── resources/                  # Educational resources (4 resources)
+│       │   │   └── index.ts                # Trading guides and references
+│       │   ├── server/                     # HTTP/SSE infrastructure
+│       │   │   ├── cors.ts                 # CORS middleware
+│       │   │   └── json-rpc.ts             # JSON-RPC 2.0 handler
+│       │   ├── tools/                      # 69 MCP tools (Modular Architecture ✨)
+│       │   │   ├── README.md               # Tools documentation
+│       │   │   ├── index.ts                # Main registration (imports all categories)
+│       │   │   ├── account/                # Account tools (10 tools)
+│       │   │   │   ├── index.ts            # Export all account tools
+│       │   │   │   ├── hyperliquid-account-operations.ts   # 1 tool, 6 operations
+│       │   │   │   ├── hyperliquid-bridge-operations.ts    # 1 tool, 2 operations
+│       │   │   │   └── memory-tools.ts     # 8 AI memory tools
+│       │   │   ├── analysis/               # Analysis tools (15 tools)
+│       │   │   │   ├── index.ts            # Export all analysis tools
+│       │   │   │   ├── market-sentiment.ts # Market sentiment (1 tool)
+│       │   │   │   ├── technical-analysis-tools.ts   # Indicators, volume, MTF (3 tools)
+│       │   │   │   ├── market-data-tools.ts          # Orderbook, liquidations, correlation (4 tools)
+│       │   │   │   ├── pattern-analysis-tools.ts     # Patterns, structure, regime (5 tools)
+│       │   │   │   └── whale-analysis-tools.ts       # Whale tracking, tiers (2 tools)
+│       │   │   ├── data/                   # Data tools (3 tools)
+│       │   │   │   ├── index.ts            # Export all data tools
+│       │   │   │   └── price-position-tools.ts       # Price, position, long/short (3 tools)
+│       │   │   ├── indicators/             # Indicator tools (35 tools)
+│       │   │   │   ├── index.ts            # Export all indicator tools
+│       │   │   │   ├── moving-averages.ts  # 10 MA indicators
+│       │   │   │   ├── oscillators.ts      # 14 oscillator indicators
+│       │   │   │   ├── channels.ts         # 3 channel indicators (merged)
+│       │   │   │   ├── pivot-points.ts     # 3 pivot indicators (merged)
+│       │   │   │   ├── trend-indicators.ts # 6 trend indicators (merged)
+│       │   │   │   ├── patterns.ts         # 3 pattern indicators (merged)
+│       │   │   │   ├── strength-indicators.ts     # 4 strength indicators (merged)
+│       │   │   │   ├── volatility-indicators.ts   # 6 volatility indicators (merged)
+│       │   │   │   └── volume-indicators.ts       # 8 volume indicators (merged)
+│       │   │   └── trading/                # Trading tools (6 tools)
+│       │   │       ├── index.ts            # Export all trading tools
+│       │   │       ├── hyperliquid-testnet-futures-trade.ts  # Testnet futures
+│       │   │       ├── hyperliquid-mainnet-futures-trade.ts  # Mainnet futures
+│       │   │       ├── spot-trading.ts     # Spot trading
+│       │   │       ├── close-position.ts   # Position closing
+│       │   │       └── risk-management-tools.ts   # Risk calculations (2 tools)
+│       │   └── signal-generation/          # Core analysis engine
+│       │       ├── analysis/               # Market analysis algorithms
+│       │       │   ├── bounce.ts           # Bounce detection
+│       │       │   ├── candlestick.ts      # Pattern recognition
+│       │       │   ├── divergence.ts       # RSI divergence
+│       │       │   ├── market-regime.ts    # Regime classification
+│       │       │   ├── market-structure.ts # Structure analysis
+│       │       │   ├── tier-classification.ts  # Trader tiers
+│       │       │   ├── trend-detection.ts  # Trend identification
+│       │       │   └── volume-analysis.ts  # Volume profile
+│       │       ├── data-fetchers/          # External API integrations
+│       │       │   ├── hyperliquid.ts      # Hyperliquid exchange API
+│       │       │   ├── hyperscreener.ts    # HyperScreener liquidations/whales
+│       │       │   └── market-data.ts      # Multi-source aggregation
+│       │       ├── exit-conditions/        # Exit strategy calculations
+│       │       │   └── stop-loss.ts        # SL/TP calculations
+│       │       ├── risk-management/        # Risk calculations
+│       │       │   ├── leverage.ts         # Dynamic leverage
+│       │       │   └── margin.ts           # Margin requirements
+│       │       ├── technical-indicators/   # 35+ indicator implementations
+│       │       │   ├── momentum.ts         # RSI, MACD, Stochastic
+│       │       │   ├── fibonacci.ts        # Fibonacci retracement
+│       │       │   ├── correlation-analysis.ts  # BTC correlation
+│       │       │   └── ...                 # 32 other indicators
+│       │       ├── types/                  # TypeScript type definitions
+│       │       └── utils/                  # Utility functions
+│       ├── dist/                           # Compiled JavaScript output
+│       ├── package.json                    # Package v1.1.0 configuration
 │       ├── tsconfig.json                   # TypeScript configuration
-│       └── dist/                           # Compiled JavaScript output
-├── scripts/                                # Utility scripts
-│   └── mcp-auto-start.sh                   # Auto-start MCP server
-├── config-backups/                         # Configuration backup files
-├── logs/                                   # Application logs
-├── package.json                            # Workspace root config
+│       └── local-server.ts                 # HTTP/SSE streaming server
+├── scripts/                                # Automation scripts
+│   ├── mcp-auto-start.sh                   # Linux/Mac auto-start
+│   └── mcp-auto-start.bat                  # Windows auto-start
+├── package.json                            # Workspace root config (v1.1.0)
 ├── pnpm-workspace.yaml                     # PNPM workspace config
 ├── pnpm-lock.yaml                          # Dependency lock file
-├── package-lock.json                       # NPM dependency lock file
 ├── mcp.json                                # MCP configuration
 ├── LICENSE                                 # MIT License
 └── README.md                               # This file
+
+📊 Code Statistics:
+  - Total Files: 150+
+  - Total Lines: 30,000+
+  - TypeScript: 100%
+  - Components: 104 (69 tools + 31 prompts + 4 resources)
+  - Main File Reduction: 4,943 → 804 lines (83.8% reduction!)
 ```
 
 ### Key Directories
 
 | No | Directory | Description |
 |----|-----------|-------------|
-| 1 | `packages/geartrade-mcp-server/src/index.ts` | Main MCP server entry with 58 analysis tools, 22 resources, 32 prompts |
-| 2 | `packages/geartrade-mcp-server/local-server.ts` | HTTP/SSE streaming server for remote MCP client connections |
-| 3 | `packages/geartrade-mcp-server/package.json` | MCP server package configuration and dependencies |
-| 4 | `packages/geartrade-mcp-server/tsconfig.json` | TypeScript configuration for MCP server compilation |
-| 5 | `packages/geartrade-mcp-server/src/memory/` | AI Memory (Mem0) service for persistent trading memory |
-| 6 | `packages/geartrade-mcp-server/src/tools/memory-tools.ts` | 8 memory tools registration for MCP |
-| 7 | `packages/geartrade-mcp-server/src/signal-generation/` | Core analysis engine with market intelligence and indicators |
-| 8 | `packages/geartrade-mcp-server/src/signal-generation/analysis/` | Market analysis modules for pattern recognition |
-| 9 | `packages/geartrade-mcp-server/src/signal-generation/technical-indicators/` | Technical indicator implementations (70+ indicators) |
-| 10 | `packages/geartrade-mcp-server/src/signal-generation/data-fetchers/` | Multi-source market data fetchers (Hyperliquid, HyperScreener, Binance) |
-| 11 | `packages/geartrade-mcp-server/src/signal-generation/risk-management/` | Risk assessment and position sizing calculations |
-| 12 | `packages/geartrade-mcp-server/src/signal-generation/ai/` | Market analysis utilities |
-| 13 | `packages/geartrade-mcp-server/src/signal-generation/monitoring/` | Real-time market monitoring and alerts |
-| 14 | `scripts/` | Utility scripts for development and deployment |
-| 15 | `logs/` | Application logs and debugging information |
+| **Core Entry Points** | |
+| 1 | `packages/geartrade-mcp-server/src/index.ts` | Main entry point (804 lines) - Registers 69 tools, 31 prompts, 4 resources |
+| 2 | `packages/geartrade-mcp-server/local-server.ts` | HTTP/SSE streaming server for remote MCP connections |
+| 3 | `packages/geartrade-mcp-server/dist/` | Compiled JavaScript output (auto-generated from TypeScript) |
+| **Configuration** | |
+| 4 | `packages/geartrade-mcp-server/package.json` | Package v1.1.0 - Dependencies and scripts |
+| 5 | `packages/geartrade-mcp-server/tsconfig.json` | TypeScript compiler configuration |
+| 6 | `packages/.env.example` | Environment variables template (copy to .env) |
+| **Tools (69 tools in 5 categories)** | |
+| 7 | `src/tools/account/` | 10 tools - Account operations, bridge, AI memory (Mem0) |
+| 8 | `src/tools/analysis/` | 15 tools - Market sentiment, technical analysis, whale tracking |
+| 9 | `src/tools/data/` | 3 tools - Real-time prices, positions, long/short ratios |
+| 10 | `src/tools/indicators/` | 35 tools - MAs, oscillators, channels, patterns, volatility |
+| 11 | `src/tools/trading/` | 6 tools - Futures trading, spot trading, risk management |
+| **Formatters & Utilities** | |
+| 12 | `src/formatters/` | 17 files - Output formatting for all tool responses |
+| 13 | `src/prompts/` | 31 prompt templates - Day/Swing/Position trading workflows |
+| 14 | `src/resources/` | 4 educational resources - Trading guides and references |
+| 15 | `src/server/` | HTTP/SSE infrastructure - CORS and JSON-RPC handlers |
+| 16 | `src/memory/` | AI Memory (Mem0) integration - Trade journal & preferences |
+| **Analysis Engine** | |
+| 17 | `src/signal-generation/` | Core analysis engine - Market intelligence & indicators |
+| 18 | `src/signal-generation/analysis/` | 8 modules - Bounce, candlestick, divergence, structure, trends |
+| 19 | `src/signal-generation/technical-indicators/` | 35+ indicators - RSI, MACD, Fibonacci, correlations, etc. |
+| 20 | `src/signal-generation/data-fetchers/` | 3 fetchers - Hyperliquid, HyperScreener, market data aggregation |
+| 21 | `src/signal-generation/risk-management/` | 2 modules - Dynamic leverage & margin calculations |
+| 22 | `src/signal-generation/exit-conditions/` | Exit strategies - Stop loss & take profit calculations |
+| **Automation** | |
+| 23 | `scripts/mcp-auto-start.sh` | Linux/Mac auto-start script with build & restart logic |
+| 24 | `scripts/mcp-auto-start.bat` | Windows auto-start script with build & restart logic |
+| **Documentation** | |
+| 25 | `README.md` (root) | This file - Complete project documentation |
+| 26 | `src/*/README.md` | 16 README files - Detailed documentation for each directory |
+
+**📝 README Files (16 total)**:
+- 1 root README.md
+- 3 main directory READMEs (scripts/, packages/, geartrade-mcp-server/)
+- 3 src/ READMEs (src/, memory/, signal-generation/)
+- 9 subdirectory READMEs (formatters/, prompts/, resources/, server/, tools/account/, tools/analysis/, tools/data/, tools/indicators/, tools/trading/)
 
 ## 🛠️ Development
 
