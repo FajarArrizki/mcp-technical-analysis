@@ -1,9 +1,10 @@
 {
   "mcpServers": {
-    "geartradeTest": {
-      "command": "cmd",
-      "args": ["/c", "C:\\Users\\hp5cd\\Downloads\\mcp-technical-analysis\\scripts\\mcp-auto-start.bat"],
-      "description": "GearTrade MCP Server V2 - 60 Tools (with AI Memory + Position Management)"
+    "geartrade": {
+      "command": "node",
+      "args": [
+        "packages/geartrade-mcp-server/dist/index.js"
+      ]
     }
   }
 }

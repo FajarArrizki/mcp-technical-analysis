@@ -1081,6 +1081,17 @@ const server = {
   },
   registerPrompt(name: string, config: any, handler?: any) {
     this.prompts.set(name, { config, handler })
+  },
+  // Add tool() method as alias for registerTool() for compatibility with new tools
+  tool(name: string, description: string, schema: any, handler: any) {
+    this.tools.set(name, { 
+      config: { 
+        title: name, 
+        description, 
+        inputSchema: schema 
+      }, 
+      handler 
+    })
   }
 } as any
 

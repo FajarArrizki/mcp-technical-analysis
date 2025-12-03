@@ -13,6 +13,8 @@ import * as hl from '@nktkas/hyperliquid'
 // ============================================================================
 
 interface SlippageConfig {
+  type?: 'retry' | 'fixed'
+  fixedSlippage?: number
   startSlippage: number
   maxSlippage: number
   incrementStep: number
@@ -20,6 +22,7 @@ interface SlippageConfig {
 }
 
 const DEFAULT_SLIPPAGE_CONFIG: SlippageConfig = {
+  type: 'retry',
   startSlippage: 0.00010,   // 0.010%
   maxSlippage: 0.08,        // 8.00%
   incrementStep: 0.00010,   // 0.010% per step
@@ -41,10 +44,14 @@ const spotTradeSchema = z.object({
   size: z.string().describe('Order size in token units (e.g., "10" for 10 PURR)'),
   
   // Order type
-  orderType: z.enum(['limit', 'market']).default('market').describe('Order type: "limit" for exact price, "market" for immediate execution with slippage retry (0.010% to 8.00%)'),
+  orderType: z.enum(['limit', 'market']).default('market').describe('Order type: "limit" for exact price, "market" for immediate execution with slippage protection (see slippageType)'),
   
   // Price (optional for market orders)
-  price: z.string().optional().describe('Limit price for limit orders. Market orders use automatic slippage retry like futures.'),
+  price: z.string().optional().describe('Limit price for limit orders. Market orders use automatic slippage protection.'),
+  
+  // Slippage configuration
+  slippageType: z.enum(['retry', 'fixed']).default('retry').optional().describe('Slippage type for market orders: "retry" = auto-retry with increasing slippage (0.010% → 8.00%), "fixed" = single attempt with fixed slippage'),
+  fixedSlippage: z.number().min(0).max(0.5).optional().describe('Fixed slippage percentage for single attempt (e.g., 0.001 = 0.1%, 0.01 = 1%). Only used when slippageType is "fixed".'),
   
   // Testnet/Mainnet
   isTestnet: z.boolean().default(false).describe('Use testnet (true) or mainnet (false). WARNING: Testnet spot has low liquidity. RECOMMENDED: Use mainnet with small amounts.'),
@@ -62,6 +69,7 @@ interface SpotTradeResult {
   orderId?: number
   status?: 'filled' | 'resting' | 'canceled'
   slippage?: number
+  slippageType?: 'retry' | 'fixed'
   error?: string
   details?: any
   timestamp?: number
@@ -468,22 +476,102 @@ export async function spotTrade(input: SpotTradeInput): Promise<SpotTradeResult>
 
     // Execute order based on order type
     if (input.orderType === 'market') {
-      // Market order: use slippage retry mechanism
-      console.log(`   Executing MARKET order with slippage retry...`)
-      
       // Use best bid/ask as base price
       const basePrice = input.side === 'buy' ? tokenInfo.bestAsk : tokenInfo.bestBid
       
-      return await executeSpotWithSlippageRetry(
-        exchClient,
-        assetIndex,
-        tokenInfo.name,
-        input.side,
-        orderSize,
-        basePrice,
-        tokenInfo.priceDecimals,
-        DEFAULT_SLIPPAGE_CONFIG
-      )
+      // Check slippage type
+      const slippageType = input.slippageType || 'retry'
+      
+      if (slippageType === 'fixed') {
+        // Fixed slippage mode - single attempt
+        const fixedSlippage = input.fixedSlippage || 0.01 // Default 1%
+        const orderPrice = calculateSlippagePrice(basePrice, fixedSlippage, input.side, tokenInfo.priceDecimals)
+        
+        console.log(`   Executing MARKET order with FIXED slippage: ${(fixedSlippage * 100).toFixed(3)}%`)
+        console.log(`   Order price: ${orderPrice}`)
+        
+        const orderResult = await placeSpotOrderWithSlippage(
+          exchClient,
+          assetIndex,
+          input.side,
+          orderSize,
+          orderPrice,
+          'Ioc'
+        )
+        
+        if (orderResult.error) {
+          return {
+            success: false,
+            error: orderResult.error,
+            timestamp: Date.now(),
+          }
+        }
+        
+        if (orderResult.status?.type === 'filled') {
+          return {
+            success: true,
+            orderId: orderResult.status.oid,
+            status: 'filled',
+            pair: tokenInfo.name,
+            side: input.side,
+            size: orderResult.status.totalSz,
+            executionPrice: orderResult.status.avgPx,
+            slippage: fixedSlippage * 100,
+            slippageType: 'fixed',
+            details: orderResult.result,
+            timestamp: Date.now(),
+          }
+        }
+        
+        // Order not filled immediately, fallback to GTC
+        console.log('   Order not filled with fixed slippage, placing GTC limit order')
+        
+        const gtcResult = await placeSpotOrderWithSlippage(
+          exchClient,
+          assetIndex,
+          input.side,
+          orderSize,
+          orderPrice,
+          'Gtc'
+        )
+        
+        if (gtcResult.status?.type === 'resting') {
+          return {
+            success: true,
+            orderId: gtcResult.status.oid,
+            status: 'resting',
+            pair: tokenInfo.name,
+            side: input.side,
+            size: orderSize,
+            executionPrice: orderPrice,
+            slippage: fixedSlippage * 100,
+            slippageType: 'fixed',
+            details: { message: 'GTC limit order placed (no immediate fill with fixed slippage)', ...gtcResult.result },
+            timestamp: Date.now(),
+          }
+        }
+        
+        return {
+          success: false,
+          error: 'Order not filled with fixed slippage',
+          timestamp: Date.now(),
+        }
+        
+      } else {
+        // Retry slippage mode (original behavior)
+        console.log(`   Executing MARKET order with RETRY slippage...`)
+        
+        return await executeSpotWithSlippageRetry(
+          exchClient,
+          assetIndex,
+          tokenInfo.name,
+          input.side,
+          orderSize,
+          basePrice,
+          tokenInfo.priceDecimals,
+          DEFAULT_SLIPPAGE_CONFIG
+        )
+      }
     } else {
       // Limit order: use exact user-specified price
       if (!input.price) {
@@ -563,7 +651,16 @@ export async function spotTrade(input: SpotTradeInput): Promise<SpotTradeResult>
 export function registerSpotTradingTools(server: any) {
   server.tool(
     'spot_trade',
-    'Execute spot trading on Hyperliquid. Buy or sell spot tokens with slippage protection. Examples: Buy BTC with USDC, Sell BTC for USDC.',
+    `Execute spot trading on Hyperliquid. Buy or sell spot tokens with slippage protection.
+
+Slippage Types (for market orders):
+- retry (default): Auto-retry with increasing slippage (0.010% → 8.00%)
+  Example: { slippageType: "retry" }
+  
+- fixed: Single attempt with fixed slippage percentage
+  Example: { slippageType: "fixed", fixedSlippage: 0.01 } (1% slippage)
+
+Examples: Buy HYPE with USDC, Sell PURR for USDC`,
     spotTradeSchema,
     async (args: SpotTradeInput) => {
       const result = await spotTrade(args)

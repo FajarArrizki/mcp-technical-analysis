@@ -35,10 +35,12 @@ const DEFAULT_SLIPPAGE_CONFIG: SlippageConfig = {
 }
 
 const slippageConfigSchema = z.object({
-  startSlippage: z.number().min(0).max(0.5).optional().describe('Starting slippage (0.00010 = 0.010%, 0.01 = 1%)'),
-  maxSlippage: z.number().min(0).max(0.5).optional().describe('Maximum slippage (0.08 = 8%, 0.5 = 50%)'),
-  incrementStep: z.number().min(0.00001).max(0.1).optional().describe('Slippage increment per retry'),
-  maxRetries: z.number().int().min(1).max(200).optional().describe('Maximum retry attempts (default: 50)'),
+  type: z.enum(['retry', 'fixed']).default('retry').describe('Slippage type: "retry" = auto-retry with increasing slippage, "fixed" = single attempt with fixed slippage'),
+  fixedSlippage: z.number().min(0).max(0.5).optional().describe('Fixed slippage percentage for single attempt (e.g., 0.001 = 0.1%, 0.01 = 1%). Only used when type is "fixed".'),
+  startSlippage: z.number().min(0).max(0.5).optional().describe('Starting slippage (0.00010 = 0.010%, 0.01 = 1%). Only used when type is "retry".'),
+  maxSlippage: z.number().min(0).max(0.5).optional().describe('Maximum slippage (0.08 = 8%, 0.5 = 50%). Only used when type is "retry".'),
+  incrementStep: z.number().min(0.00001).max(0.1).optional().describe('Slippage increment per retry. Only used when type is "retry".'),
+  maxRetries: z.number().int().min(1).max(200).optional().describe('Maximum retry attempts (default: 50). Only used when type is "retry".'),
 }).optional()
 
 const mainnetFuturesTradeInputSchema = z.object({
@@ -79,6 +81,7 @@ interface TradeResult {
   averagePrice?: string
   orderMode?: 'market' | 'limit' | 'custom'
   appliedSlippage?: string
+  slippageType?: string
   retryAttempts?: number
   requestedPrice?: string
   sizeInUsd?: number
@@ -568,21 +571,124 @@ async function executeMainnetFuturesTrade(input: MainnetFuturesTradeInput): Prom
     if (input.orderMode === 'market') {
       const currentPrice = await getCurrentPrice(infoClient, input.symbol)
       const fallbackToGtc = input.fallbackToGtc !== false // default true
-      const result = await executeWithSlippageRetry(
-        exchClient,
-        infoClient,
-        assetIndex,
-        input.symbol,
-        input.side,
-        orderSize,
-        currentPrice,
-        input.reduceOnly,
-        slippageConfig,
-        safetyResult.checks,
-        fallbackToGtc,
-        input.cloid
-      )
-      return { ...result, orderMode: 'market', sizeInUsd: sizeInUsdValue, calculatedSize: orderSize }
+      
+      // Check slippage type
+      const slippageType = input.slippageConfig?.type || 'retry'
+      
+      if (slippageType === 'fixed') {
+        // Fixed slippage mode - single attempt
+        const fixedSlippage = input.slippageConfig?.fixedSlippage || 0.01 // Default 1%
+        const orderPrice = calculateSlippagePrice(currentPrice, fixedSlippage, input.side, input.symbol)
+        
+        console.log(`[MAINNET] Fixed slippage mode: ${(fixedSlippage * 100).toFixed(3)}% - Single attempt at price ${orderPrice}`)
+        
+        const orderResult = await placeOrderWithSlippage(
+          exchClient,
+          assetIndex,
+          input.side,
+          orderSize,
+          orderPrice,
+          input.reduceOnly,
+          'Ioc',
+          input.cloid
+        )
+        
+        if (orderResult.error) {
+          return {
+            success: false,
+            error: orderResult.error,
+            orderMode: 'market',
+            appliedSlippage: (fixedSlippage * 100).toFixed(3) + '%',
+            slippageType: 'fixed',
+            safetyChecks: safetyResult.checks,
+            details: orderResult.result,
+            timestamp: Date.now(),
+          }
+        }
+        
+        if (orderResult.status?.type === 'filled') {
+          return {
+            success: true,
+            orderId: orderResult.status.oid,
+            status: 'filled',
+            executedSize: orderResult.status.totalSz,
+            averagePrice: orderResult.status.avgPx,
+            orderMode: 'market',
+            appliedSlippage: (fixedSlippage * 100).toFixed(3) + '%',
+            slippageType: 'fixed',
+            retryAttempts: 0,
+            requestedPrice: currentPrice.toFixed(6),
+            sizeInUsd: sizeInUsdValue,
+            calculatedSize: orderSize,
+            safetyChecks: safetyResult.checks,
+            details: orderResult.result,
+            timestamp: Date.now(),
+          }
+        }
+        
+        // Order not filled immediately with fixed slippage
+        if (fallbackToGtc) {
+          console.log('[MAINNET] Order not filled with fixed slippage, falling back to GTC limit order')
+          
+          const gtcResult = await placeOrderWithSlippage(
+            exchClient,
+            assetIndex,
+            input.side,
+            orderSize,
+            orderPrice,
+            input.reduceOnly,
+            'Gtc',
+            input.cloid
+          )
+          
+          if (gtcResult.status?.type === 'resting') {
+            return {
+              success: true,
+              orderId: gtcResult.status.oid,
+              status: 'resting',
+              orderMode: 'market',
+              appliedSlippage: (fixedSlippage * 100).toFixed(3) + '%',
+              slippageType: 'fixed',
+              requestedPrice: orderPrice,
+              sizeInUsd: sizeInUsdValue,
+              calculatedSize: orderSize,
+              safetyChecks: safetyResult.checks,
+              details: { message: 'GTC limit order placed (no immediate fill with fixed slippage)', ...gtcResult.result, fallbackUsed: 'GTC' },
+              timestamp: Date.now(),
+            }
+          }
+        }
+        
+        return {
+          success: false,
+          error: 'Order not filled with fixed slippage',
+          orderMode: 'market',
+          appliedSlippage: (fixedSlippage * 100).toFixed(3) + '%',
+          slippageType: 'fixed',
+          sizeInUsd: sizeInUsdValue,
+          calculatedSize: orderSize,
+          safetyChecks: safetyResult.checks,
+          timestamp: Date.now(),
+        }
+        
+      } else {
+        // Retry slippage mode (original behavior)
+        const result = await executeWithSlippageRetry(
+          exchClient,
+          infoClient,
+          assetIndex,
+          input.symbol,
+          input.side,
+          orderSize,
+          currentPrice,
+          input.reduceOnly,
+          slippageConfig,
+          safetyResult.checks,
+          fallbackToGtc,
+          input.cloid
+        )
+        return { ...result, orderMode: 'market', slippageType: 'retry', sizeInUsd: sizeInUsdValue, calculatedSize: orderSize }
+      }
     }
 
     if (input.orderMode === 'limit') {
@@ -770,9 +876,16 @@ export function registerMainnetFuturesTradeTool(server: any) {
 WARNING: This executes actual trades with real funds!
 
 Order Modes:
-- market: Auto-retry with increasing slippage (0.010% to 8.00%)
+- market: Market order with slippage protection (choose type below)
 - limit: Exact price execution, no slippage
 - custom: User-defined entry price with optional slippage protection
+
+Slippage Types (for market orders):
+- retry (default): Auto-retry with increasing slippage (0.010% → 8.00%)
+  Example: slippageConfig: { type: "retry", startSlippage: 0.0001, maxSlippage: 0.05 }
+  
+- fixed: Single attempt with fixed slippage percentage
+  Example: slippageConfig: { type: "fixed", fixedSlippage: 0.01 } (1% slippage)
 
 Safety Checks:
 - confirmExecution must be true

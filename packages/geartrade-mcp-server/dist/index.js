@@ -918,6 +918,17 @@ const server = {
     },
     registerPrompt(name, config, handler) {
         this.prompts.set(name, { config, handler });
+    },
+    // Add tool() method as alias for registerTool() for compatibility with new tools
+    tool(name, description, schema, handler) {
+        this.tools.set(name, {
+            config: {
+                title: name,
+                description,
+                inputSchema: schema
+            },
+            handler
+        });
     }
 };
 // Register all merged tools (unified indicators)
