@@ -570,7 +570,7 @@ nameserver 1.0.0.1
 ║  │                                           ▼                                       │  ║
 ║  │  ╔═════════════════════════════════════════════════════════════════════════════╗  │  ║
 ║  │  ║                       GEARTRADE MCP SERVER v2.0                             ║  │  ║
-║  │  ║                 58 Tools • 22 Resources • 32 Prompts                        ║  │  ║
+║  │  ║                 68 Tools • 22 Resources • 32 Prompts                        ║  │  ║
 ║  │  ╚═════════════════════════════════════════════════════════════════════════════╝  │  ║
 ║  │                                           │                                       │  ║
 ║  │                                           ▼                                       │  ║
@@ -597,7 +597,10 @@ nameserver 1.0.0.1
 ║  │  │  │  • L2 Order Book    │ │  • Liquidations     │ │  • Multi-Timeframe  │    │  │  ║
 ║  │  │  │  • Funding Rates    │ │  • Long/Short Ratio │ │  • Volume Data      │    │  │  ║
 ║  │  │  │  • Open Interest    │ │  • Large Trades     │ │  • Market Data      │    │  │  ║
-║  │  │  │  • Trading Execution│ │  • Top Traders      │ │                     │    │  │  ║
+║  │  │  │  • Futures Trading  │ │  • Top Traders      │ │                     │    │  │  ║
+║  │  │  │  • Spot Trading     │ │  • Tier Breakdown   │ │                     │    │  │  ║
+║  │  │  │  • Account Ops      │ │                     │ │                     │    │  │  ║
+║  │  │  │  • Bridge to L1     │ │                     │ │                     │    │  │  ║
 ║  │  │  └─────────────────────┘ └─────────────────────┘ └─────────────────────┘    │  │  ║
 ║  │  └─────────────────────────────────────────────────────────────────────────────┘  │  ║
 ║  │                                           │                                       │  ║
@@ -734,12 +737,17 @@ GEARTRADE/
 ├── packages/
 │   └── geartrade-mcp-server/               # Main MCP server package
 │       ├── src/
-│       │   ├── index.ts                    # MCP server entry (60 tools, 22 resources, 32 prompts)
+│       │   ├── index.ts                    # MCP server entry (68 tools, 22 resources, 32 prompts)
 │       │   ├── memory/                     # AI Memory (Mem0) integration
 │       │   │   ├── index.ts                # Memory service singleton
 │       │   │   └── types.ts                # TypeScript interfaces
 │       │   ├── tools/                      # MCP tools registration
 │       │   │   ├── memory-tools.ts         # 8 memory tools
+│       │   │   ├── hyperliquid-account-operations.ts   # 6 account operations (NEW Dec 3, 2025)
+│       │   │   ├── hyperliquid-bridge-operations.ts    # 2 bridge operations (NEW Dec 3, 2025)
+│       │   │   ├── spot-trading.ts                     # Spot trading (NEW Dec 3, 2025)
+│       │   │   ├── hyperliquid-testnet-futures-trade.ts  # Testnet futures
+│       │   │   ├── hyperliquid-mainnet-futures-trade.ts  # Mainnet futures
 │       │   │   └── ...                     # Other tool files
 │       │   └── signal-generation/          # Analysis engine modules
 │       │       ├── ai/                     # AI integration
@@ -818,14 +826,19 @@ This server provides both market analysis and trading execution capabilities wit
 - ✅ Zod schema validation for all inputs
 - ✅ Testnet trading for safe testing (no real funds)
 - ✅ Mainnet safety checks:
-  - `confirmExecution: true` required
-  - Asset whitelist (BTC, ETH, SOL, etc.)
-  - Minimum order value: $10
-  - Maximum position size: 25% of equity
-- ✅ Configurable slippage protection (0.01% - 50%)
+  - **Futures:** `confirmExecution: true` required, asset whitelist, min $10, max 25% equity
+  - **Spot:** `confirmMainnet: true` required, start with small amounts ($5-10)
+  - **Account Ops:** `confirmMainnet: true` for transfers and withdrawals
+  - **Bridge:** 3-hour withdrawal to Arbitrum L1 with status tracking
+- ✅ Slippage protection:
+  - **Futures:** 0.01% - 50% configurable
+  - **Spot:** 0.010% - 8.00% automatic retry (same mechanism as futures)
 - ✅ Auto-fallback to GTC orders on no liquidity
-- ✅ Environment variables for wallet security (AGENT_WALLET_PRIVATE_KEY, MAIN_WALLET_ADDRESS)
-- ✅ Mem0 API key for persistent memory (MEM0_API_KEY)
+- ✅ Environment variables for wallet security:
+  - `AGENT_WALLET_PRIVATE_KEY` - API wallet private key
+  - `MAIN_WALLET_ADDRESS` - Main trading account address
+  - `MEM0_API_KEY` - Persistent AI memory
+  - `ARBITRUM_RPC_URL` - L1 bridge endpoint (DRPC recommended)
 
 ## 🌐 API Endpoints (HTTP Streaming Mode)
 
