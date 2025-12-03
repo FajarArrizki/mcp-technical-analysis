@@ -9,13 +9,13 @@ import { z } from 'zod'
 import {
   calculateChaikinOscillator,
   calculateMFI,
-} from '../signal-generation/technical-indicators'
-import { calculateChaikinMF } from '../signal-generation/technical-indicators/chaikin-mf'
-import { calculateVolumeOscillator } from '../signal-generation/technical-indicators/volume-oscillator'
-import { calculatePriceVolumeTrend } from '../signal-generation/technical-indicators/price-volume-trend'
-import { calculatePositiveVolumeIndex } from '../signal-generation/technical-indicators/positive-volume-index'
-import { calculateVolumeROC } from '../signal-generation/technical-indicators/volume-roc'
-import { calculateVolumeZoneOscillator } from '../signal-generation/technical-indicators/volume-zone-oscillator'
+} from '../../signal-generation/technical-indicators'
+import { calculateChaikinMF } from '../../signal-generation/technical-indicators/chaikin-mf'
+import { calculateVolumeOscillator } from '../../signal-generation/technical-indicators/volume-oscillator'
+import { calculatePriceVolumeTrend } from '../../signal-generation/technical-indicators/price-volume-trend'
+import { calculatePositiveVolumeIndex } from '../../signal-generation/technical-indicators/positive-volume-index'
+import { calculateVolumeROC } from '../../signal-generation/technical-indicators/volume-roc'
+import { calculateVolumeZoneOscillator } from '../../signal-generation/technical-indicators/volume-zone-oscillator'
 
 export const volumeIndicatorsInputSchema = z.object({
   type: z.enum([

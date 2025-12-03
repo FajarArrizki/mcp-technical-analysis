@@ -8,8 +8,8 @@ import {
   calculateBOP,
   calculateCOG,
   calculateForceIndex,
-} from '../signal-generation/technical-indicators'
-import { calculateBullBearPower } from '../signal-generation/technical-indicators/bull-bear-power'
+} from '../../signal-generation/technical-indicators'
+import { calculateBullBearPower } from '../../signal-generation/technical-indicators/bull-bear-power'
 
 export const strengthIndicatorsInputSchema = z.object({
   type: z.enum([
@@ -18,12 +18,12 @@ export const strengthIndicatorsInputSchema = z.object({
     'center_of_gravity',
     'balance_of_power'
   ]).describe('Type of strength indicator to calculate'),
-  // Price data
-  closes: z.array(z.number()).min(5).describe('Array of closing prices'),
-  highs: z.array(z.number()).optional().describe('Array of high prices'),
-  lows: z.array(z.number()).optional().describe('Array of low prices'),
-  opens: z.array(z.number()).optional().describe('Array of open prices'),
-  volumes: z.array(z.number()).optional().describe('Array of volume data'),
+  // Price data (REQUIRED based on type)
+  closes: z.array(z.number()).min(5).describe('Array of closing prices (REQUIRED for all types)'),
+  highs: z.array(z.number()).optional().describe('Array of high prices (REQUIRED for bull_bear_power, balance_of_power)'),
+  lows: z.array(z.number()).optional().describe('Array of low prices (REQUIRED for bull_bear_power, balance_of_power)'),
+  opens: z.array(z.number()).optional().describe('Array of open prices (REQUIRED for balance_of_power)'),
+  volumes: z.array(z.number()).optional().describe('Array of volume data (REQUIRED for force_index, OPTIONAL for bull_bear_power)'),
   // Common parameters
   period: z.number().int().min(2).max(200).default(13).describe('Period for calculation (default: 13)'),
 })

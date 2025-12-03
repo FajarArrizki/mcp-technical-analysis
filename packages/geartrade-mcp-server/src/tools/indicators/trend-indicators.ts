@@ -10,8 +10,8 @@ import {
   calculateIchimokuCloud,
   calculateVortex,
   calculateRSquared,
-} from '../signal-generation/technical-indicators'
-import { calculateLinearRegression } from '../signal-generation/technical-indicators/linear-regression'
+} from '../../signal-generation/technical-indicators'
+import { calculateLinearRegression } from '../../signal-generation/technical-indicators/linear-regression'
 
 export const trendIndicatorsInputSchema = z.object({
   type: z.enum([

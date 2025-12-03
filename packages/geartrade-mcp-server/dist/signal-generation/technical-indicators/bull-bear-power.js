@@ -11,14 +11,28 @@
  * @returns BullBearPowerData object
  */
 export function calculateBullBearPower(highs, lows, closes, volumes) {
+    // Validate input arrays
+    if (!Array.isArray(highs) || !Array.isArray(lows) || !Array.isArray(closes)) {
+        return null;
+    }
     if (highs.length < 2 || lows.length < 2 || closes.length < 2) {
         return null;
     }
-    // Get current and previous data
+    // Ensure arrays are same length
+    const minLength = Math.min(highs.length, lows.length, closes.length);
+    if (minLength < 2) {
+        return null;
+    }
+    // Get current and previous data from the end of arrays
     const currentHigh = highs[highs.length - 1];
     const currentLow = lows[lows.length - 1];
     const currentClose = closes[closes.length - 1];
     const previousClose = closes[closes.length - 2];
+    // Validate all values are finite numbers
+    if (!isFinite(currentHigh) || !isFinite(currentLow) ||
+        !isFinite(currentClose) || !isFinite(previousClose) || previousClose === 0) {
+        return null;
+    }
     // Calculate Bull Power and Bear Power
     const bullPower = ((currentHigh - previousClose) / previousClose) * 100;
     const bearPower = ((currentLow - previousClose) / previousClose) * 100;

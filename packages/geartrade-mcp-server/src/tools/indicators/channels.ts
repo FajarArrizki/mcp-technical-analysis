@@ -7,8 +7,8 @@ import { z } from 'zod'
 import {
   calculateKeltnerChannels,
   calculateDonchianChannels,
-} from '../signal-generation/technical-indicators'
-import { calculatePriceChannel } from '../signal-generation/technical-indicators/price-channel'
+} from '../../signal-generation/technical-indicators'
+import { calculatePriceChannel } from '../../signal-generation/technical-indicators/price-channel'
 
 export const channelsInputSchema = z.object({
   type: z.enum([

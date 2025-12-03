@@ -4,7 +4,7 @@
  */
 
 import { z } from 'zod';
-import { tradingMemory } from '../memory';
+import { tradingMemory } from '../../memory';
 
 export function registerMemoryTools(server: any) {
 

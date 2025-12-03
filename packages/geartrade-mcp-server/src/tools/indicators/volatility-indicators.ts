@@ -10,9 +10,9 @@ import {
   calculateBBPercentB,
   calculateChaikinVolatility,
   calculateHistoricalVolatility,
-} from '../signal-generation/technical-indicators'
-import { calculateMassIndex } from '../signal-generation/technical-indicators/mass-index'
-import { calculateUlcerIndex } from '../signal-generation/technical-indicators/ulcer-index'
+} from '../../signal-generation/technical-indicators'
+import { calculateMassIndex } from '../../signal-generation/technical-indicators/mass-index'
+import { calculateUlcerIndex } from '../../signal-generation/technical-indicators/ulcer-index'
 
 export const volatilityIndicatorsInputSchema = z.object({
   type: z.enum([

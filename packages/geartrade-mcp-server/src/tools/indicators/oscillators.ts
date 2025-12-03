@@ -14,20 +14,20 @@ import {
   calculateTRIX,
   calculateAwesomeOscillator,
   calculateGatorOscillator,
-} from '../signal-generation/technical-indicators'
-import { calculateChandeMomentum } from '../signal-generation/technical-indicators/chande-momentum'
-import { calculatePercentagePriceOscillator } from '../signal-generation/technical-indicators/percentage-price-oscillator'
-import { calculateAcceleratorOscillator } from '../signal-generation/technical-indicators/accelerator-oscillator'
-import { calculateElderRay } from '../signal-generation/technical-indicators/elder-ray'
-import { calculateFisherTransform } from '../signal-generation/technical-indicators/fisher-transform'
-import { calculateKST } from '../signal-generation/technical-indicators/kst'
-import { calculateSchaffTrendCycle } from '../signal-generation/technical-indicators/schaff-trend-cycle'
-import { calculateCoppockCurve } from '../signal-generation/technical-indicators/coppock-curve'
-import { calculateTrueStrengthIndex } from '../signal-generation/technical-indicators/true-strength-index'
-import { calculateRelativeVigorIndex } from '../signal-generation/technical-indicators/relative-vigor-index'
-import { calculateDetrendedPrice } from '../signal-generation/technical-indicators/detrended-price'
-import { calculateMomentum } from '../signal-generation/technical-indicators/momentum-indicator'
-import { calculateROC } from '../signal-generation/technical-indicators/roc'
+} from '../../signal-generation/technical-indicators'
+import { calculateChandeMomentum } from '../../signal-generation/technical-indicators/chande-momentum'
+import { calculatePercentagePriceOscillator } from '../../signal-generation/technical-indicators/percentage-price-oscillator'
+import { calculateAcceleratorOscillator } from '../../signal-generation/technical-indicators/accelerator-oscillator'
+import { calculateElderRay } from '../../signal-generation/technical-indicators/elder-ray'
+import { calculateFisherTransform } from '../../signal-generation/technical-indicators/fisher-transform'
+import { calculateKST } from '../../signal-generation/technical-indicators/kst'
+import { calculateSchaffTrendCycle } from '../../signal-generation/technical-indicators/schaff-trend-cycle'
+import { calculateCoppockCurve } from '../../signal-generation/technical-indicators/coppock-curve'
+import { calculateTrueStrengthIndex } from '../../signal-generation/technical-indicators/true-strength-index'
+import { calculateRelativeVigorIndex } from '../../signal-generation/technical-indicators/relative-vigor-index'
+import { calculateDetrendedPrice } from '../../signal-generation/technical-indicators/detrended-price'
+import { calculateMomentum } from '../../signal-generation/technical-indicators/momentum-indicator'
+import { calculateROC } from '../../signal-generation/technical-indicators/roc'
 
 export const oscillatorsInputSchema = z.object({
   type: z.enum([

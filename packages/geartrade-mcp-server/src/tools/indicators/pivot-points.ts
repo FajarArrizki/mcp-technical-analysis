@@ -4,9 +4,9 @@
  */
 
 import { z } from 'zod'
-import { calculateCamarillaPivots } from '../signal-generation/technical-indicators/pivot-camarilla'
-import { calculatePivotPoints } from '../signal-generation/technical-indicators/pivot-standard'
-import { calculateFibonacciRetracement } from '../signal-generation/technical-indicators/fibonacci'
+import { calculateCamarillaPivots } from '../../signal-generation/technical-indicators/pivot-camarilla'
+import { calculatePivotPoints } from '../../signal-generation/technical-indicators/pivot-standard'
+import { calculateFibonacciRetracement } from '../../signal-generation/technical-indicators/fibonacci'
 
 export const pivotPointsInputSchema = z.object({
   type: z.enum([
@@ -14,12 +14,12 @@ export const pivotPointsInputSchema = z.object({
     'standard',
     'fibonacci_retracement'
   ]).describe('Type of pivot points to calculate'),
-  // For standard/camarilla pivots
-  high: z.number().optional().describe('High price (for standard/camarilla)'),
-  low: z.number().optional().describe('Low price (for standard/camarilla)'),
-  close: z.number().optional().describe('Close price (for standard/camarilla)'),
-  // For fibonacci retracement
-  closes: z.array(z.number()).optional().describe('Array of closing prices (for fibonacci)'),
+  // For standard/camarilla pivots (REQUIRED for those types)
+  high: z.number().optional().describe('High price (REQUIRED for standard/camarilla)'),
+  low: z.number().optional().describe('Low price (REQUIRED for standard/camarilla)'),
+  close: z.number().optional().describe('Close price (REQUIRED for standard/camarilla)'),
+  // For fibonacci retracement (REQUIRED for that type)
+  closes: z.array(z.number()).optional().describe('Array of closing prices (REQUIRED for fibonacci, min 10 values)'),
   lookbackPeriod: z.number().int().min(5).max(200).optional().describe('Lookback period for Fibonacci (default: 50)'),
 })
 

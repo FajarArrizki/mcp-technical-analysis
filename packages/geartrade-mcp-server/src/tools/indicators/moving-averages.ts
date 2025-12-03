@@ -6,18 +6,18 @@
  */
 
 import { z } from 'zod'
-import { calculateMAEnvelope, MAEnvelopeData } from '../signal-generation/technical-indicators/ma-envelope.js'
-import { calculateVWMA, VWMAData } from '../signal-generation/technical-indicators/vwma.js'
-import { calculateMcGinleyDynamic, McGinleyDynamicData } from '../signal-generation/technical-indicators/mcginley-dynamic.js'
-import { calculateRainbowMA, RainbowMAData } from '../signal-generation/technical-indicators/rainbow-ma.js'
-import { calculateKaufmanAdaptiveMA, KaufmanAdaptiveMAData } from '../signal-generation/technical-indicators/kaufman-adaptive-ma.js'
+import { calculateMAEnvelope, MAEnvelopeData } from '../../signal-generation/technical-indicators/ma-envelope.js'
+import { calculateVWMA, VWMAData } from '../../signal-generation/technical-indicators/vwma.js'
+import { calculateMcGinleyDynamic, McGinleyDynamicData } from '../../signal-generation/technical-indicators/mcginley-dynamic.js'
+import { calculateRainbowMA, RainbowMAData } from '../../signal-generation/technical-indicators/rainbow-ma.js'
+import { calculateKaufmanAdaptiveMA, KaufmanAdaptiveMAData } from '../../signal-generation/technical-indicators/kaufman-adaptive-ma.js'
 import {
   calculateHMA,
   calculateWMA,
   calculateSMMA,
   calculateDEMA,
   calculateTEMA,
-} from '../signal-generation/technical-indicators/index.js'
+} from '../../signal-generation/technical-indicators/index.js'
 
 export const movingAveragesInputSchema = z.object({
   type: z.enum([

@@ -19,6 +19,28 @@ export function calculatePivotPoints(
   low: number,
   close: number
 ): PivotPointsData {
+  // Input validation
+  if (!isFinite(high) || !isFinite(low) || !isFinite(close)) {
+    return {
+      pivotPoint: null,
+      resistance1: null,
+      resistance2: null,
+      resistance3: null,
+      support1: null,
+      support2: null,
+      support3: null,
+      currentPosition: null,
+    }
+  }
+
+  if (high < low) {
+    throw new Error('High price must be greater than or equal to low price')
+  }
+
+  if (close < low || close > high) {
+    throw new Error('Close price must be between low and high prices')
+  }
+
   // Pivot Point = (High + Low + Close) / 3
   const pivotPoint = (high + low + close) / 3
 

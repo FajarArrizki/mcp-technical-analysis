@@ -7,8 +7,8 @@ import { z } from 'zod'
 import {
   calculateFractals,
   calculateZigZag,
-} from '../signal-generation/technical-indicators'
-import { detectChangeOfCharacter } from '../signal-generation/analysis/market-structure'
+} from '../../signal-generation/technical-indicators'
+import { detectChangeOfCharacter } from '../../signal-generation/analysis/market-structure'
 
 export const patternsInputSchema = z.object({
   type: z.enum([
