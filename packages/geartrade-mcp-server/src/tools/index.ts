@@ -16,6 +16,9 @@ import { registerMainnetFuturesTradeTool } from './hyperliquid-mainnet-futures-t
 import { registerMemoryTools } from './memory-tools'
 import { registerClosePositionTool } from './close-position'
 import { registerMarketSentimentTool } from './market-sentiment'
+import { registerHyperliquidAccountOperations } from './hyperliquid-account-operations'
+import { registerSpotTradingTools } from './spot-trading'
+import { registerHyperliquidBridgeOperations } from './hyperliquid-bridge-operations'
 
 export function registerAllMergedTools(server: any) {
   registerMovingAveragesTool(server)
@@ -32,6 +35,9 @@ export function registerAllMergedTools(server: any) {
   registerMemoryTools(server)
   registerClosePositionTool(server)
   registerMarketSentimentTool(server)
+  registerHyperliquidAccountOperations(server)  // Merged: balance + transfer operations (6 ops)
+  registerSpotTradingTools(server)               // Spot trading (separate due to complexity)
+  registerHyperliquidBridgeOperations(server)    // Bridge operations: withdraw/deposit L1 (2 ops)
 }
 
 export { registerMovingAveragesTool }
@@ -48,3 +54,6 @@ export { registerMainnetFuturesTradeTool }
 export { registerMemoryTools }
 export { registerClosePositionTool }
 export { registerMarketSentimentTool }
+export { registerHyperliquidAccountOperations }
+export { registerSpotTradingTools }
+export { registerHyperliquidBridgeOperations }
