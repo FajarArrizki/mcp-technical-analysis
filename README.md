@@ -484,33 +484,22 @@ The MCP Technical Analysis Server exposes **104 total components** through the M
 | 64 | `memory_get_all` | Get all stored memories for review. |
 | 65 | `memory_delete` | Delete specific memory by ID. |
 
-### 📚 Resources (22)
+### 📚 Resources (4)
+
+Educational documentation accessible through the MCP protocol.
 
 | No | Resource URI | Description |
 |----|--------------|-------------|
-| 1 | `geartrade://trading-strategies` | Comprehensive guide on trading strategies, technical analysis, and best practices for using MCP Technical Analysis Server |
-| 2 | `geartrade://risk-management` | Guide on risk management, position sizing, stop loss, and take profit strategies |
-| 3 | `geartrade://tools-overview` | Complete tools documentation and usage examples |
-| 4 | `geartrade://execution-workflow` | Step-by-step guide for analysis to execution workflow |
-| 5 | `geartrade://technical-indicators-guide` | Complete reference for all technical indicators and their usage |
-| 6 | `geartrade://hyperliquid-api-reference` | Hyperliquid API documentation and integration guide |
-| 7 | `geartrade://volume-analysis-guide` | Comprehensive volume analysis techniques and interpretation |
-| 8 | `geartrade://fibonacci-trading-guide` | Fibonacci retracement and extension strategies |
-| 9 | `geartrade://market-structure-guide` | Market structure analysis and change of character detection |
-| 10 | `geartrade://orderbook-analysis-guide` | Order book depth analysis and market maker behavior |
-| 11 | `geartrade://candlestick-patterns-guide` | Candlestick pattern recognition and trading signals |
-| 12 | `geartrade://divergence-trading-guide` | RSI and price divergence identification and trading |
-| 13 | `geartrade://liquidation-analysis-guide` | Liquidation level analysis and risk assessment |
-| 14 | `geartrade://long-short-ratio-guide` | Long/short ratio analysis for market sentiment |
-| 15 | `geartrade://spot-futures-divergence-guide` | Spot-futures price divergence opportunities |
-| 16 | `geartrade://external-data-guide` | External market data integration and usage |
-| 17 | `geartrade://multitimeframe-analysis-guide` | Multi-timeframe trend alignment analysis |
-| 18 | `geartrade://moving-averages-guide` | Moving averages, envelopes, and trend analysis |
-| 19 | `geartrade://momentum-oscillators-guide` | Momentum indicators and oscillator-based strategies |
-| 20 | `geartrade://volume-indicators-guide` | Volume-based indicators and flow analysis |
-| 21 | `geartrade://volatility-indicators-guide` | Volatility measurement and option strategies |
-| 22 | `geartrade://usage-patterns` | **NEW:** Recommended usage patterns for Day Trading, Swing Trading, Position Trading |
-| 23 | `geartrade://complete-tools` | **NEW:** Complete reference of all 58 MCP tools with parameters and use cases |
+| 1 | `geartrade://docs/trading-strategies` | Comprehensive guide on trading strategies, technical analysis, and best practices. Covers trend following, mean reversion, breakout trading, volume-based strategies, and risk management principles. |
+| 2 | `geartrade://docs/risk-management` | Complete guide on risk management, position sizing, stop loss/take profit strategies, leverage management, and portfolio risk. Includes formulas, examples, and best practices. |
+| 3 | `geartrade://docs/tools-overview` | Complete overview of all 69 MCP tools with descriptions, parameters, and usage patterns. Organized by category: Market Data, Execution, Technical Indicators, and AI Memory. |
+| 4 | `geartrade://docs/execution-workflow` | Step-by-step guide for analysis to execution workflow. Covers comprehensive analysis, signal identification, user confirmation, testnet/mainnet execution, position monitoring, and trade logging. |
+
+**Content Highlights:**
+- **Trading Strategies**: 58 tools quick reference, workflow recommendations, common mistakes to avoid
+- **Risk Management**: Position sizing formulas, stop loss strategies, leverage guidelines, MAE analysis
+- **Tools Overview**: All 69 tools categorized, usage patterns, execution workflows, memory-enhanced trading
+- **Execution Workflow**: Safety best practices, multiple asset analysis, error handling, step-by-step guides
 
 ### 🤖 Prompts (32)
 
