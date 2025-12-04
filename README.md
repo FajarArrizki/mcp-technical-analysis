@@ -422,67 +422,67 @@ The MCP Technical Analysis Server exposes **104 total components** through the M
 | 18 | `calculate_risk_management` | Calculate stop loss, take profit, and risk/reward ratio |
 | 19 | `calculate_position_setup` | Calculate position size, leverage, margin, and quantity |
 | | **Moving Averages (Merged Tool)** | |
-| 16 | `ma_envelope` | MA Envelope for volatility-based support/resistance |
-| 17 | `vwma` | Volume-Weighted Moving Average |
-| 18 | `mcginley_dynamic` | McGinley Dynamic - adaptive MA with reduced lag |
-| 19 | `rainbow_ma` | Rainbow MA - multiple MAs for trend visualization |
-| 20 | `kaufman_adaptive_ma` | Kaufman Adaptive MA - adjusts to market efficiency |
-| 21 | `hull_ma` | Hull Moving Average - reduced lag, smooth trend |
-| 22 | `weighted_ma` | Weighted Moving Average |
-| 23 | `smoothed_ma` | Smoothed Moving Average |
-| 24 | `double_ema` | Double Exponential Moving Average (DEMA) |
-| 25 | `triple_ema` | Triple Exponential Moving Average (TEMA) |
+| 20 | `ma_envelope` | MA Envelope for volatility-based support/resistance |
+| 21 | `vwma` | Volume-Weighted Moving Average |
+| 22 | `mcginley_dynamic` | McGinley Dynamic - adaptive MA with reduced lag |
+| 23 | `rainbow_ma` | Rainbow MA - multiple MAs for trend visualization |
+| 24 | `kaufman_adaptive_ma` | Kaufman Adaptive MA - adjusts to market efficiency |
+| 25 | `hull_ma` | Hull Moving Average - reduced lag, smooth trend |
+| 26 | `weighted_ma` | Weighted Moving Average |
+| 27 | `smoothed_ma` | Smoothed Moving Average |
+| 28 | `double_ema` | Double Exponential Moving Average (DEMA) |
+| 29 | `triple_ema` | Triple Exponential Moving Average (TEMA) |
 | | **Oscillators (Merged Tool)** | |
-| 26 | `stochastic_rsi` | Stochastic RSI - RSI with stochastic formula |
-| 27 | `chande_momentum` | Chande Momentum Oscillator (-100 to +100) |
-| 28 | `percentage_price_oscillator` | PPO - MACD as percentage |
-| 29 | `accelerator_oscillator` | Accelerator Oscillator (Bill Williams) |
-| 30 | `awesome_oscillator` | Awesome Oscillator - momentum via median price |
-| 31 | `gator_oscillator` | Gator Oscillator - Alligator convergence/divergence |
-| 32 | `elder_ray` | Elder-Ray Index - Bull/Bear Power |
-| 33 | `fisher_transform` | Fisher Transform - Gaussian normalized reversals |
-| 34 | `know_sure_thing` | KST - multi-timeframe ROC momentum |
-| 35 | `schaff_trend_cycle` | Schaff Trend Cycle - MACD + Stochastic |
-| 36 | `coppock_curve` | Coppock Curve - long-term momentum bottoms |
-| 37 | `true_strength_index` | TSI - double-smoothed momentum |
-| 38 | `relative_vigor_index` | RVI - close vs open momentum |
-| 39 | `detrended_price` | Detrended Price Oscillator - cycle identification |
-| 40 | `momentum` | Momentum Indicator - rate of price change |
-| 41 | `rate_of_change` | ROC - percentage price change |
-| 42 | `ultimate_oscillator` | Ultimate Oscillator - 3 timeframe combination |
-| 43 | `trix` | TRIX - triple smoothed EMA rate of change |
+| 30 | `stochastic_rsi` | Stochastic RSI - RSI with stochastic formula |
+| 31 | `chande_momentum` | Chande Momentum Oscillator (-100 to +100) |
+| 32 | `percentage_price_oscillator` | PPO - MACD as percentage |
+| 33 | `accelerator_oscillator` | Accelerator Oscillator (Bill Williams) |
+| 34 | `awesome_oscillator` | Awesome Oscillator - momentum via median price |
+| 35 | `gator_oscillator` | Gator Oscillator - Alligator convergence/divergence |
+| 36 | `elder_ray` | Elder-Ray Index - Bull/Bear Power |
+| 37 | `fisher_transform` | Fisher Transform - Gaussian normalized reversals |
+| 38 | `know_sure_thing` | KST - multi-timeframe ROC momentum |
+| 39 | `schaff_trend_cycle` | Schaff Trend Cycle - MACD + Stochastic |
+| 40 | `coppock_curve` | Coppock Curve - long-term momentum bottoms |
+| 41 | `true_strength_index` | TSI - double-smoothed momentum |
+| 42 | `relative_vigor_index` | RVI - close vs open momentum |
+| 43 | `detrended_price` | Detrended Price Oscillator - cycle identification |
+| 44 | `momentum` | Momentum Indicator - rate of price change |
+| 45 | `rate_of_change` | ROC - percentage price change |
+| 46 | `ultimate_oscillator` | Ultimate Oscillator - 3 timeframe combination |
+| 47 | `trix` | TRIX - triple smoothed EMA rate of change |
 | | **Volume Indicators (Merged Tool)** | |
-| 44 | `volume_indicators` | Merged volume tool with types: chaikin_money_flow, chaikin_oscillator, klinger_oscillator, volume_oscillator, ease_of_movement, price_volume_trend, positive_volume_index, volume_roc, anchored_vwap, volume_zone_oscillator, money_flow_index |
+| 48 | `volume_indicators` | Merged volume tool with types: chaikin_money_flow, chaikin_oscillator, klinger_oscillator, volume_oscillator, ease_of_movement, price_volume_trend, positive_volume_index, volume_roc, anchored_vwap, volume_zone_oscillator, money_flow_index |
 | | **Volatility Indicators (Merged Tool)** | |
-| 45 | `volatility_indicators` | Merged volatility tool with types: bollinger_band_width, bollinger_percent_b, chaikin_volatility, historical_volatility, mass_index, ulcer_index |
+| 49 | `volatility_indicators` | Merged volatility tool with types: bollinger_band_width, bollinger_percent_b, chaikin_volatility, historical_volatility, mass_index, ulcer_index |
 | | **Trend Indicators (Merged Tool)** | |
-| 46 | `trend_indicators` | Merged trend tool with types: supertrend, alligator, ichimoku_cloud, vortex, linear_regression, r_squared |
+| 50 | `trend_indicators` | Merged trend tool with types: supertrend, alligator, ichimoku_cloud, vortex, linear_regression, r_squared |
 | | **Strength Indicators (Merged Tool)** | |
-| 47 | `strength_indicators` | Merged strength tool with types: bull_bear_power, force_index, center_of_gravity, balance_of_power, advance_decline_line |
+| 51 | `strength_indicators` | Merged strength tool with types: bull_bear_power, force_index, center_of_gravity, balance_of_power, advance_decline_line |
 | | **Channels (Merged Tool)** | |
-| 48 | `channels` | Merged channels tool with types: keltner_channels, donchian_channels, price_channel |
+| 52 | `channels` | Merged channels tool with types: keltner_channels, donchian_channels, price_channel |
 | | **Pivot Points (Merged Tool)** | |
-| 49 | `pivot_points` | Merged pivot tool with types: camarilla, standard, fibonacci_retracement |
+| 53 | `pivot_points` | Merged pivot tool with types: camarilla, standard, fibonacci_retracement |
 | | **Patterns (Merged Tool)** | |
-| 50 | `patterns` | Merged patterns tool with types: fractals, zigzag, change_of_character |
+| 54 | `patterns` | Merged patterns tool with types: fractals, zigzag, change_of_character |
 | | **Trading Execution (Hyperliquid)** | |
-| 51 | `hyperliquid_testnet_futures_trade` | Execute futures trades on Hyperliquid TESTNET. Supports market/limit/custom orders, sizeInUsd ($100), leverage (1-100x), slippage protection (0.01%-50%), auto-fallback to GTC on no liquidity. |
-| 52 | `hyperliquid_mainnet_futures_trade` | Execute REAL futures trades on Hyperliquid MAINNET. Safety checks: confirmExecution=true required, asset whitelist, min $10, max 25% equity. |
-| 53 | `close_position` | Close or reduce positions on Hyperliquid (testnet/mainnet). Full or partial close (1-99%), auto-detects position side, reduceOnly for safety. |
-| 54 | `get_market_sentiment` | Get market sentiment from Fear & Greed Index + BTC Dominance + Funding Summary (FREE APIs). Overall sentiment score + trading recommendation. |
+| 55 | `hyperliquid_testnet_futures_trade` | Execute futures trades on Hyperliquid TESTNET. Supports market/limit/custom orders, sizeInUsd ($100), leverage (1-100x), slippage protection (0.01%-50%), auto-fallback to GTC on no liquidity. |
+| 56 | `hyperliquid_mainnet_futures_trade` | Execute REAL futures trades on Hyperliquid MAINNET. Safety checks: confirmExecution=true required, asset whitelist, min $10, max 25% equity. |
+| 57 | `close_position` | Close or reduce positions on Hyperliquid (testnet/mainnet). Full or partial close (1-99%), auto-detects position side, reduceOnly for safety. |
+| 58 | `get_market_sentiment` | Get market sentiment from Fear & Greed Index + BTC Dominance + Funding Summary (FREE APIs). Overall sentiment score + trading recommendation. |
 | | **Hyperliquid Account & Spot (Dec 3, 2025)** | |
-| 55 | `hyperliquid_account_operations` | 6 operations: check balances, transfers (spot ↔ perp), send USD/tokens. Tested with $100+ real transactions. Production ready. |
-| 56 | `hyperliquid_bridge_operations` | L1 Arbitrum bridge: withdraw_to_arbitrum (3-hour), check_withdraw_status. Full testnet/mainnet support. |
-| 57 | `spot_trade` | Buy/sell spot tokens with slippage retry (0.010% → 8.00%). Market & limit orders. **Use mainnet** ($5-10 recommended). |
+| 59 | `hyperliquid_account_operations` | 6 operations: check balances, transfers (spot ↔ perp), send USD/tokens. Tested with $100+ real transactions. Production ready. |
+| 60 | `hyperliquid_bridge_operations` | L1 Arbitrum bridge: withdraw_to_arbitrum (3-hour), check_withdraw_status. Full testnet/mainnet support. |
+| 61 | `spot_trade` | Buy/sell spot tokens with slippage retry (0.010% → 8.00%). Market & limit orders. **Use mainnet** ($5-10 recommended). |
 | | **AI Memory (Mem0)** | |
-| 58 | `memory_save_preference` | Save trading preferences (leverage, risk %, pairs, style). AI remembers for future interactions. |
-| 59 | `memory_log_trade` | Log completed trade with full context (entry/exit reason, PnL, lesson) for pattern learning. |
-| 60 | `memory_get_insights` | Get personalized trading insights based on history (performance, patterns, mistakes). |
-| 61 | `memory_check_pattern` | Check if current setup matches past winning/losing patterns from your history. |
-| 62 | `memory_remember` | Store any important note or context for future reference (key levels, observations). |
-| 63 | `memory_recall` | Search and recall stored memories based on query. |
-| 64 | `memory_get_all` | Get all stored memories for review. |
-| 65 | `memory_delete` | Delete specific memory by ID. |
+| 62 | `memory_save_preference` | Save trading preferences (leverage, risk %, pairs, style). AI remembers for future interactions. |
+| 63 | `memory_log_trade` | Log completed trade with full context (entry/exit reason, PnL, lesson) for pattern learning. |
+| 64 | `memory_get_insights` | Get personalized trading insights based on history (performance, patterns, mistakes). |
+| 65 | `memory_check_pattern` | Check if current setup matches past winning/losing patterns from your history. |
+| 66 | `memory_remember` | Store any important note or context for future reference (key levels, observations). |
+| 67 | `memory_recall` | Search and recall stored memories based on query. |
+| 68 | `memory_get_all` | Get all stored memories for review. |
+| 69 | `memory_delete` | Delete specific memory by ID. |
 
 ### 📚 Resources (4)
 
