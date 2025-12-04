@@ -49,31 +49,6 @@ A comprehensive Model Context Protocol (MCP) server that bridges AI assistants w
 
 ## 📋 Recent Updates
 
-### December 4, 2025 - Complete Refactoring & Modular Architecture ✅
-
-#### Major Improvements
-- ✅ **Fully Modular Architecture** - Refactored all 69 tools into 5 organized categories
-- ✅ **83.8% Code Reduction** - Main index.ts reduced from 4,943 to 804 lines
-- ✅ **Zero Duplicates** - All 104 components verified unique (69 tools + 4 resources + 31 prompts)
-- ✅ **Production Ready** - Clean codebase, comprehensive documentation, build passing
-- ✅ **Type-Safe** - Full TypeScript coverage with proper imports
-- ✅ **Hot Reload** - Changes reflected immediately without server restart
-
-#### Tool Categories
-```
-tools/
-├── account/     10 tools (Account operations & AI memory)
-├── analysis/    15 tools (Market analysis & insights)
-├── data/         3 tools (Price & position data)
-├── indicators/  35 tools (Technical indicators)
-└── trading/      6 tools (Trade execution & risk management)
-```
-
-#### Files Removed
-- ✅ Cleaned up 30 development files (277 KB freed)
-- ✅ Removed intermediate documentation
-- ✅ Professional, production-ready structure
-
 ### December 3, 2025 - Hyperliquid Account & Spot Trading Integration + TypeScript Fix
 
 #### Bug Fixes
@@ -113,54 +88,7 @@ tools/
 - 100% coverage for account and bridge operations
 - Spot trading tested: Successfully executed HYPE trades with 13.919% slippage on testnet
 - Comprehensive documentation: See `FINAL_SUMMARY.md` for complete implementation details
-
-### December 2024 - AI Memory Integration (Mem0) + New Tools
-
-#### AI Memory Tools (8)
-- ✅ **`memory_save_preference`** - Save trading preferences (leverage, risk %, pairs, style)
-- ✅ **`memory_log_trade`** - Log trades with full context for pattern learning
-- ✅ **`memory_get_insights`** - Get personalized insights based on trading history
-- ✅ **`memory_check_pattern`** - Check if current setup matches past winning/losing patterns
-- ✅ **`memory_remember`** - Store any note/context for future reference
-- ✅ **`memory_recall`** - Search and recall stored memories
-- ✅ **`memory_get_all`** - Get all stored memories with trading statistics
-- ✅ **`memory_delete`** - Delete specific memory by ID
-
-#### Position Management & Sentiment Tools (2)
-- ✅ **`close_position`** - Close or reduce positions on Hyperliquid (testnet/mainnet)
-- ✅ **`get_market_sentiment`** - Fear & Greed Index + BTC Dominance + Funding Summary (FREE APIs)
-
-**New Environment Variable:**
-```env
-MEM0_API_KEY=your_mem0_api_key  # Get from https://app.mem0.ai
-```
-
-### November 2024 - Position & Whale Tracking
-- ✅ **`get_position`** - Track your own futures positions from Hyperliquid (account value, margin, PnL, positions)
-- ✅ **`get_correlation_analysis`** - BTC dominance, altcoin correlation with BTC, beta analysis, market regime
-- ✅ **`get_whale_position`** - Track specific wallet addresses with labeling & change detection alerts
-- ✅ **`get_tier_classification`** - Market breakdown by trader tier (🦐 Shrimp → 🐉 Institutional) with Long/Short and top wallets
-
-### New Features
-- ✅ **BTC Correlation in `get_indicators`** - Added `btcCorrelation` field showing correlation, beta, relative strength for each ticker
-- ✅ **Tier Classification System** - 7 tiers from Shrimp (<$1K) to Institutional (>$2M)
-- ✅ **Wallet Labeling** - Label tracked wallets (e.g., "Smart Money 1", "Competitor A")
-- ✅ **Change Detection** - Alerts for new positions, closed positions, size changes, side flips
-
-### Bug Fixes
-- ✅ **CVD (Cumulative Volume Delta)** - Fixed null data issue, now returns cvdTrend and cvdDelta
-- ✅ **HyperScreener API Integration** - Fixed URL construction bug that caused all HyperScreener data to return null
-- ✅ **API Response Handling** - Fixed array response parsing (API returns `[]` not `{value:[]}`)
-- ✅ **Parameter Corrections** - Fixed `position_value` → `notional_value`, `long_short_ratio` → `notional_value`
-
-### New HyperScreener Endpoints
-- `/node/market/summary` - All symbols with price change + liquidations
-- `/node/market/summary/{SYMBOL}` - Per symbol market summary  
-- `/market-data/funding-rates` - Funding rates per symbol
-- `/market-data/open-interest` - Open interest per symbol
-- `/market-data/volume` - Volume 24h per symbol
-- `/market-data/stats/24h` - 24h aggregate stats
-
+  
 ### Data Now Available
 | Tool | Data Status |
 |------|-------------|
@@ -398,13 +326,11 @@ The MCP Technical Analysis Server exposes **104 total components** through the M
 
 | No | Tool Name | Description |
 |----|-----------|-------------|
-| | **Price & Market Data** | |
 | 1 | `get_price` | Get latest prices for multiple trading tickers/symbols at once (e.g., ["BTC", "ETH", "SOL"]) |
 | 2 | `get_indicators` | Get comprehensive technical analysis indicators for multiple trading tickers at once |
 | 3 | `get_volume_analysis` | Get comprehensive volume analysis for multiple trading tickers at once |
 | 4 | `get_Multitimeframe` | Get multi-timeframe trend alignment analysis (Daily, 4H, 1H) |
 | 5 | `get_External_data` | Get external market data (funding rate, open interest, liquidations, whale positions, top traders, large trades from HyperScreener) |
-| | **Order Book & Market Analysis** | |
 | 6 | `get_orderbook_depth` | Get real-time L2 order book depth from Hyperliquid (bids/asks, spread, imbalance) |
 | 7 | `get_volume_profile` | Get volume profile analysis (POC, VAH, VAL, HVN, LVN) |
 | 8 | `get_market_structure` | Get market structure analysis (swing highs/lows, COC) |
@@ -413,15 +339,12 @@ The MCP Technical Analysis Server exposes **104 total components** through the M
 | 11 | `get_divergence` | Get RSI/price divergence detection |
 | 12 | `get_liquidation_levels` | Get liquidation level analysis with heatmap data from HyperScreener |
 | 13 | `get_long_short_ratio` | Get long/short ratio with whale positions and top traders from HyperScreener |
-| | **Position & Whale Tracking** | |
 | 14 | `get_position` | Get your own futures positions from Hyperliquid (account value, margin, PnL, leverage) |
 | 15 | `get_correlation_analysis` | BTC dominance, altcoin correlation, beta analysis, market regime detection |
 | 16 | `get_whale_position` | Track specific wallet addresses with labeling & change detection alerts |
 | 17 | `get_tier_classification` | Market breakdown by tier (🦐→🐉) with Long/Short and top wallets per tier |
-| | **Risk Management** | |
 | 18 | `calculate_risk_management` | Calculate stop loss, take profit, and risk/reward ratio |
 | 19 | `calculate_position_setup` | Calculate position size, leverage, margin, and quantity |
-| | **Moving Averages (Merged Tool)** | |
 | 20 | `ma_envelope` | MA Envelope for volatility-based support/resistance |
 | 21 | `vwma` | Volume-Weighted Moving Average |
 | 22 | `mcginley_dynamic` | McGinley Dynamic - adaptive MA with reduced lag |
@@ -432,7 +355,6 @@ The MCP Technical Analysis Server exposes **104 total components** through the M
 | 27 | `smoothed_ma` | Smoothed Moving Average |
 | 28 | `double_ema` | Double Exponential Moving Average (DEMA) |
 | 29 | `triple_ema` | Triple Exponential Moving Average (TEMA) |
-| | **Oscillators (Merged Tool)** | |
 | 30 | `stochastic_rsi` | Stochastic RSI - RSI with stochastic formula |
 | 31 | `chande_momentum` | Chande Momentum Oscillator (-100 to +100) |
 | 32 | `percentage_price_oscillator` | PPO - MACD as percentage |
@@ -451,9 +373,7 @@ The MCP Technical Analysis Server exposes **104 total components** through the M
 | 45 | `rate_of_change` | ROC - percentage price change |
 | 46 | `ultimate_oscillator` | Ultimate Oscillator - 3 timeframe combination |
 | 47 | `trix` | TRIX - triple smoothed EMA rate of change |
-| | **Volume Indicators (Merged Tool)** | |
 | 48 | `volume_indicators` | Merged volume tool with types: chaikin_money_flow, chaikin_oscillator, klinger_oscillator, volume_oscillator, ease_of_movement, price_volume_trend, positive_volume_index, volume_roc, anchored_vwap, volume_zone_oscillator, money_flow_index |
-| | **Volatility Indicators (Merged Tool)** | |
 | 49 | `volatility_indicators` | Merged volatility tool with types: bollinger_band_width, bollinger_percent_b, chaikin_volatility, historical_volatility, mass_index, ulcer_index |
 | | **Trend Indicators (Merged Tool)** | |
 | 50 | `trend_indicators` | Merged trend tool with types: supertrend, alligator, ichimoku_cloud, vortex, linear_regression, r_squared |
@@ -465,16 +385,13 @@ The MCP Technical Analysis Server exposes **104 total components** through the M
 | 53 | `pivot_points` | Merged pivot tool with types: camarilla, standard, fibonacci_retracement |
 | | **Patterns (Merged Tool)** | |
 | 54 | `patterns` | Merged patterns tool with types: fractals, zigzag, change_of_character |
-| | **Trading Execution (Hyperliquid)** | |
-| 55 | `hyperliquid_testnet_futures_trade` | Execute futures trades on Hyperliquid TESTNET. Supports market/limit/custom orders, sizeInUsd ($100), leverage (1-100x), slippage protection (0.01%-50%), auto-fallback to GTC on no liquidity. |
+| 55 | `hyperliquid_testnet_futures_trade` | Execute futures trades on Hyperliquid TESTNET. Supports market/limit/custom orders, sizeInUsd ($100), leverage (1-100x), slippage protection (0.01%-50%), auto-
 | 56 | `hyperliquid_mainnet_futures_trade` | Execute REAL futures trades on Hyperliquid MAINNET. Safety checks: confirmExecution=true required, asset whitelist, min $10, max 25% equity. |
 | 57 | `close_position` | Close or reduce positions on Hyperliquid (testnet/mainnet). Full or partial close (1-99%), auto-detects position side, reduceOnly for safety. |
 | 58 | `get_market_sentiment` | Get market sentiment from Fear & Greed Index + BTC Dominance + Funding Summary (FREE APIs). Overall sentiment score + trading recommendation. |
-| | **Hyperliquid Account & Spot (Dec 3, 2025)** | |
 | 59 | `hyperliquid_account_operations` | 6 operations: check balances, transfers (spot ↔ perp), send USD/tokens. Tested with $100+ real transactions. Production ready. |
 | 60 | `hyperliquid_bridge_operations` | L1 Arbitrum bridge: withdraw_to_arbitrum (3-hour), check_withdraw_status. Full testnet/mainnet support. |
 | 61 | `spot_trade` | Buy/sell spot tokens with slippage retry (0.010% → 8.00%). Market & limit orders. **Use mainnet** ($5-10 recommended). |
-| | **AI Memory (Mem0)** | |
 | 62 | `memory_save_preference` | Save trading preferences (leverage, risk %, pairs, style). AI remembers for future interactions. |
 | 63 | `memory_log_trade` | Log completed trade with full context (entry/exit reason, PnL, lesson) for pattern learning. |
 | 64 | `memory_get_insights` | Get personalized trading insights based on history (performance, patterns, mistakes). |
@@ -494,12 +411,6 @@ Educational documentation accessible through the MCP protocol.
 | 2 | `geartrade://docs/risk-management` | Complete guide on risk management, position sizing, stop loss/take profit strategies, leverage management, and portfolio risk. Includes formulas, examples, and best practices. |
 | 3 | `geartrade://docs/tools-overview` | Complete overview of all 69 MCP tools with descriptions, parameters, and usage patterns. Organized by category: Market Data, Execution, Technical Indicators, and AI Memory. |
 | 4 | `geartrade://docs/execution-workflow` | Step-by-step guide for analysis to execution workflow. Covers comprehensive analysis, signal identification, user confirmation, testnet/mainnet execution, position monitoring, and trade logging. |
-
-**Content Highlights:**
-- **Trading Strategies**: 69 tools quick reference, workflow recommendations, common mistakes to avoid
-- **Risk Management**: Position sizing formulas, stop loss strategies, leverage guidelines, MAE analysis
-- **Tools Overview**: All 69 tools categorized, usage patterns, execution workflows, memory-enhanced trading
-- **Execution Workflow**: Safety best practices, multiple asset analysis, error handling, step-by-step guides
 
 ### 🤖 Prompts (31)
 
@@ -594,23 +505,23 @@ Educational documentation accessible through the MCP protocol.
 ### High-Level Overview
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                      AI ASSISTANTS LAYER                            │
-│  ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐     │
-│  │  Claude  │    │  Cursor  │    │  GPT-4   │    │  Custom  │     │
-│  └────┬─────┘    └────┬─────┘    └────┬─────┘    └────┬─────┘     │
-└───────┼───────────────┼───────────────┼───────────────┼───────────┘
-        │               │               │               │
-        └───────────────┴───────────────┴───────────────┘
-                            │
-                   ◀═══ MCP Protocol ═══▶
-                            │
-┌───────────────────────────┼──────────────────────────────────────────┐
-│                           ▼                                          │
-│  ╔═══════════════════════════════════════════════════════════════╗  │
-│  ║          GEARTRADE MCP SERVER v1.1.0                          ║  │
-│  ║   69 Tools • 31 Prompts • 4 Resources • 104 Components        ║  │
-│  ╚═══════════════════════════════════════════════════════════════╝  │
+┌─────────────────────────────────────────────────────────────────────────────────────────┐
+│                      AI ASSISTANTS LAYER                                                ║
+│   ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐                          ║
+│   │  Claude  │    │  Cursor  │    │  GPT-4   │    │  Custom  │                          ║
+│   └────┬─────┘    └────┬─────┘    └────┬─────┘    └────┬─────┘                          ║
+│        ┼               ┼               ┼               ┼                                ║
+│        │               │               │               │                                ║
+│        └───────────────┴───────────────┴───────────────┘                                ║
+│                           │                                                             ║
+│                   ◀═══ MCP Protocol ═══▶                                                ║
+│                           │                                                             ║
+┌───────────────────────────┼──────────────────────────────────────────────────────────┐  ║
+│                           ▼                                                          │  ║
+│  ╔═══════════════════════════════════════════════════════════════╗                   │  ║
+│  ║          GEARTRADE MCP SERVER v1.1.0                          ║                   │  ║
+│  ║   69 Tools • 31 Prompts • 4 Resources • 104 Components        ║                   │  ║
+│  ╚═══════════════════════════════════════════════════════════════╝                   │  ║
 ║  │                                           │                                       │  ║
 ║  │                                           ▼                                       │  ║
 ║  │  ┌─────────────────────────────────────────────────────────────────────────────┐  │  ║
@@ -887,33 +798,27 @@ mcp-technical-analysis/
 | 1 | `packages/geartrade-mcp-server/src/index.ts` | Main entry point (804 lines) - Registers 69 tools, 31 prompts, 4 resources |
 | 2 | `packages/geartrade-mcp-server/local-server.ts` | HTTP/SSE streaming server for remote MCP connections |
 | 3 | `packages/geartrade-mcp-server/dist/` | Compiled JavaScript output (auto-generated from TypeScript) |
-| **Configuration** | |
 | 4 | `packages/geartrade-mcp-server/package.json` | Package v1.1.0 - Dependencies and scripts |
 | 5 | `packages/geartrade-mcp-server/tsconfig.json` | TypeScript compiler configuration |
 | 6 | `packages/.env.example` | Environment variables template (copy to .env) |
-| **Tools (69 tools in 5 categories)** | |
 | 7 | `src/tools/account/` | 10 tools - Account operations, bridge, AI memory (Mem0) |
 | 8 | `src/tools/analysis/` | 15 tools - Market sentiment, technical analysis, whale tracking |
 | 9 | `src/tools/data/` | 3 tools - Real-time prices, positions, long/short ratios |
 | 10 | `src/tools/indicators/` | 35 tools - MAs, oscillators, channels, patterns, volatility |
 | 11 | `src/tools/trading/` | 6 tools - Futures trading, spot trading, risk management |
-| **Formatters & Utilities** | |
 | 12 | `src/formatters/` | 17 files - Output formatting for all tool responses |
 | 13 | `src/prompts/` | 31 prompt templates - Day/Swing/Position trading workflows |
 | 14 | `src/resources/` | 4 educational resources - Trading guides and references |
 | 15 | `src/server/` | HTTP/SSE infrastructure - CORS and JSON-RPC handlers |
 | 16 | `src/memory/` | AI Memory (Mem0) integration - Trade journal & preferences |
-| **Analysis Engine** | |
 | 17 | `src/signal-generation/` | Core analysis engine - Market intelligence & indicators |
 | 18 | `src/signal-generation/analysis/` | 8 modules - Bounce, candlestick, divergence, structure, trends |
 | 19 | `src/signal-generation/technical-indicators/` | 35+ indicators - RSI, MACD, Fibonacci, correlations, etc. |
 | 20 | `src/signal-generation/data-fetchers/` | 3 fetchers - Hyperliquid, HyperScreener, market data aggregation |
 | 21 | `src/signal-generation/risk-management/` | 2 modules - Dynamic leverage & margin calculations |
 | 22 | `src/signal-generation/exit-conditions/` | Exit strategies - Stop loss & take profit calculations |
-| **Automation** | |
 | 23 | `scripts/mcp-auto-start.sh` | Linux/Mac auto-start script with build & restart logic |
 | 24 | `scripts/mcp-auto-start.bat` | Windows auto-start script with build & restart logic |
-| **Documentation** | |
 | 25 | `README.md` (root) | This file - Complete project documentation |
 | 26 | `src/*/README.md` | 16 README files - Detailed documentation for each directory |
 
