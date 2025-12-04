@@ -174,7 +174,7 @@ MEM0_API_KEY=your_mem0_api_key  # Get from https://app.mem0.ai
 
 ## 🌟 **What's Included**
 
-### 📊 **68 Complete Analysis & Trading Tools**
+### 📊 **69 Complete Analysis & Trading Tools**
 - **Market Data** (5): Price, indicators, volume analysis, multi-timeframe, external data
 - **Order Book & Market** (8): Order book depth, volume profile, market structure, regime, patterns, divergence, liquidation, long/short ratio
 - **Position & Whale Tracking** (4): Position tracking, correlation analysis, whale position tracking, tier classification
@@ -186,14 +186,14 @@ MEM0_API_KEY=your_mem0_api_key  # Get from https://app.mem0.ai
 - **Trading Execution** (5): Hyperliquid futures (testnet/mainnet), spot trading, account operations, bridge operations
 - **AI Memory** (8): Save preferences, log trades, get insights, check patterns, remember, recall, get all, delete
 
-### 📚 **22 Analysis Resources**
+### 📚 **4 Educational Resources**
 - Comprehensive documentation for trading strategies, risk management, and technical analysis
 - API references and integration guides
 - Specialized guides for volume analysis, Fibonacci, orderbook, and more
 - **NEW:** Usage patterns guide for Day Trading, Swing Trading, Position Trading
-- **NEW:** Complete tools reference (60 tools with parameters including AI Memory)
+- **NEW:** Complete tools reference (69 tools with parameters including AI Memory)
 
-### 🤖 **32 AI Analysis Prompts**
+### 🤖 **31 AI Analysis Prompts**
 - Core analysis workflows for comprehensive market research
 - Technical analysis prompts for indicator-based insights
 - Risk management and position sizing guidance
@@ -496,12 +496,12 @@ Educational documentation accessible through the MCP protocol.
 | 4 | `geartrade://docs/execution-workflow` | Step-by-step guide for analysis to execution workflow. Covers comprehensive analysis, signal identification, user confirmation, testnet/mainnet execution, position monitoring, and trade logging. |
 
 **Content Highlights:**
-- **Trading Strategies**: 58 tools quick reference, workflow recommendations, common mistakes to avoid
+- **Trading Strategies**: 69 tools quick reference, workflow recommendations, common mistakes to avoid
 - **Risk Management**: Position sizing formulas, stop loss strategies, leverage guidelines, MAE analysis
 - **Tools Overview**: All 69 tools categorized, usage patterns, execution workflows, memory-enhanced trading
 - **Execution Workflow**: Safety best practices, multiple asset analysis, error handling, step-by-step guides
 
-### 🤖 Prompts (32)
+### 🤖 Prompts (31)
 
 | No | Prompt Name | Description |
 |----|-------------|-------------|
@@ -694,7 +694,7 @@ Educational documentation accessible through the MCP protocol.
 - **Configurable Slippage**: Dynamic slippage with auto-retry (0.01% to 50%)
 
 **📊 Analysis Engine Components**
-- **Technical Indicators**: 70+ indicators across momentum, volume, volatility, and trend analysis
+- **Technical Indicators**: 35+ indicators across momentum, volume, volatility, and trend analysis
 - **CVD (Cumulative Volume Delta)**: Real-time buy/sell pressure analysis with trend detection
 - **Market Structure**: Advanced change-of-character detection, market regime analysis, and fractal analysis
 - **Volume Profile**: POC, VAH, VAL, HVN, LVN for session and composite analysis
