@@ -894,10 +894,5 @@ curl -X POST http://localhost:8787/mcp \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"get_price","arguments":{"ticker":"BTC"}}}'
 ```
 
-## 📄 License
-
-MIT
-
---
 ---
 **Made with ❤️ by the GearTrade Team**
