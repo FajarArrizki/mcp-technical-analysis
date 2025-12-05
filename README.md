@@ -898,41 +898,6 @@ curl -X POST http://localhost:8787/mcp \
 
 MIT
 
+--
 ---
-
-*Built for the AI analysis community - empowering AI assistants with professional technical analysis capabilities*
-## 📊 Project Statistics
-
-### Component Breakdown
-```
-Total Components:     104
-├─ Tools:              69 (5 categories)
-│  ├─ Account:         10 tools
-│  ├─ Analysis:        15 tools
-│  ├─ Data:             3 tools
-│  ├─ Indicators:      35 tools
-│  └─ Trading:          6 tools
-├─ Resources:           4 (educational guides)
-└─ Prompts:            31 (AI workflows)
-```
-
-### Code Quality Metrics
-```
-✅ TypeScript:        100%
-✅ Build Status:      Passing
-✅ Duplicates:        0 (zero!)
-✅ Type Safety:       Full coverage
-✅ Documentation:     Comprehensive
-✅ Architecture:      Fully modular
-```
-
-### Refactoring Achievement  
-```
-Before:  4,943 lines (index.ts)
-After:     804 lines (index.ts)
-Savings: 4,139 lines (83.8% reduction!)
-```
-
----
-
 **Made with ❤️ by the GearTrade Team**
